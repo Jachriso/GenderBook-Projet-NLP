@@ -33,6 +33,7 @@ python -m scripts.build_dataset
 from src.data_loader import load_books, get_books_by_author, apply_constraints
 
 books = load_books()                       # enrichi > propre > échantillon (le meilleur disponible)
+get_books_by_author(books, "jk rowling")   # toutes les orthographes -> les 7 Harry Potter + The Cuckoo's Calling
 get_books_by_author(books, "stephen kng")  # matching flou -> livres de Stephen King
 mask = apply_constraints(books, audience="Young Adult", formats=["Paperback"],
                          excluded_authors=["Suzanne Collins"], fiction_only=True)
@@ -44,9 +45,9 @@ mask = apply_constraints(books, audience="Young Adult", formats=["Paperback"],
 |---|---|
 | `book_id` | identifiant (ISBN-13 de l'édition retenue) |
 | `title` | titre d'affichage, sans mentions d'édition (« Deluxe Edition »…) |
-| `authors` / `authors_str` / `main_author` | liste des auteurs / chaîne / auteur principal (hors illustrateur, traducteur) |
+| `authors` / `authors_str` / `main_author` | liste des auteurs (**une seule orthographe par auteur**) / chaîne / auteur principal (hors illustrateur, traducteur) |
 | `categories` | catégories Book Depository (liste de noms) |
-| `description` | **texte pour le NLP** : nettoyé, sans citations de presse ni bandeaux commerciaux |
+| `description` | **texte pour le NLP** : nettoyé, sans texte générique, citations de presse, bandeaux commerciaux ni sections « Praise for… » |
 | `description_raw` | description avec nettoyage minimal seulement (traçabilité) |
 | `embed_text` | **texte à encoder** = `title. description`, tronqué proprement à ≈ 1 500 caractères |
 | `pub_year` | année de publication de l'**édition** (pas l'époque du récit !) |
@@ -61,7 +62,7 @@ mask = apply_constraints(books, audience="Young Adult", formats=["Paperback"],
 ```
 data/          raw/ (non versionné) · processed/ · reference/ · embeddings/
 notebooks/     01_data_preparation.ipynb (P1) … 06_evaluation.ipynb
-src/           config.py · data_loader.py (P1) · enrichment.py · embeddings.py · scoring.py · …
+src/           config.py · data_loader.py + marketing.py (P1) · enrichment.py · embeddings.py · scoring.py · …
 scripts/       build_dataset.py
 tests/         tests unitaires (python -m pytest tests -q)
 docs/          figures/ · report/ (sections du rapport PDF) · slides/
@@ -70,7 +71,7 @@ app/           application Streamlit
 
 ## Avancement
 
-- [x] **P1 : Données** : catalogue, EDA, utilitaires, tests, section du rapport (`docs/report/01_dataset.md`), slides (`docs/slides/01_dataset_slides.md`)
+- [x] **P1 : Données** : catalogue, EDA, utilitaires, 52 tests, section du rapport (`docs/report/01_dataset.md`), slides (`docs/slides/01_dataset_slides.md`)
 - [ ] P2 : Référentiel des blocs et enrichissement (`books_enriched.parquet`)
 - [ ] P3 : Moteur sémantique (embeddings)
 - [ ] P4 : Scoring et recommandation

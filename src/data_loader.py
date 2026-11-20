@@ -109,80 +109,59 @@ def clean_description(text: str | float) -> str:
 
 # Phrases types des réimpressions / produits sans contenu narratif.
 # Détectées dans l'EDA : des dizaines de milliers de livres partagent ces textes.
+# Appliquées PHRASE PAR PHRASE (voir strip_boilerplate) : une phrase qui contient
+# un de ces motifs est retirée, le reste de la description est conservé.
 BOILERPLATE_PATTERNS = [
     r"facsimile reprint",
     r"scarce antiquarian book",
-    r"selected by scholars as being culturally important",
+    r"culturally important",
+    r"knowledge base of civilization",
     r"print on demand",
-    r"this book may have occasional imperfections",
-    r"reproduction of (an|the) original",
-    r"we have (scanned|reformatted|recreated)",
+    r"may (?:have occasional|contain) imperfections",
+    r"marks, notations",
+    r"due to its age",
+    r"true to the original work",
+    r"protecting, preserving,? and promoting",
+    r"reproduction of (?:an|the) original",
+    r"we have (?:scanned|reformatted|recreated)",
     r"this is a reproduction of a book published before",
-    r"(perfect|blank|lined|ruled) (notebook|journal|planner)",
-    r"\bnotebook\b.*\b(pages|sheets)\b",
+    r"(?:perfect|blank|lined|ruled) (?:notebook|journal|planner)",
+    r"\bnotebook\b.*\b(?:pages|sheets)\b",
     r"click or search",
     r"public domain",
+    r"historical books limited",
+    r"send an email to",
 ]
 _BOILERPLATE_RE = re.compile("|".join(BOILERPLATE_PATTERNS), flags=re.IGNORECASE)
 
 
 def is_boilerplate(text: str) -> bool:
-    """True si la description est un texte générique sans valeur sémantique."""
+    """True si la description CONTIENT un texte générique (statistiques de l'EDA)."""
     return bool(_BOILERPLATE_RE.search(text or ""))
 
 
-# --- Texte marketing (citations de presse, bandeaux « BESTSELLER ») ----------
-# ~7 % des descriptions commencent par des critiques du type
-#   "A hair-raising debut..." --Mary Kubica, New York Times bestselling author
-# Ces phrases parlent du SUCCÈS du livre, pas de son CONTENU : elles
-# rapprocheraient artificiellement tous les best-sellers entre eux dans
-# l'espace d'embedding. On les retire du texte utilisé pour le NLP.
-_Q_OPEN, _Q_CLOSE = "\"“”«", "\"“”»"
-# citation entre parenthèses : ("remarkable"--Associated Press)
-_PAREN_BLURB_RE = re.compile(rf"\(\s*[{_Q_OPEN}][^{_Q_CLOSE}]{{1,250}}[{_Q_CLOSE}]\s*[-–—]{{1,3}}[^)]{{1,80}}\)")
-# citation suivie d'une attribution qui s'arrête à la citation suivante
-_CHAINED_BLURB_RE = re.compile(
-    rf"[{_Q_OPEN}][^{_Q_CLOSE}]{{2,500}}[{_Q_CLOSE}]\s*(?:--|—|–|-{{3}})\s*[^{_Q_OPEN}]{{0,140}}?(?=[{_Q_OPEN}])"
-)
-# dernière citation : on retire « citation + nom propre (+ précision entre parenthèses) »
-_LAST_BLURB_RE = re.compile(
-    rf"[{_Q_OPEN}][^{_Q_CLOSE}]{{2,500}}[{_Q_CLOSE}]\s*(?:--|—|–|-{{3}})\s*"
-    r"(?:The\s+)?[A-Z][\w.&'’]*(?:\s+(?:of\s+)?[A-Z][\w.&'’]*){0,4}(?:\s*\([^)]{0,40}\))?[,.]?"
-)
-# bandeau en MAJUSCULES contenant un argument de vente
-# suite d'au moins 3 « mots » sans minuscule ("THE INSTANT #1 BESTSELLER!")
-_CAPS_HEADLINE_RE = re.compile(
-    r"(?<![\w'’])(?:[A-Z0-9#'’!?,.&:;\-]+\s+){2,}[A-Z0-9#'’!?,.&:;\-]+(?![\w'’])"
-)
-# reste d'attribution en DÉBUT de texte : "New York Times bestselling author of The Good Girl"
-# (ancré au début pour ne pas toucher "From the bestselling author of Gone Girl comes...")
-_AUTHOR_OF_RE = re.compile(
-    r"^\s*(?:,\s*)?(?:#1\s+)?(?:[A-Z][\w.]*\s+){0,4}(?:and\s+(?:[A-Z][\w.]*\s+){1,3})?"
-    r"(?:internationally\s+|award-winning\s+)?best-?selling author of"
-    r"(?:\s+(?:the\s+)?(?!A\s)[A-Z][\w'’-]*){1,5}"
-)
-_SALES_WORDS_RE = re.compile(
-    r"BESTSELL|BEST-SELL|NEW YORK TIMES|SUNDAY TIMES|USA TODAY|#1|NUMBER ONE|"
-    r"WINNER|AWARD|PRIZE|MAJOR (MOTION PICTURE|NETFLIX|TV)|NOW A |SOON TO BE|"
-    r"OVER \d|MILLION COPIES|INSTANT|EDITION"
-)
+_SENTENCE_SPLIT_RE = re.compile(r"(?<=[.!?])\s+(?=[\"“A-Z0-9])")
 
 
-def _drop_sales_headline(match: re.Match) -> str:
-    seg = match.group(0)
-    return " " if _SALES_WORDS_RE.search(seg) else seg
+def strip_boilerplate(text: str) -> str:
+    """Retire les PHRASES génériques (réimpressions, « public domain »…) et garde le reste.
+
+    On travaille phrase par phrase plutôt que de jeter toute la description :
+    "The original book has been in the public domain in the US since 1956." est
+    retirée, mais le résumé du *Magicien d'Oz* qui l'entoure est conservé.
+    Un livre dont la description n'était QUE du texte générique tombe ensuite
+    sous le seuil de 300 caractères et est écarté.
+    """
+    if not text or not _BOILERPLATE_RE.search(text):
+        return text
+    kept = [s for s in _SENTENCE_SPLIT_RE.split(text) if not _BOILERPLATE_RE.search(s)]
+    return " ".join(kept).strip()
 
 
-def strip_marketing(text: str) -> str:
-    """Retire citations de presse et bandeaux commerciaux d'une description."""
-    text = _PAREN_BLURB_RE.sub(" ", text)
-    text = _CHAINED_BLURB_RE.sub(" ", text)
-    text = _LAST_BLURB_RE.sub(" ", text)
-    text = _AUTHOR_OF_RE.sub(" ", text)
-    text = _CAPS_HEADLINE_RE.sub(_drop_sales_headline, text)
-    text = _MULTI_SPACE_RE.sub(" ", text)
-    text = _SPACE_BEFORE_PUNCT_RE.sub(r"\1", text)
-    return text.strip(" ,;:-–—")
+# --- Texte marketing ---------------------------------------------------------
+# La logique (citations de presse, bandeaux « BESTSELLER », attributions) est
+# dans src/marketing.py ; on la ré-exporte ici pour compatibilité.
+from src.marketing import MarketingStripper, norm_words, strip_marketing  # noqa: E402,F401
 
 
 # --- Éditions spéciales, coffrets, auteurs -----------------------------------
@@ -197,6 +176,37 @@ BOX_SET_RE = re.compile(
     r"\d+[- ]book (?:set|collection)|\d+[- ]volume|books? \d+\s*[-–&]\s*\d+",
     flags=re.IGNORECASE,
 )
+
+
+# Produits dérivés / compagnons : ce ne sont pas des expériences de lecture
+# (livres pop-up, « making of » de films, guides officiels, livres d'art,
+# livres de stickers ou journaux à remplir). Liste volontairement PRÉCISE :
+# des motifs larges ("guide to", "the art of", "companion") supprimeraient
+# The Art of War, The Hitchhiker's Guide to the Galaxy ou des romans
+# « compagnons » comme Lying Out Loud: A Companion to the Duff.
+COMPANION_RE = re.compile(
+    r"pop-?up\b|page to screen|film wizardry|making the movie|behind the scenes of|"
+    r"official (?:movie )?(?:guide|companion|handbook|colou?ring)|"
+    r"(?:unofficial|unauthori[sz]ed) (?:guide|companion|handbook)|\[companion book\]|"
+    r"the art of the (?:animated|film|movie|series|game)|peel-off stickers|sticker book|"
+    r"wreck this journal|journal pages|colou?ring book|activity book|"
+    r"visual (?:companion|guide|dictionary)|the world of the hunger games|"
+    r"the sorcerer's companion|cats of the clans|the book of the exhibition|"
+    r"a journey through a history of magic",
+    flags=re.IGNORECASE,
+)
+# Auteurs « corporate » (studios, éditeurs) : signe d'un produit dérivé
+CORPORATE_AUTHOR_RE = re.compile(
+    r"^(?:warner bros\.?|scholastic(?: inc\.?)?|insight editions|running press|lucasfilm(?: ltd)?|"
+    r"disney(?: book group)?|dreamworks|pixar|nickelodeon|cartoon network|bbc|national geographic|"
+    r"lonely planet|dk|universal studios|paramount)$",
+    flags=re.IGNORECASE,
+)
+
+
+def is_companion_product(title: str, authors: list[str]) -> bool:
+    """True pour un produit dérivé (pop-up, guide officiel, making of...)."""
+    return bool(COMPANION_RE.search(title)) or any(CORPORATE_AUTHOR_RE.match(a) for a in authors)
 
 
 def author_key(name: str) -> str:
@@ -231,7 +241,7 @@ def normalize_title(title: str) -> str:
     """Clé de titre pour détecter les éditions multiples d'une même œuvre.
 
     "Pride & Prejudice (Penguin Classics)" et "Pride and Prejudice" donnent
-    la même clé "pride and prejudice".
+    la même clé "pride and prejudice" ; "Cat's Eye" et "Cats Eye" -> "cats eye".
     """
     if not isinstance(title, str):
         return ""
@@ -239,6 +249,11 @@ def normalize_title(title: str) -> str:
     t = _TITLE_BRACKETS_RE.sub(" ", t)          # retire "(Penguin Classics)", "[Illustrated]"...
     t = _TITLE_SUFFIX_RE.sub("", t)            # retire ": A Novel", ": A Memoir"...
     t = t.lower().replace("&", " and ")
+    # apostrophes SUPPRIMÉES : "Cat's Eye" = "Cats Eye".
+    # Les tirets deviennent des espaces ("Water-Babies" -> "water babies") pour que
+    # la comparaison mot à mot de la règle (b) fonctionne ; la règle (a) compare
+    # les titres SANS espaces, donc "Wall-paper" = "Wallpaper" reste couvert.
+    t = re.sub(r"['’`]", "", t)
     t = _NON_ALNUM_RE.sub(" ", t)
     return _MULTI_SPACE_RE.sub(" ", t).strip()
 
@@ -427,25 +442,33 @@ def build_catalogue(raw: pd.DataFrame | None = None,
     df = df[df["format"].isin(config.KEEP_FORMATS)]
     _log(report, "3. format in Paperback/Hardback", df, "drop audio CDs, calendars, toys...")
 
-    # --- 5.3 Nettoyage et qualité de la description ------------------------
-    # Pré-filtre rapide sur la longueur brute avant le nettoyage regex (coûteux)
-    df = df[df["description"].str.len() >= config.MIN_DESC_CHARS]
-    df["description_raw"] = df["description"].map(clean_description)
-    df = df[~df["description_raw"].map(is_boilerplate)]
-    _log(report, "4. drop boilerplate descriptions", df,
-         "facsimile reprints, print-on-demand, notebooks")
-    # Texte utilisé pour le NLP : sans citations de presse ni bandeaux commerciaux
-    df["description"] = df["description_raw"].map(strip_marketing)
-    df = df[df["description"].str.len() >= config.MIN_DESC_CHARS]
-    _log(report, f"5. clean description >= {config.MIN_DESC_CHARS} chars", df,
-         "enough content (after removing press quotes) for an embedding")
-
-    # --- 5.4 Notes Goodreads ------------------------------------------------
+    # --- 5.3 Notes Goodreads (filtre numérique bon marché, fait AVANT les
+    #         nettoyages de texte coûteux) ------------------------------------
     df["rating_count"] = pd.to_numeric(df["rating-count"], errors="coerce")
     df["rating_avg"] = pd.to_numeric(df["rating-avg"], errors="coerce")
     df = df[df["rating_count"] >= min_rating_count]
-    _log(report, f"6. rating_count >= {min_rating_count}", df,
+    _log(report, f"4. rating_count >= {min_rating_count}", df,
          "known books with reliable ratings")
+
+    # --- 5.4 Qualité de la description --------------------------------------
+    df = df[df["description"].str.len() >= config.MIN_DESC_CHARS]
+    _log(report, f"5. raw description >= {config.MIN_DESC_CHARS} chars", df,
+         "short blurbs carry too little meaning")
+    df["description_raw"] = df["description"].map(clean_description)
+    n_with_boilerplate = int(df["description_raw"].map(is_boilerplate).sum())
+    df["description"] = df["description_raw"].map(strip_boilerplate)
+    df = df[df["description"].str.len() >= config.MIN_DESC_CHARS]
+    _log(report, "6. not only boilerplate", df,
+         f"generic sentences removed in {n_with_boilerplate:,} texts; "
+         "drop texts that were only boilerplate")
+    # Texte utilisé pour le NLP : sans citations de presse ni bandeaux commerciaux.
+    # Le « stripper » connaît les noms d'auteurs et les titres du dataset pour
+    # savoir où s'arrête une attribution (voir src/marketing.py).
+    stripper = build_marketing_stripper(raw)
+    df["description"] = df["description"].map(stripper)
+    df = df[df["description"].str.len() >= config.MIN_DESC_CHARS]
+    _log(report, f"7. >= {config.MIN_DESC_CHARS} chars without press quotes", df,
+         "enough content once marketing is removed")
 
     # --- 5.5 Catégories : noms + domaine -----------------------------------
     cat_names = load_lookup(config.RAW_CATEGORIES, "category_id", "category_name")
@@ -463,21 +486,25 @@ def build_catalogue(raw: pd.DataFrame | None = None,
     # On garde un livre s'il a au moins une catégorie « lecture loisir » et
     # au moins autant de catégories loisir que de catégories exclues.
     df = df[(reader >= 1) & (reader >= df["n_excluded"])]
-    _log(report, "7. leisure-reading categories", df,
+    _log(report, "8. leisure-reading categories", df,
          "fiction + narrative non-fiction, no textbooks/cookery/IT...")
     df["is_fiction"] = df["n_fiction"] >= df["n_nonfiction"]
     df["domain"] = np.where(df["is_fiction"], "Fiction", "Non-fiction")
 
-    # --- 5.6 Auteurs ---------------------------------------------------------
+    # --- 5.6 Auteurs : orthographe canonique ---------------------------------
     author_names = load_lookup(config.RAW_AUTHORS, "author_id", "author_name")
     df["author_ids"] = df["authors"].map(parse_id_list)
     df["authors_list"] = df["author_ids"].map(
         lambda ids: [author_names[i] for i in ids if author_names.get(i)]
     )
     df = df[df["authors_list"].map(len) > 0]
-    _log(report, "8. at least one named author", df, "needed for display & dedup")
-    # Clés d'auteur normalisées : le dataset a un ID différent pour
-    # "J.K. Rowling", "J. K. Rowling" et "J K Rowling".
+    _log(report, "9. at least one named author", df, "needed for display & dedup")
+    # Le dataset a un ID (et une orthographe) différent pour "J.K. Rowling",
+    # "J. K. Rowling" et "J K Rowling". On unifie : clé normalisée -> orthographe
+    # canonique (la plus fréquente), pour que "tous les livres de J.K. Rowling"
+    # soient bien retrouvés (auteur favori, auteurs exclus du questionnaire).
+    canonical = canonical_author_names(df["authors_list"])
+    df["authors_list"] = df["authors_list"].map(lambda lst: canonicalize_authors(lst, canonical))
     df["author_keys"] = df["authors_list"].map(lambda lst: [author_key(a) for a in lst])
     # Auteur principal = l'auteur de la liste le plus fréquent dans le corpus.
     # Les illustrateurs / traducteurs / éditeurs scientifiques sont parfois
@@ -485,25 +512,28 @@ def build_catalogue(raw: pd.DataFrame | None = None,
     freq = pd.Series([k for ks in df["author_keys"] for k in ks]).value_counts()
     df["main_author_key"] = df["author_keys"].map(lambda ks: max(ks, key=lambda k: freq.get(k, 0)))
 
-    # --- 5.7 Coffrets et lots -----------------------------------------------
+    # --- 5.7 Coffrets, lots et produits dérivés ------------------------------
     df["title"] = df["title"].map(clean_title)
-    df = df[~df["title"].str.contains(BOX_SET_RE)]
-    _log(report, "9. drop box sets / bundles", df, "a box set is not a single reading experience")
+    df = df[~df["title"].map(lambda t: bool(BOX_SET_RE.search(t)))]
+    _log(report, "10. drop box sets / bundles", df, "a box set is not a single reading experience")
+    df = df[~pd.Series([is_companion_product(t, a) for t, a in zip(df["title"], df["authors_list"])],
+                       index=df.index)]
+    _log(report, "11. drop companion products", df, "pop-up books, film tie-in guides, art books...")
 
     # --- 5.8 Dédoublonnage des éditions (union-find) ------------------------
     df = dedup_editions(df)
-    _log(report, "10. merge editions of the same work", df,
+    _log(report, "12. merge editions of the same work", df,
          "same title+author, or same Goodreads ratings + similar title/author")
     # Descriptions identiques restantes = éditions groupées, textes génériques
     dup_counts = df["description"].map(df["description"].value_counts())
     df = df[dup_counts == 1]
-    _log(report, "11. drop shared descriptions", df, "generic publisher texts")
+    _log(report, "13. drop shared descriptions", df, "generic publisher texts")
 
     # --- 5.9 Diversité : plafond de livres par auteur -----------------------
     df = df.sort_values("rating_count", ascending=False)
     df["author_rank"] = df.groupby("main_author_key").cumcount()
     df = df[df["author_rank"] < max_per_author]
-    _log(report, f"12. max {max_per_author} books per author", df,
+    _log(report, f"14. max {max_per_author} books per author", df,
          "avoid catalogue saturation by prolific authors / manga series")
 
     # --- 5.9 Vérification de la langue de la description -------------------
@@ -511,17 +541,17 @@ def build_catalogue(raw: pd.DataFrame | None = None,
     # langue. On ne teste que les meilleurs candidats (coût ~5 ms/texte).
     # df est déjà trié par rating_count décroissant : on garde une marge de 15 %
     pool = df.head(int(target_size * 1.15)).copy()
-    _log(report, f"13. top {len(pool):,} candidates by rating_count", pool,
+    _log(report, f"15. top {len(pool):,} candidates by rating_count", pool,
          "well-known books: richer descriptions, recognisable in the demo")
     if detect_language:
         pool["desc_lang"] = detect_languages(pool["description"])
         pool = pool[pool["desc_lang"] == "en"]
-        _log(report, "14. description really in English", pool,
+        _log(report, "16. description really in English", pool,
              "langdetect (seed fixed)")
 
     # --- 5.10 Sélection finale ------------------------------------------------
     cat_df = pool.head(target_size).copy()
-    _log(report, f"15. final catalogue (top {target_size:,})", cat_df,
+    _log(report, f"17. final catalogue (top {target_size:,})", cat_df,
          "target size reached")
 
     cat_df = finalize_columns(cat_df)
@@ -537,6 +567,47 @@ _TITLE_STOPWORDS = {
 }
 
 
+def build_marketing_stripper(raw: pd.DataFrame) -> MarketingStripper:
+    """Construit le MarketingStripper avec les connaissances du dataset.
+
+    * noms d'auteurs (authors.csv) : pour reconnaître "--Stephen King" ;
+    * titres (dataset.csv, titre complet ET partie avant ':') : pour savoir où
+      s'arrête "author of The Statistical Probability of Love at First Sight".
+    """
+    authors = pd.read_csv(config.RAW_AUTHORS, dtype=str)["author_name"].dropna()
+    titles = raw["title"].dropna()
+    titles = pd.concat([titles, titles.str.split(r"\s*:\s*").str[0]]).drop_duplicates()
+    return MarketingStripper(authors, titles)
+
+
+def canonical_author_names(author_lists: Iterable[list[str]]) -> dict[str, str]:
+    """Clé normalisée -> orthographe canonique (la plus fréquente, puis la plus longue).
+
+    {"jkrowling": "J.K. Rowling"} si "J.K. Rowling" est l'orthographe la plus
+    fréquente parmi "J.K. Rowling" / "J. K. Rowling" / "J K Rowling".
+    """
+    counts = pd.Series([a for lst in author_lists for a in lst]).value_counts()
+    best: dict[str, tuple[int, int, str]] = {}
+    for name, n in counts.items():
+        k = author_key(name)
+        if not k:
+            continue
+        cand = (int(n), len(name), name)
+        if k not in best or cand > best[k]:
+            best[k] = cand
+    return {k: v[2] for k, v in best.items()}
+
+
+def canonicalize_authors(authors: list[str], canonical: dict[str, str]) -> list[str]:
+    """Remplace chaque auteur par son orthographe canonique, sans doublons, ordre conservé."""
+    out: list[str] = []
+    for a in authors:
+        name = canonical.get(author_key(a), a)
+        if name not in out:
+            out.append(name)
+    return out
+
+
 def _title_tokens(key: str) -> set[str]:
     """Mots significatifs d'un titre normalisé (sans mots vides ni numéros)."""
     return {w for w in key.split() if w not in _TITLE_STOPWORDS and not w.isdigit()}
@@ -548,7 +619,8 @@ def dedup_editions(df: pd.DataFrame, rel_tol: float = 0.02, avg_tol: float = 0.0
     """Fusionne les éditions d'une même œuvre et garde un seul représentant.
 
     Deux lignes sont considérées comme la même œuvre si :
-      (a) même titre normalisé ET au moins un auteur en commun (clés normalisées) ;
+      (a) même titre normalisé (comparé sans espaces) ET au moins un auteur en commun
+          (clés normalisées) ;
       (b) OU notes Goodreads quasi identiques (nombre de notes à ±2 %, moyenne à
           ±0.05, pour les œuvres ≥ 1 000 notes : Goodreads agrège les notes par
           œuvre, et le dataset a été scrapé à des dates différentes) ET titres
@@ -578,11 +650,13 @@ def dedup_editions(df: pd.DataFrame, rel_tol: float = 0.02, avg_tol: float = 0.0
 
     # clé de titre calculée sur le titre SANS mentions d'édition ("Dune : Deluxe Edition" -> "dune")
     title_keys = df["title"].map(lambda t: normalize_title(display_title(t))).tolist()
-    author_sets = [set(k) for k in df["author_keys"]]  # utilisé par la règle (a)
+    author_sets = [set(k) for k in df["author_keys"]]  # utilisé par les règles (a) et (b)
 
-    # (a) même titre normalisé + un auteur commun
+    # (a) même titre normalisé + un auteur commun. Le titre est comparé SANS
+    #     espaces : "Daddy-Long-Legs" = "Daddy Long Legs", "The Wasteland" = "The Waste Land"
     first_seen: dict[tuple[str, str], int] = {}
     for i, (tk, keys) in enumerate(zip(title_keys, author_sets)):
+        tk = tk.replace(" ", "")
         for ak in keys:
             j = first_seen.setdefault((tk, ak), i)
             if j != i:
@@ -602,16 +676,23 @@ def dedup_editions(df: pd.DataFrame, rel_tol: float = 0.02, avg_tol: float = 0.0
             ti, tj = tokens[i], tokens[j]
             inter = len(ti & tj)
             jac = inter / max(1, len(ti | tj))
-            # un titre inclus dans l'autre, seulement si le plus court a ≥ 2 mots
-            # (sinon "Out" serait inclus dans "Knocked Out by my Nunga-Nungas")
-            overlap = inter / min(len(ti), len(tj)) if min(len(ti), len(tj)) >= 2 else 0.0
+            # un titre inclus dans l'autre : le plus court doit avoir ≥ 3 mots
+            # significatifs, ou 2 mots ET un auteur en commun. Sinon "Out" serait
+            # inclus dans "Knocked Out by my Nunga-Nungas", ou "Civil War" (Lucain)
+            # dans "Spider-Man: Miles Morales: Civil War II" ; mais "Little Women"
+            # reste fusionné avec "Little Women: Or Meg, Jo, Beth and Amy".
+            shortest = min(len(ti), len(tj))
+            same_author = bool(author_sets[i] & author_sets[j])
+            overlap = inter / shortest if shortest >= 3 or (shortest == 2 and same_author) else 0.0
             # Le titre proche est OBLIGATOIRE : un auteur commun ne suffit pas
             # (deux romans de Lee Child peuvent avoir ±2 % de notes d'écart).
             if jac >= title_jaccard or overlap >= 0.8:
                 union(i, j)
 
     df["work_id"] = [find(i) for i in range(n)]
-    df["is_special_edition"] = df["title"].str.contains(EDITION_WORDS_RE)
+    df["is_special_edition"] = df["title"].map(lambda t: bool(EDITION_WORDS_RE.search(t)))
+    if "main_author_key" in df.columns:
+        df = _harmonize_main_author(df)
     df["desc_len"] = df["description"].str.len()
     # Représentant : édition standard d'abord, puis la plus notée, puis la plus longue description
     df = df.sort_values(["is_special_edition", "rating_count", "desc_len"],
@@ -620,6 +701,33 @@ def dedup_editions(df: pd.DataFrame, rel_tol: float = 0.02, avg_tol: float = 0.0
     if return_groups:  # toutes les lignes avec leur work_id (pour inspecter les fusions)
         return df
     return df.drop_duplicates("work_id", keep="first")
+
+
+def _harmonize_main_author(df: pd.DataFrame) -> pd.DataFrame:
+    """Auteur principal d'une œuvre = l'auteur principal le plus fréquent parmi ses éditions.
+
+    Corrige les fautes de saisie d'une édition isolée : l'édition la plus notée de
+    Pride and Prejudice est créditée à "Jane Austin", mais la grande majorité de
+    ses 31 éditions le sont à "Jane Austen".
+    """
+    mode = df.groupby("work_id")["main_author_key"].agg(lambda s: s.value_counts().index[0])
+    name_of: dict[str, str] = {}
+    for lst, keys in zip(df["authors_list"], df["author_keys"]):
+        for a, k in zip(lst, keys):
+            name_of.setdefault(k, a)
+    new_key = df["work_id"].map(mode)
+    wrong = df["main_author_key"] != new_key
+    for idx in df.index[wrong]:
+        old_k, good_k = df.at[idx, "main_author_key"], new_key[idx]
+        lst, keys = list(df.at[idx, "authors_list"]), list(df.at[idx, "author_keys"])
+        if good_k in keys:            # le bon auteur est déjà listé (ex. illustrateur en tête)
+            pass
+        elif old_k in keys:           # faute de saisie : on remplace l'auteur fautif
+            i = keys.index(old_k)
+            lst[i], keys[i] = name_of[good_k], good_k
+        df.at[idx, "authors_list"], df.at[idx, "author_keys"] = lst, keys
+        df.at[idx, "main_author_key"] = good_k
+    return df
 
 
 def detect_languages(texts: pd.Series) -> list[str]:
@@ -762,16 +870,21 @@ def _norm_name(name: str) -> str:
 
 
 def find_author(df: pd.DataFrame, name: str, min_score: int = 85) -> str | None:
-    """Retrouve le nom exact d'un auteur du catalogue à partir d'une saisie libre.
+    """Retrouve le nom (orthographe du catalogue) d'un auteur à partir d'une saisie libre.
 
-    Matching flou (rapidfuzz) pour tolérer fautes de frappe et casse :
-    "stephen kng" -> "Stephen King". Retourne None si rien d'assez proche.
+    1. correspondance EXACTE sur la clé normalisée : "jk rowling", "J. K. Rowling",
+       "J.K.Rowling" -> "J.K. Rowling" ;
+    2. sinon matching flou (rapidfuzz) pour tolérer les fautes : "stephen kng" -> "Stephen King".
+    Retourne None si rien d'assez proche.
     """
     if not name or not name.strip():
         return None
+    all_authors = sorted({a for lst in df["authors"] for a in lst})
+    by_key = {author_key(a): a for a in all_authors}
+    if author_key(name) in by_key:
+        return by_key[author_key(name)]
     from rapidfuzz import fuzz, process, utils
 
-    all_authors = sorted({a for lst in df["authors"] for a in lst})
     match = process.extractOne(_norm_name(name), [_norm_name(a) for a in all_authors],
                                scorer=fuzz.WRatio, processor=utils.default_process)
     if match is None or match[1] < min_score:
@@ -779,12 +892,21 @@ def find_author(df: pd.DataFrame, name: str, min_score: int = 85) -> str | None:
     return all_authors[match[2]]
 
 
+def _has_author_key(df: pd.DataFrame, keys: set[str]) -> pd.Series:
+    """Masque : le livre a au moins un auteur dont la clé normalisée est dans `keys`."""
+    return df["authors"].map(lambda lst: any(author_key(a) in keys for a in lst))
+
+
 def get_books_by_author(df: pd.DataFrame, name: str, min_score: int = 85) -> pd.DataFrame:
-    """Tous les livres du catalogue d'un auteur (saisie libre, matching flou)."""
+    """Tous les livres du catalogue d'un auteur (saisie libre, matching flou).
+
+    La comparaison se fait sur la clé normalisée : toutes les variantes
+    d'orthographe d'un même auteur sont retrouvées.
+    """
     author = find_author(df, name, min_score)
     if author is None:
         return df.iloc[0:0]
-    return df[df["authors"].map(lambda lst: author in lst)]
+    return df[_has_author_key(df, {author_key(author)})]
 
 
 def apply_constraints(df: pd.DataFrame,
@@ -814,7 +936,7 @@ def apply_constraints(df: pd.DataFrame,
     if excluded_authors:
         names = {find_author(df, a) for a in excluded_authors} - {None}
         if names:
-            mask &= ~df["authors"].map(lambda lst: bool(names.intersection(lst)))
+            mask &= ~_has_author_key(df, {author_key(n) for n in names})
     if fiction_only is not None:
         mask &= df["is_fiction"] == fiction_only
     return mask

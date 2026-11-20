@@ -151,3 +151,141 @@ def test_utilities():
     assert dl.find_author(df, "zzzz qqqq") is None
     mask = dl.apply_constraints(df, audience="Children", fiction_only=True)
     assert mask.sum() > 0 and (df.loc[mask, "audience"] == "Children").all()
+
+
+# =============================================================================
+# Tests ajoutés suite à la revue de la PR #1
+# =============================================================================
+
+# --- 🔴 Variantes d'orthographe des auteurs ----------------------------------
+
+def test_canonical_author_names_unifies_variants():
+    lists = [["J.K. Rowling"], ["J.K. Rowling"], ["J. K. Rowling"], ["Jim Kay", "J K Rowling"]]
+    canonical = dl.canonical_author_names(lists)
+    assert canonical["jkrowling"] == "J.K. Rowling"          # orthographe la plus fréquente
+    assert dl.canonicalize_authors(["Jim Kay", "J K Rowling"], canonical) == ["Jim Kay", "J.K. Rowling"]
+
+
+def _toy_books():
+    return pd.DataFrame({
+        "title": ["HP 1", "HP 2", "HP 3", "Other"],
+        "authors": [["J.K. Rowling"], ["J. K. Rowling"], ["J K Rowling", "Jim Kay"], ["Stephen King"]],
+    })
+
+
+def test_get_books_by_author_matches_all_spellings():
+    books = _toy_books()
+    assert len(dl.get_books_by_author(books, "jk rowling")) == 3
+    assert len(dl.get_books_by_author(books, "J.K.Rowling")) == 3
+
+
+def test_excluded_author_removes_all_spellings():
+    books = _toy_books()
+    mask = dl.apply_constraints(books, excluded_authors=["J. K. Rowling"])
+    assert books.loc[mask, "title"].tolist() == ["Other"]
+
+
+# --- 🟠 strip_marketing ne doit pas couper le contenu -------------------------
+
+def test_publication_attribution_stops_before_story():
+    # "--People" est un magazine : "Meghan" est déjà le début de l'intrigue
+    text = '"A premium delivery." --People Meghan doesn\'t know Agatha, but Agatha knows Meghan.'
+    assert dl.strip_marketing(text) == "Meghan doesn't know Agatha, but Agatha knows Meghan."
+
+
+def test_author_of_title_is_fully_removed_with_dataset_knowledge():
+    stripper = dl.MarketingStripper(author_names=["Jennifer E. Smith"],
+                                    titles=["The Statistical Probability of Love at First Sight"])
+    text = ('A New York Times Bestseller "Here are three things about this book." --Jennifer E. Smith, '
+            'author of The Statistical Probability of Love at First Sight With the perfect mix of comedy '
+            'and tragedy, the characters come to feel like old friends.')
+    assert stripper(text).startswith("With the perfect mix of comedy")
+
+
+def test_in_story_quote_is_kept():
+    text = 'He was left with a Turkish inventor known as Hoja--"master"--a man who is his exact double.'
+    assert dl.strip_marketing(text) == text
+
+
+def test_sales_sentence_is_kept_when_removal_would_cut_a_phrase():
+    # retirer "The #1 New York Times bestselling" laisserait "debut novel that introduced..."
+    text = "The #1 New York Times bestselling debut novel that introduced Khaled Hosseini to millions."
+    assert dl.strip_marketing(text) == text
+    # mais un bandeau autonome est retiré
+    assert dl.strip_marketing("#1 NEW YORK TIMES BESTSELLER - A pair of sisters meet.") == "A pair of sisters meet."
+
+
+def test_praise_section_is_removed():
+    text = ('Two boys grow up in Kabul. Praise for The Kite Runner "A powerful book." --The Washington Post '
+            '"Haunting." --Booklist')
+    assert dl.strip_marketing(text) == "Two boys grow up in Kabul."
+
+
+# --- Mineur : boilerplate phrase par phrase --------------------------------------
+
+def test_strip_boilerplate_keeps_real_content():
+    text = ("Dorothy is swept away to the magical land of Oz. The original book has been in the public "
+            "domain in the US since 1956. She meets a scarecrow, a tin man and a lion.")
+    out = dl.strip_boilerplate(text)
+    assert "public domain" not in out
+    assert out.startswith("Dorothy") and out.endswith("lion.")
+
+
+# --- Mineur : doublons dus à la ponctuation ----------------------------------------
+
+def test_normalize_title_punctuation():
+    assert dl.normalize_title("Cat's Eye") == dl.normalize_title("Cats Eye")
+    assert dl.normalize_title("The Water-Babies") == dl.normalize_title("The Water Babies")
+
+
+@pytest.mark.parametrize("a, b", [
+    ("The Yellow Wall-paper", "The Yellow Wallpaper"),
+    ("Daddy-Long-Legs", "Daddy Long Legs"),
+    ("The Wasteland", "The Waste Land"),
+])
+def test_dedup_merges_punctuation_and_space_variants(a, b):
+    df = _editions_frame([(a, ["Author Name"], 5000, 4.0), (b, ["Author Name"], 4000, 3.9)])
+    assert len(dl.dedup_editions(df)) == 1
+
+
+def test_dedup_does_not_merge_short_title_into_unrelated_book():
+    # mêmes notes par coïncidence, "Civil War" inclus dans un titre plus long, auteurs différents
+    df = _editions_frame([
+        ("Civil War", ["Lucan"], 3000, 3.9),
+        ("Spider-Man: Miles Morales Vol. 2: Civil War II", ["Brian Michael Bendis"], 3010, 3.9),
+    ])
+    assert len(dl.dedup_editions(df)) == 2
+
+
+# --- Mineur : produits dérivés --------------------------------------------------
+
+@pytest.mark.parametrize("title, authors, expected", [
+    ("Harry Potter : A Pop-Up Book", ["Andrew Williamson"], True),
+    ("Harry Potter : Page to Screen", ["Bob McCabe"], True),
+    ("Harry Potter Film Wizardry", ["Warner Bros"], True),
+    ("The World of the Hunger Games", ["Scholastic"], True),
+    ("The Art of War", ["Sun Tzu"], False),
+    ("The Hitchhiker's Guide to the Galaxy", ["Douglas Adams"], False),
+    ("Lying Out Loud : A Companion to the Duff", ["Kody Keplinger"], False),
+])
+def test_companion_products(title, authors, expected):
+    assert dl.is_companion_product(title, authors) is expected
+
+
+@pytest.mark.skipif(catalogue_missing, reason="catalogue absent")
+def test_catalogue_review_fixes():
+    df = dl.load_books(config.BOOKS_CLEAN)
+    # une seule orthographe par auteur
+    ex = df[["authors"]].explode("authors").dropna()
+    assert (ex.groupby(ex["authors"].map(dl.author_key))["authors"].nunique() == 1).all()
+    # tous les Harry Potter de Rowling sont retrouvés, et tous exclus
+    rowling = dl.get_books_by_author(df, "jk rowling")
+    assert rowling["title"].str.startswith("Harry Potter and the").sum() == 7
+    mask = dl.apply_constraints(df, excluded_authors=["J. K. Rowling"])
+    assert not df.loc[mask, "title"].str.startswith("Harry Potter and the").any()
+    # pas de doublon titre + auteur (ponctuation et espaces ignorés)
+    key = df["title"].map(lambda t: dl.normalize_title(dl.display_title(t)).replace(" ", "")) \
+        + "|" + df["main_author"].map(dl.author_key)
+    assert not key.duplicated().any()
+    # pas de produit dérivé
+    assert not df["title"].str.contains("Pop-Up|Page to Screen|Film Wizardry", case=False).any()
