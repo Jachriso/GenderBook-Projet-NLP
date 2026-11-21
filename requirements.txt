@@ -1,0 +1,27 @@
+# Python 3.11+ recommandé (testé en 3.12)
+# --- Données (P1) ---
+pandas>=2.2
+pyarrow>=15
+numpy>=1.26
+kagglehub>=0.3
+beautifulsoup4>=4.12
+rapidfuzz>=3.6
+langdetect>=1.0.9
+matplotlib>=3.8
+seaborn>=0.13
+jupyter
+nbformat
+nbconvert
+ipykernel
+pytest
+# --- NLP (P2, P3, P4) ---
+sentence-transformers>=3.0
+scikit-learn>=1.4
+gensim>=4.3
+keybert>=0.8
+spacy>=3.7
+umap-learn>=0.5
+# --- App (P5) ---
+streamlit>=1.35
+plotly>=5.20
+kaleido

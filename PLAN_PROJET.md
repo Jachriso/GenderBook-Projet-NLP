@@ -147,12 +147,13 @@ book-reco/
 | `image_url`, `url` | str | P1 |
 | `popularity` | float ∈ [0,1] | P1 |
 | `embed_text` | str = `title + ". " + description` (tronqué à environ 1 500 caractères) | P1 |
+| `main_author`, `description_raw`, `audience` (Children/Young Adult/Adult), `domain` (Fiction/Non-fiction), `is_fiction`, `n_editions`, `n_words` | **ajoutées par P1** (voir README) | P1 |
 | `genres` | list[str] (labels du bloc Genre) | P2 |
 | `themes` | list[str] (top 3 labels du bloc Thèmes) | P2 |
 | `styles` | list[str] (top 2) | P2 |
 | `atmospheres` | list[str] (top 2, époque/ambiance) | P2 |
 | `keywords` | list[str] (top 5 KeyBERT) | P2 |
-| `label_scores` | dict[block → dict[label → float]] | P2 |
+| `label_scores` | dict[block → dict[label → float]] (stocké en **chaîne JSON** dans le parquet ; `load_books()` le reconvertit en dict) | P2 |
 
 ### 4.2 `data/reference/blocks.json` (P2)
 ```json
@@ -388,7 +389,7 @@ Exigences du sujet (à respecter strictement) :
 ARCHITECTURE FIXÉE PAR L'ÉQUIPE (ne pas modifier les contrats sans prévenir) :
 - Python 3.11, pandas, pyarrow, numpy, scikit-learn, sentence-transformers (modèle par défaut all-MiniLM-L6-v2, comparé à all-mpnet-base-v2), gensim, keybert, umap-learn, plotly, streamlit, spacy.
 - Repo : data/{raw,processed,reference,embeddings}, notebooks/01..06, src/{config,schemas,data_loader,enrichment,preprocessing,embeddings,profile,scoring,recommender,explain,viz,llm_explain}.py, app/streamlit_app.py, docs/.
-- books_enriched.parquet colonnes : book_id, title, authors (list[str]), authors_str, categories (list[str]), description, pub_year, rating_avg, rating_count, format, for_ages, image_url, url, popularity [0-1], embed_text (= title + ". " + description, ~1500 car. max), genres, themes, styles, atmospheres, keywords (list[str]), label_scores (dict bloc→label→score).
+- books_enriched.parquet colonnes : book_id, title, authors (list[str]), authors_str, categories (list[str]), description, pub_year, rating_avg, rating_count, format, for_ages, image_url, url, popularity [0-1], embed_text (= title + ". " + description, ~1500 car. max), main_author, audience (Children/Young Adult/Adult), domain (Fiction/Non-fiction), is_fiction, description_raw, n_editions, genres, themes, styles, atmospheres, keywords (list[str]), label_scores (dict bloc→label→score).
 - data/reference/blocks.json : {"Genre": {label: phrase descriptive}, "Themes": {...}, "Style": {...}, "Atmosphere": {...}}.
 - answers.json (sortie du questionnaire) : {"free_text": {"ideal_book","loved_book","atmosphere","avoid"}, "genres": [...], "themes": [...], "period": str, "audience": str, "formats": [...], "favorite_author": str, "guided": {"focus": "Characters"|"Plot"|"Both", "standalone_only": bool, "exclude_favorite_author": bool}, "likert": {"complexity","pace","darkness","popularity","w_genre","w_themes","w_style","w_atmosphere"} (1-5)}.
 - Dataclasses (src/schemas.py) : UserProfile(query_texts, query_vecs, weights, block_affinities, constraints, summary) et Recommendation(rank, book_id, title, authors, image_url, final_score, match_label, block_scores, contributions, coverage, matched_labels, best_sentence, best_sentence_score, explanation).

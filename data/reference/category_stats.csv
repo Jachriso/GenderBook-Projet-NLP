@@ -1,0 +1,1075 @@
+category,n_books,share_fiction,domain_rule
+Contemporary Fiction,3538,0.99,fiction
+Thriller Books,1102,1.0,fiction
+Thrillers,1102,1.0,fiction
+Adult & Contemporary Romance,1073,1.0,fiction
+Romance,1067,0.999,fiction
+Romance Books,1067,0.999,fiction
+Crime,971,1.0,fiction
+Crime Fiction,971,1.0,fiction
+Children's Fiction,906,0.921,fiction
+Classic Books & Novels,855,0.981,fiction
+Fantasy Books,813,1.0,fiction
+Fantasy,813,1.0,fiction
+Science Fiction,782,0.999,fiction
+Historical Fiction,748,0.997,fiction
+Adventure Books,710,1.0,fiction
+Memoirs,629,0.03,nonfiction
+Sci Fi Books for Kids,581,0.997,fiction
+Biography: General,564,0.037,nonfiction
+Adventure Books for Kids,539,0.978,fiction
+Family,490,0.731,nonfiction
+Horror,465,1.0,fiction
+Children's General Story Books,412,0.954,fiction
+Sagas,383,1.0,fiction
+Fantasy Books for Kids,343,0.985,fiction
+"Graphic Novels, Anime & Manga",321,0.953,fiction
+Romance Books for Teenagers,306,0.948,fiction
+Funny Books for Kids,299,0.993,fiction
+Short Story Books,268,0.996,fiction
+History Of The Americas,267,0.034,nonfiction
+"Biography: Historical, Political & Military",262,0.008,nonfiction
+Classic Books for Children,259,0.981,fiction
+Animal Stories,250,0.996,fiction
+Historical Romance,245,1.0,fiction
+Poetry By Individual Poets,238,0.945,fiction
+"Plays, Playscripts",213,0.986,fiction
+Religious & Spiritual Fiction,210,0.976,fiction
+Biography: Arts & Entertainment,210,0.005,nonfiction
+Funny Books & Stories,204,0.529,fiction
+Anthologies (non-poetry),203,0.68,fiction
+Erotic Fiction,201,1.0,fiction
+Military Fiction,198,0.985,fiction
+Mystery Books for Kids,175,0.989,fiction
+Traditional,173,0.988,neutral
+Space Opera,173,1.0,fiction
+Family Issues,165,0.436,nonfiction
+Literary Studies: General,161,0.634,neutral
+Historical,160,0.656,nonfiction
+Graphic Novels: Superheroes,152,0.993,fiction
+Christian Life & Practice,150,0.387,nonfiction
+Popular Psychology,150,0.007,nonfiction
+Literary Essays,148,0.243,nonfiction
+"Mind, Body, Spirit: Thought & Practice",147,0.027,nonfiction
+Political & Legal,146,1.0,excluded
+"Assertiveness, Motivation & Self-esteem",146,0.034,nonfiction
+Espionage,144,1.0,fiction
+Autobiography: General,143,0.0,nonfiction
+Gender Studies: Women,142,0.042,nonfiction
+Relationships,140,0.7,nonfiction
+Graphic Novels: Manga,128,1.0,fiction
+Graphic Novels,128,0.953,fiction
+Psychology,126,0.016,nonfiction
+Historical Crime,126,0.992,fiction
+Biography: Literary,121,0.033,nonfiction
+Horror & Ghost,114,0.991,fiction
+Military History,114,0.026,nonfiction
+European History,112,0.045,nonfiction
+Autobiography: Arts & Entertainment,101,0.0,nonfiction
+Fiction In Translation,100,1.0,fiction
+Guidebooks,99,0.121,excluded
+20th Century History: C 1900  To C 2000,94,0.0,nonfiction
+School Stories,93,0.978,fiction
+English Language: Reading Schemes,91,1.0,excluded
+Travel Writing,91,0.033,nonfiction
+Spirituality & Religious Experience,89,0.034,nonfiction
+True Crime Biographies,88,0.068,nonfiction
+True Crime Books,88,0.068,nonfiction
+Personal Development,86,0.105,nonfiction
+Society & Social Issues,85,0.871,neutral
+Advice On Careers & Achieving Success,84,0.048,excluded
+Philosophy,84,0.024,nonfiction
+Politics & Government,83,0.048,nonfiction
+Family & Relationships,82,0.098,nonfiction
+"Literary Studies: Fiction, Novelists & Prose Writers",80,0.775,neutral
+World War 2 Books,75,0.027,neutral
+People & Places,74,0.635,nonfiction
+Political Science & Theory,72,0.014,nonfiction
+Myth & Legend Told As Fiction,71,1.0,fiction
+Biography: Religious & Spiritual,71,0.0,nonfiction
+Social & Cultural History,71,0.028,nonfiction
+General & World History,68,0.044,nonfiction
+Graphic Novels: Literary & Memoirs,68,0.868,fiction
+"Social, Group Or Collective Psychology",68,0.0,nonfiction
+Christian Books,67,0.134,nonfiction
+Self-Esteem,67,0.597,nonfiction
+Abnormal Psychology,63,0.016,nonfiction
+Asian History,63,0.032,nonfiction
+Black & Asian Studies,63,0.175,nonfiction
+Popular Culture,62,0.065,nonfiction
+Picture Books,62,0.968,fiction
+Religious Life & Practice,62,0.016,nonfiction
+Oriental & Indian Philosophy,56,0.0,nonfiction
+Ethics & Moral Philosophy,55,0.018,nonfiction
+Poetry Books for Kids,55,0.964,fiction
+Sociology,53,0.0,nonfiction
+Modern History To 20th Century: C 1700 To C 1900,52,0.0,nonfiction
+"Dating, Relationships, Living Together & Marriage",52,0.212,nonfiction
+"Literary Studies: Classical, Early & Medieval",51,0.706,neutral
+"Biography: Science, Technology & Engineering",51,0.02,excluded
+Social & Cultural Anthropology,50,0.02,nonfiction
+Cognition & Cognitive Psychology,50,0.0,nonfiction
+Literary Studies: Plays & Playwrights,50,0.98,neutral
+Social & Political Philosophy,50,0.04,nonfiction
+British & Irish History,49,0.0,nonfiction
+Westerns,48,1.0,fiction
+Science: General Issues,48,0.021,nonfiction
+"Autobiography: Historical, Political & Military",47,0.0,nonfiction
+Christian Theology,47,0.021,nonfiction
+Classical History / Classical Civilisation,46,0.109,nonfiction
+"Mind, Body, Spirit: Meditation & Visualisation",46,0.0,nonfiction
+Personal Christian Testimony & Popular Inspirational Works,45,0.067,nonfiction
+Popular Science,45,0.044,nonfiction
+Constitution: Government & The State,44,0.045,neutral
+Society & Culture: General,44,0.045,nonfiction
+"Western Philosophy, From C 1900 -",44,0.068,nonfiction
+Individual Actors & Performers,43,0.0,nonfiction
+Television,42,0.048,nonfiction
+Buddhist Books,42,0.0,nonfiction
+Death & Bereavement,41,0.927,neutral
+Cartoons & Comic Strips,41,0.976,fiction
+Philosophy Of Religion,40,0.075,nonfiction
+Bullying & Abuse,40,0.8,neutral
+Holocaust,40,0.1,neutral
+Literary Studies: Poetry & Poets,40,0.875,neutral
+Nonfiction History Books for Kids,39,0.769,fiction
+Advice On Parenting,38,0.079,excluded
+History Of Science,38,0.0,nonfiction
+Biography: Sport,38,0.026,nonfiction
+Middle Eastern History,38,0.079,nonfiction
+Children's Health Books,37,0.892,neutral
+Miscellaneous Items,35,0.543,neutral
+Early Learning,35,1.0,excluded
+Literary Studies: C 1800 To C 1900,35,0.857,neutral
+History Of Western Philosophy,35,0.029,nonfiction
+Poetry Books,34,0.971,fiction
+Natural History Books,34,0.412,fiction
+Feminism & Feminist Theory,33,0.03,nonfiction
+Philosophy Of Science,33,0.03,nonfiction
+Social Issues,33,0.848,neutral
+Graphic Novels: True Stories & Non-fiction,32,0.312,nonfiction
+Social Discrimination,31,0.097,neutral
+Historical Adventure,31,1.0,fiction
+Economics,31,0.0,neutral
+Political Structure & Processes,31,0.0,nonfiction
+Storybooks,31,1.0,neutral
+"Mind, Body & Spirit",31,0.065,nonfiction
+Coping With Death & Bereavement,30,0.133,neutral
+Art History,30,0.1,nonfiction
+Evolution,30,0.033,nonfiction
+Geographical Discovery & Exploration,30,0.067,neutral
+Management: Leadership & Motivation,30,0.067,excluded
+Literary Studies: From C 1900 -,30,0.667,neutral
+International Relations,29,0.0,nonfiction
+Political Control & Freedoms,29,0.034,nonfiction
+Political Leaders & Leadership,29,0.0,nonfiction
+Autobiography: Literary,29,0.0,nonfiction
+Rock & Pop Music,29,0.0,nonfiction
+Central Government Policies,29,0.0,neutral
+"Self, Ego, Identity, Personality",29,0.034,neutral
+Religion: General,28,0.0,nonfiction
+Crime & Criminology,28,0.0,neutral
+Religious Books,28,0.036,nonfiction
+Thriller Books for Children,28,1.0,fiction
+"Individual Artists, Art Monographs",28,0.321,neutral
+Theatre Studies,28,0.821,neutral
+Biography: Royalty,28,0.0,nonfiction
+"Folklore, Myths & Legends",27,0.778,fiction
+"Postwar 20th Century History, From C 1945 To C 2000",27,0.0,nonfiction
+Ancient History: To C 500 CE,27,0.222,nonfiction
+Coping With Personal Problems,26,0.038,neutral
+"Western Philosophy: Ancient, To C 500",26,0.077,nonfiction
+Psychotherapy,26,0.0,neutral
+History Books for Kids,26,0.769,fiction
+Parodies & Spoofs,26,0.846,neutral
+Economic History,25,0.0,nonfiction
+21st Century History: From C 2000 -,25,0.0,nonfiction
+Multiculturalism,25,0.8,neutral
+"Physiological & Neuro-psychology, Biopsychology",25,0.04,nonfiction
+African History,25,0.0,nonfiction
+Ethnic Studies,25,0.08,neutral
+"Gender Studies, Gender Groups",24,0.042,nonfiction
+Biblical Studies & Exegesis,24,0.083,neutral
+General Cookery,24,0.125,excluded
+"Individual Composers & Musicians, Specific Bands & Groups",24,0.0,nonfiction
+Poetry & Drama,24,0.875,fiction
+Business & Management,23,0.043,excluded
+Sports Stories,23,0.913,fiction
+Wildlife: General Interest,23,0.043,nonfiction
+Psychic Powers & Psychic Phenomena,23,0.087,neutral
+"Christian Aspects Of Sexuality, Gender & Relationships",23,0.0,nonfiction
+"Complementary Therapies, Healing & Health",23,0.043,neutral
+Neurosciences,22,0.0,neutral
+Other Performing Arts,22,0.273,neutral
+Political Economy,22,0.0,nonfiction
+Child & Developmental Psychology,22,0.0,nonfiction
+Cosmology & The Universe,22,0.0,nonfiction
+Civil Rights & Citizenship,21,0.095,neutral
+Coping With Drug & Alcohol Abuse,21,0.048,neutral
+Conservation Of The Environment,20,0.25,nonfiction
+Creative Writing & Creative Writing Guides,20,0.3,neutral
+Early Modern History: C 1450/1500 To C 1700,20,0.05,nonfiction
+Warfare & Defence,20,0.05,neutral
+Prose: Non-fiction,20,0.45,fiction
+Philosophy Of Mind,20,0.05,nonfiction
+Short Stories for Kids,20,1.0,fiction
+Christian Spirituality & Religious Experience,20,0.0,nonfiction
+Humour Collections & Anthologies,20,0.75,fiction
+Siblings,19,0.737,neutral
+World War 2 Fiction,19,1.0,fiction
+Central Government,19,0.053,neutral
+Comparative Religion,19,0.053,nonfiction
+"Biology, Life Sciences",19,0.158,neutral
+English Literature,19,0.947,neutral
+Psychology: Emotions,19,0.0,nonfiction
+Zen Buddhism,18,0.0,nonfiction
+Wildlife,18,0.667,nonfiction
+Sports Books,18,0.0,nonfiction
+Phenomenology & Existentialism,18,0.167,neutral
+Domestic Animals & Pets,18,0.056,neutral
+Neurology & Clinical Neurophysiology,18,0.0,excluded
+Popular Medicine & Health,18,0.0,excluded
+Indigenous Peoples,17,0.059,neutral
+Disability,17,0.882,neutral
+"Films, Cinema",17,0.176,nonfiction
+Economic Theory & Philosophy,17,0.0,nonfiction
+Sociology: Customs & Traditions,17,0.059,nonfiction
+History Of Religion,17,0.059,nonfiction
+Aspects Of Religion (non-Christian),17,0.0,nonfiction
+Religious Groups: Social & Cultural Aspects,16,0.0,nonfiction
+Autobiography: Religious & Spiritual,16,0.0,nonfiction
+Teaching Resources & Education,16,0.5,excluded
+Biography: Business & Industry,16,0.125,excluded
+Islamic Story & History Books,16,0.562,fiction
+Hindu Books,16,0.0,nonfiction
+"Astronomy, Space & Time",16,0.0,nonfiction
+Psychoanalytical Theory (Freudian Psychology),16,0.0,nonfiction
+"Mysticism, Magic & Ritual",16,0.062,neutral
+History Of Engineering & Technology,16,0.0,excluded
+"Diaries, Letters & Journals",16,0.25,nonfiction
+Wildlife: Mammals,15,0.067,nonfiction
+Physics Books,15,0.133,excluded
+Vintage Crime,15,0.933,fiction
+True Story Books,15,0.6,fiction
+American Civil War,15,0.0,neutral
+Health Books,15,0.067,neutral
+Sexual Behaviour,15,0.133,neutral
+Regional Studies,15,0.0,neutral
+Art History: From c 1960,15,0.267,nonfiction
+Food & Drink,15,0.0,neutral
+Anthropology,15,0.0,nonfiction
+Slavery & Abolition Of Slavery,15,0.133,neutral
+Media Studies,14,0.0,neutral
+Poetry Anthologies (various Poets),14,1.0,fiction
+Writing & Editing Guides,14,0.143,neutral
+Violence In Society,14,0.0,neutral
+Tibetan Buddhism,14,0.071,nonfiction
+Philosophy: Epistemology & Theory Of Knowledge,14,0.0,nonfiction
+Social Classes,14,0.0,neutral
+Sociology: Death & Dying,14,0.214,nonfiction
+"Sex & Sexuality, Sex Manuals",13,0.0,neutral
+Shakespeare Plays,13,1.0,fiction
+Philosophy: Metaphysics & Ontology,13,0.077,excluded
+Elections & Referenda,13,0.0,neutral
+Other Non-Christian Religions,13,0.0,nonfiction
+Theology,13,0.0,neutral
+"Buddhist Worship, Rites & Ceremonies",13,0.0,nonfiction
+Islamic Studies,13,0.077,nonfiction
+Journalistic Style Guides,13,0.0,neutral
+"Terrorism, Armed Struggle",13,0.0,neutral
+Marxism & Communism,13,0.0,neutral
+Film Scripts & Screenplays,12,1.0,fiction
+Exercise & Workout Books,12,0.0,excluded
+Medieval History,12,0.083,nonfiction
+Linguistics,12,0.417,neutral
+Psychiatry,12,0.0,neutral
+"Western Philosophy: Medieval & Renaissance, C 500 To C 1600",12,0.0,nonfiction
+Jewish Books,12,0.083,neutral
+Art Books,12,0.083,neutral
+Cultural Studies,12,0.0,neutral
+Autobiography: Sport,12,0.0,nonfiction
+Coping With Illness,12,0.0,neutral
+Sociology: Family & Relationships,11,0.091,nonfiction
+True War  & Combat Stories,11,0.182,fiction
+Afghan War,11,0.0,neutral
+History Of Ideas,11,0.0,nonfiction
+Christian Ministry & Pastoral Activity,11,0.0,nonfiction
+Literary Studies: C 1500 To C 1800,11,0.909,neutral
+Aerospace & Aviation Technology,11,0.091,excluded
+Clinical Psychology,11,0.0,excluded
+Human Biology,11,0.091,neutral
+Eclectic & Esoteric Religions & Belief Systems,11,0.0,nonfiction
+Espionage & Secret Services,11,0.182,fiction
+Language: Reference & General,11,0.636,neutral
+Military Engineering,11,0.091,excluded
+Genetics (non-medical),11,0.0,excluded
+Film Theory & Criticism,11,0.091,nonfiction
+Children's Religious Books,11,0.455,nonfiction
+Astrophysics,11,0.0,excluded
+Fiction Texts,11,1.0,fiction
+"Roman Catholicism, Roman Catholic Church",11,0.0,neutral
+Dogs As Pets,11,0.455,neutral
+Iraq War,11,0.0,neutral
+Poverty  & Unemployment,11,0.0,neutral
+Drawing,11,0.364,excluded
+Jokes & Humour,11,1.0,fiction
+Philosophy & Theory Of Education,11,0.091,excluded
+Popular Philosophy,11,0.0,nonfiction
+Dance & Other Performing Arts,10,0.5,neutral
+"Track & Field Sports, Athletics",10,0.0,nonfiction
+Human Rights,10,0.1,neutral
+"True Stories Of Heroism, Endurance & Survival",10,0.1,nonfiction
+Picture & Activity Books,10,0.8,excluded
+Literature: History & Criticism,10,0.4,nonfiction
+Bibles,10,0.3,neutral
+Behavioural Theory (Behaviourism),10,0.0,neutral
+Management & Management Techniques,10,0.0,excluded
+Children's Foreign Language Books,10,0.9,excluded
+History Of Medicine,10,0.0,excluded
+Earth: Natural History General,10,0.1,nonfiction
+Diplomacy,10,0.0,neutral
+Development Economics,10,0.1,neutral
+Music Reviews & Criticism,10,0.0,nonfiction
+Mental Health Services,10,0.0,neutral
+Conservatism & Right-of-centre Democratic Ideologies,10,0.0,neutral
+Sacred Texts,10,0.3,neutral
+Drugs & Addiction,9,1.0,neutral
+Early History: C 500 To C 1450/1500,9,0.0,nonfiction
+Child Care & Upbringing,9,0.111,excluded
+"Media, Information & Communication Industries",9,0.0,neutral
+Business Strategy,9,0.0,excluded
+Impact Of Science & Technology On Society,9,0.0,excluded
+History: Specific Events & Topics,9,0.0,nonfiction
+Australasian & Pacific History,9,0.0,nonfiction
+Industrial Relations,9,0.0,neutral
+Popular Astronomy & Space,9,0.111,nonfiction
+Climbing & Mountaineering,9,0.0,neutral
+Criminal Law & Procedure,9,0.111,excluded
+Religion & Science,9,0.0,nonfiction
+"Environmental Science, Engineering & Technology",9,0.222,excluded
+Colours,9,1.0,neutral
+Food & Society,9,0.0,neutral
+"Walking, Hiking, Trekking",9,0.0,neutral
+"Trees, Wildflowers & Plants",9,0.444,neutral
+Historical Geography,9,0.0,nonfiction
+Market Research,9,0.0,neutral
+National & Regional Cuisine,9,0.222,excluded
+Hindu Sacred Texts,9,0.111,nonfiction
+Reference Works,8,0.25,neutral
+"Autobiography: Science, Technology & Engineering",8,0.0,excluded
+Social Groups,8,0.25,neutral
+Social Issues & Processes,8,0.0,neutral
+Space Science,8,0.0,neutral
+Battles & Campaigns,8,0.0,neutral
+Bible Stories,8,1.0,fiction
+Contemporary Non-Christian & Para-Christian Cults & Sects,8,0.0,nonfiction
+Psychological Theory & Schools Of Thought,8,0.0,nonfiction
+Applied Ecology,8,0.5,neutral
+Anthologies,8,1.0,fiction
+Ships & Shipping,8,0.125,neutral
+Techniques Of Music / Music Tutorials,8,0.0,nonfiction
+Graphic Novels: History & Criticism,8,0.375,nonfiction
+Wildlife: Aquatic Creatures,8,0.0,nonfiction
+Characters,8,1.0,neutral
+Entrepreneurship,8,0.125,neutral
+Vietnam War,8,0.125,neutral
+Development Studies,8,0.0,neutral
+Other Nonconformist & Evangelical Churches,8,0.0,neutral
+Paintings,8,0.0,neutral
+Economic Systems & Structures,8,0.0,neutral
+"Ecological Science, The Biosphere",8,0.25,neutral
+Mysticism,8,0.125,neutral
+Penology & Punishment,8,0.0,neutral
+Jokes & Riddles,8,0.875,neutral
+Urban Communities,8,0.0,neutral
+Music,8,0.0,nonfiction
+Taoism,8,0.0,neutral
+Intergenerational Relationships,8,0.125,nonfiction
+World War 1 Fiction,8,1.0,fiction
+World War 1 Books,7,0.0,neutral
+Basketball,7,0.0,neutral
+Comic Book & Cartoon Art,7,0.857,fiction
+"Revolutions, Uprisings, Rebellions",7,0.0,nonfiction
+Children's Literature Studies: General,7,0.286,neutral
+Semantics,7,0.0,neutral
+Art History: c 1900 -,7,0.0,nonfiction
+Witchcraft & Wicca,7,0.143,neutral
+War & Defence Operations,7,0.0,neutral
+Astral Projection & Out-of-body Experiences,7,0.0,neutral
+"Migration, Immigration & Emigration",7,0.143,neutral
+Reincarnation & Past Lives,7,0.0,neutral
+Gender Studies: Men,7,0.143,nonfiction
+Shakespeare Studies & Criticism,7,0.714,neutral
+Women's Health,7,0.286,neutral
+Western Philosophy: C 1600 To C 1900,7,0.143,nonfiction
+Fascism & Nazism,7,0.0,neutral
+Political Ideologies,7,0.0,nonfiction
+Language Teaching & Learning Material & Coursework,7,0.857,excluded
+Political Activism,7,0.0,nonfiction
+Coping With Disability,7,0.0,neutral
+Special & Elite Forces,7,0.0,neutral
+Photographs: Collections,7,0.286,neutral
+Philosophy: Aesthetics,7,0.0,nonfiction
+Koran,7,0.429,neutral
+Cats As Pets,7,0.571,neutral
+Animated Films,7,1.0,nonfiction
+Sociology & Anthropology,7,0.0,nonfiction
+Labour Economics,7,0.0,neutral
+Management Decision Making,7,0.0,excluded
+Literary Theory,7,0.143,neutral
+Unexplained Phenomena / The Paranormal,7,0.143,neutral
+Military Veterans,6,0.167,neutral
+Information Technology Industries,6,0.0,excluded
+Infectious & Contagious Diseases,6,0.0,neutral
+Political Structures: Democracy,6,0.0,nonfiction
+Buddhist Life & Practice,6,0.0,nonfiction
+Buddhist Sacred Texts,6,0.0,nonfiction
+History Of Other Lands,6,0.0,nonfiction
+Painting & Art Manuals,6,0.167,neutral
+"Punk, New Wave & Indie",6,0.0,neutral
+Christian Mission & Evangelism,6,0.0,nonfiction
+Natural Disasters,6,0.0,neutral
+Beverages,6,0.0,neutral
+Religion & Politics,6,0.0,nonfiction
+Christian Social Thought & Activity,6,0.0,nonfiction
+Naval Forces & Warfare,6,0.0,neutral
+Organizational Theory & Behaviour,6,0.0,neutral
+Baby Books,6,1.0,neutral
+Medicine,6,0.5,excluded
+Autobiography: Business & Industry,6,0.167,excluded
+"Social Forecasting, Future Studies",6,0.0,neutral
+Social Impact Of Disasters,6,0.0,neutral
+Art,6,0.333,neutral
+Coping With Stress,6,0.0,neutral
+Time & Seasons,6,1.0,neutral
+Adoption,6,0.167,neutral
+American Football,6,0.0,neutral
+Fiction Books,6,1.0,fiction
+The Senses,6,0.833,neutral
+Encyclopaedias & Reference Works,6,0.333,excluded
+Screenwriting Techniques,6,0.833,neutral
+Art History: Renaissance,6,0.0,nonfiction
+Coping With Old Age,6,0.167,neutral
+Classic Science Fiction,5,1.0,fiction
+Animal Husbandry,5,0.0,neutral
+Popular Beliefs & Controversial Knowledge,5,0.4,neutral
+Finance,5,0.0,excluded
+Numbers & Counting,5,1.0,neutral
+Ancient Religions & Mythologies,5,0.4,nonfiction
+Illness & Addiction: Social Aspects,5,0.0,neutral
+Animals & Society,5,0.2,neutral
+"Charities, Voluntary Services & Philanthropy",5,0.0,neutral
+Human Geography,5,0.0,neutral
+Child Abuse,5,0.0,neutral
+Primary & Middle Schools,5,1.0,neutral
+Sports Psychology,5,0.0,nonfiction
+Classic Travel Writing,5,0.0,nonfiction
+Veterinary Medicine,5,0.0,excluded
+Analytical & Jungian Psychology,5,0.0,nonfiction
+Literary Reference Works,5,0.8,neutral
+Organized Crime,5,0.0,fiction
+Non-Western Philosophy,5,0.0,nonfiction
+Air Forces & Warfare,5,0.2,neutral
+English Language: Reading & Writing Skills,5,0.8,excluded
+Peace Studies & Conflict Resolution,5,0.0,neutral
+The Environment,5,0.6,nonfiction
+Business Ethics,5,0.0,excluded
+Natural History Books for Children,5,0.8,fiction
+Jewish Studies,5,0.2,neutral
+Business Communication & Presentation,5,0.0,excluded
+Non-Fiction,5,1.0,fiction
+Citizenship & Social Education,5,0.8,excluded
+Technology: General Issues,5,0.2,excluded
+Investment & Securities,5,0.0,excluded
+Botany & Plant Sciences,5,0.4,neutral
+Study & Learning Skills: General,5,0.6,neutral
+Travel & Holiday Guides,5,0.2,neutral
+Children's Books,5,1.0,neutral
+Diets & Dieting,5,0.0,excluded
+Public Speaking Guides,5,0.0,neutral
+Conspiracy Theories,5,0.0,neutral
+Science,5,0.6,neutral
+Global Warming,5,0.2,neutral
+Wildlife: Birds & Birdwatching,5,0.2,nonfiction
+Globalization,5,0.0,neutral
+Sexual Abuse & Harassment,5,0.0,neutral
+Dreams & Their Interpretation,5,0.0,neutral
+Zoology & Animal Sciences,5,0.4,neutral
+"Higher & Further Education, Tertiary Education",5,0.2,excluded
+Children's Christian Books,5,0.4,nonfiction
+Communication Studies,5,0.0,neutral
+Genocide & Ethnic Cleansing,4,0.25,neutral
+Cycling,4,0.0,neutral
+"Calvinist, Reformed & Presbyterian Churches",4,0.0,neutral
+Television Technology,4,0.0,excluded
+Rural Communities,4,0.0,neutral
+Religious & Spiritual Leaders,4,0.0,nonfiction
+Islamic Theology,4,0.0,nonfiction
+Philosophy: Logic,4,0.0,nonfiction
+Teenagers: Advice For Parents,4,0.25,neutral
+Exhibition Catalogues & Specific Collections,4,0.75,neutral
+Local History,4,0.0,nonfiction
+Television Scripts & Screenplays,4,1.0,fiction
+Protestantism & Protestant Churches,4,0.0,neutral
+Ethnic Minorities & Multicultural Studies,4,0.25,neutral
+Pets,4,0.75,neutral
+Library & Information Sciences,4,0.25,neutral
+Transportation Books for Children,4,1.0,excluded
+Christian Mysticism,4,0.0,nonfiction
+Occupational & Industrial Psychology,4,0.0,nonfiction
+"Christian Worship, Rites & Ceremonies",4,0.0,nonfiction
+Life Sciences: General Issues,4,0.0,neutral
+Agriculture & Farming,4,0.25,neutral
+Coping With Anxiety & Phobias,4,0.0,neutral
+Memory Improvement & Thinking Techniques,4,0.0,neutral
+Legal Profession: General,4,0.0,excluded
+Legal History,4,0.0,excluded
+Christian Institutions & Organizations,4,0.0,nonfiction
+Aircraft,4,0.0,neutral
+Children's Geography Books,4,0.75,neutral
+Conservation Of Wildlife & Habitats,4,0.0,nonfiction
+Extreme Sports,4,0.0,nonfiction
+Art Theory,4,0.0,neutral
+Battles,4,1.0,neutral
+Classic Horror,4,1.0,fiction
+Urban & Municipal Planning,4,0.0,neutral
+Dictionaries & Dictionary Books,4,0.5,excluded
+Service Industries,4,0.25,neutral
+Financial Crises & Disasters,4,0.0,neutral
+Nationalism,4,0.0,neutral
+First Words,4,1.0,neutral
+Dictionaries Of Biography (Who's Who),4,0.25,excluded
+Earth Sciences,4,0.25,neutral
+Social Research & Statistics,4,0.0,excluded
+Art & Design,4,0.25,neutral
+Press & Journalism,4,0.0,nonfiction
+Combat Sports & Self-defence,4,0.0,nonfiction
+Horses & Ponies,4,0.25,neutral
+Musicals,4,0.0,nonfiction
+Forensic Medicine,4,0.0,excluded
+Psychology Of Ageing,4,0.25,nonfiction
+Banking,4,0.0,neutral
+Maritime History,4,0.0,nonfiction
+Marathon & Cross-country Running,4,0.0,neutral
+Art Techniques & Principles,4,0.5,excluded
+Plays,4,1.0,fiction
+International Economics,4,0.0,neutral
+Relativity Physics,4,0.0,excluded
+Management Of Land & Natural Resources,4,0.5,excluded
+Gay Studies (Gay Men),4,0.0,neutral
+TV Tie-in Humour,4,1.0,fiction
+Age Groups: Children,4,0.5,neutral
+"Scientific Equipment, Experiments & Techniques",4,0.25,neutral
+Fiction Companions,4,0.75,fiction
+Industrial / Commercial Art & Design,4,0.5,neutral
+Advertising,3,0.0,neutral
+Work,3,0.667,neutral
+Nuclear Weapons,3,0.0,excluded
+Addiction & Therapy,3,0.0,neutral
+Activity Books,3,1.0,excluded
+Agriculture & Related Industries,3,0.0,neutral
+True Stories for Children,3,1.0,nonfiction
+ABC,3,1.0,neutral
+Verse,3,1.0,neutral
+"Musical Scores, Lyrics & Libretti",3,0.333,nonfiction
+Multicultural Education,3,0.0,excluded
+"Residential Buildings, Domestic Buildings",3,0.0,neutral
+Occult Studies,3,0.0,neutral
+Schools & Museums,3,0.333,neutral
+Social Interaction,3,0.0,neutral
+Probability & Statistics,3,0.0,excluded
+Programming & Scripting Languages: General,3,0.0,excluded
+Sleep & Dreams,3,0.0,neutral
+Baseball,3,0.333,neutral
+Sex Education,3,0.667,excluded
+Publishing Industry,3,0.0,neutral
+Aviation Skills / Piloting,3,0.0,neutral
+Religion & Beliefs,3,0.333,nonfiction
+Prayer,3,0.0,neutral
+Artificial Intelligence,3,0.0,neutral
+"Rocks, Minerals & Fossils",3,0.0,neutral
+Religious Fundamentalism,3,0.0,nonfiction
+Atomic & Molecular Physics,3,0.0,excluded
+Astronautics,3,0.0,neutral
+Religious Institutions & Organizations,3,0.0,nonfiction
+Revolutionary Groups & Movements,3,0.0,nonfiction
+Religious Subjects Depicted In Art,3,0.0,nonfiction
+"Pregnancy, Birth & Baby Care",3,0.0,excluded
+Social Welfare & Social Services,3,0.0,neutral
+Office & Workplace,3,0.0,neutral
+Reportage & Collected Journalism,3,0.0,nonfiction
+Opposites,3,1.0,neutral
+Training & Coaching,3,0.0,neutral
+Orthodox & Oriental Churches,3,0.0,neutral
+Celebrity Biographies & Books,3,0.667,nonfiction
+Alcoholic Beverages,3,0.0,neutral
+Palaeontology,3,0.333,neutral
+Camping & Woodcraft,3,0.333,neutral
+Photographic Reportage,3,0.0,neutral
+Sustainability,3,0.0,neutral
+Sociology: Sexual Relations,3,0.0,nonfiction
+Surgery,3,0.0,excluded
+Students & Student Organisations,3,0.333,neutral
+Political Assassinations,3,0.0,nonfiction
+Political Corruption,3,0.0,nonfiction
+Stationery,3,0.333,excluded
+Sport & Leisure Industries,3,0.0,nonfiction
+Spiritualism,3,0.333,neutral
+"Bible Readings, Selections & Meditations",3,0.333,neutral
+Digital Lifestyle,3,0.0,neutral
+Oceanography (seas),3,0.333,neutral
+Intelligence & Reasoning,3,0.0,neutral
+Geology & The Lithosphere,3,0.333,neutral
+Heavy Metal Music,3,0.0,nonfiction
+Hispanic & Latino Studies,3,0.0,neutral
+Confucianism,3,0.0,neutral
+Macroeconomics,3,0.0,neutral
+Economic Forecasting,3,0.0,neutral
+Comparative Politics,3,0.0,nonfiction
+History Of Mathematics,3,0.333,excluded
+Colonialism & Imperialism,3,0.0,neutral
+Hunting Or Shooting Animals & Game,3,0.333,neutral
+I Ching,3,0.0,neutral
+Illustration,3,0.667,neutral
+"Individual Film Directors, Film-makers",3,0.333,nonfiction
+Individual Photographers,3,0.333,neutral
+English Language,3,0.667,excluded
+Expeditions,3,0.0,neutral
+Environment,3,0.0,nonfiction
+Freedom Of Information & Freedom Of Speech,3,0.0,neutral
+Internet Guides & Online Services,3,0.333,excluded
+Jurisprudence,3,0.667,neutral
+Geopolitics,3,0.0,nonfiction
+Christian Prayer,3,0.0,nonfiction
+Ethical & Social Aspects Of Computing,3,0.0,excluded
+"Football (Soccer, Association Football)",3,0.333,neutral
+Food & Beverage Technology,3,0.0,excluded
+Gardening Books,3,0.333,excluded
+Disability: Social Aspects,3,0.0,neutral
+Meteorology & Climatology,3,0.0,neutral
+Gay & Lesbian Studies,3,0.0,neutral
+Medical Profession,3,0.0,excluded
+Cybernetics & Systems Theory,2,0.0,neutral
+Inorganic Chemistry,2,0.0,excluded
+Political Oppression & Persecution,2,0.0,nonfiction
+Armed Conflict,2,0.0,neutral
+Industry & Industrial Studies,2,0.0,neutral
+Bible Studies: For Individual Or Small Group Study,2,0.0,neutral
+Architecture,2,0.5,neutral
+Technical Design,2,0.0,neutral
+Sentencing & Punishment,2,0.0,neutral
+Classical Mechanics,2,0.5,neutral
+Scrapbook Keeping,2,0.0,neutral
+Population & Demography,2,0.0,neutral
+Humanistic Psychology,2,0.0,nonfiction
+Anatomy,2,0.0,neutral
+Biodiversity,2,0.0,neutral
+Separation & Divorce,2,0.0,neutral
+Human Rights & Civil Liberties Law,2,0.5,excluded
+Biology,2,0.5,neutral
+Ethical Issues: Pornography & Obscenity,2,0.0,neutral
+Photographs: Portraits,2,0.0,neutral
+Photography,2,0.0,neutral
+"Shamanism, Paganism & Druidry",2,0.0,neutral
+Physical Anthropology & Ethnography,2,0.0,nonfiction
+Physical Geography & Topography,2,0.5,neutral
+Bullying & Anti-bullying Strategies,2,0.0,neutral
+Inventions & Inventors,2,0.0,neutral
+American War Of Independence,2,0.0,neutral
+"Cosmetics, Hair & Beauty",2,0.0,neutral
+Places & Peoples: Pictorial Works,2,0.0,neutral
+International Business,2,0.0,excluded
+Dance,2,0.0,neutral
+"Birth Control, Contraception, Family Planning",2,0.0,nonfiction
+Police & Security Services,2,0.0,neutral
+Birds (ornithology),2,0.5,neutral
+DNA & Genome,2,0.0,neutral
+Pregnancy,2,1.0,excluded
+General Reference,2,0.0,neutral
+Teaching Of Students With English As A Second Language (TESOL),2,0.5,excluded
+School,2,1.0,neutral
+Fiction: Special Features,2,1.0,fiction
+Spirits & Cocktails,2,0.0,neutral
+Historical & Comparative Linguistics,2,0.0,nonfiction
+"Spirit Guides, Angels & Channelling",2,0.0,neutral
+Sales & Marketing,2,0.0,excluded
+Religious Communities & Monasticism,2,0.0,nonfiction
+Religious Counselling,2,0.0,nonfiction
+Society & Social Sciences,2,0.5,neutral
+Religious Studies,2,0.5,nonfiction
+Graphic Design,2,0.5,neutral
+Socialism & Left-of-centre Democratic Ideologies,2,0.0,neutral
+"Antiques & Collectables: Books, Manuscripts, Ephemera & Printed Matter",2,0.0,excluded
+"Genealogy, Heraldry, Names & Honours",2,0.0,neutral
+Social Theory,2,0.0,neutral
+Road Vehicle Manufacturing Industry,2,0.0,neutral
+Safety In The Home,2,0.0,neutral
+Geography Books,2,0.0,neutral
+Regiments,2,0.0,neutral
+Computer Security,2,0.0,excluded
+Coping With Eating Disorders,2,0.0,neutral
+Fashion & Style Guides,2,0.0,neutral
+Primates,2,0.0,neutral
+Prints,2,0.5,neutral
+Prisoners Of War,2,0.0,neutral
+Family Break-Up,2,0.5,nonfiction
+Food Manufacturing & Related Industries,2,0.0,neutral
+Crystals & Colour-healing,2,0.0,neutral
+Sustainable Agriculture,2,0.0,neutral
+Hoaxes & Deceptions,2,0.0,neutral
+History: Earliest Times To Present Day,2,0.0,nonfiction
+Psychological Testing & Measurement,2,0.0,nonfiction
+Church History,2,0.0,nonfiction
+Corporate Finance,2,0.0,excluded
+Public Administration,2,0.0,neutral
+Style Guides,2,0.0,neutral
+Study & Revision Guides,2,1.0,excluded
+Schools,2,0.0,neutral
+Criminal Or Forensic Psychology,2,0.0,nonfiction
+Pressure Groups & Lobbying,2,0.0,neutral
+Fortune-telling & Divination,2,0.5,neutral
+Business Negotiation,2,0.0,excluded
+Lesbian Studies,2,0.0,neutral
+Witches & Ghosts (Children's/YA),2,1.0,fiction
+Electronic & Video Art,2,0.5,neutral
+Organization & Management Of Education,2,0.5,excluded
+Dictionaries Of Quotations,2,0.5,excluded
+Medical Ethics & Professional Conduct,2,0.5,excluded
+Oriental Martial Arts,2,0.0,neutral
+Cellular Biology (cytology),2,0.0,neutral
+Demonstrations & Protest Movements,2,0.0,neutral
+Age Groups: The Elderly,2,0.0,neutral
+Outdoor Survival Skills,2,0.0,neutral
+PSHE,2,1.0,neutral
+Music Industry,2,0.0,nonfiction
+Paediatric Medicine,2,0.0,excluded
+Multidiscipline Sports,2,0.0,nonfiction
+Mysteries & The Supernatural (Children's/YA),2,1.0,fiction
+Drama,2,1.0,fiction
+Mathematical Physics,2,0.0,excluded
+Olympic Games,2,0.0,excluded
+Chemistry Books,2,0.0,excluded
+Mathematical Logic,2,0.0,excluded
+War Crimes,2,0.5,fiction
+Napoleonic,2,1.0,neutral
+Wave Mechanics (vibration & Acoustics),2,0.0,neutral
+Literacy,2,0.0,neutral
+"National Liberation & Independence, Post-colonialism",2,0.0,neutral
+Literary Companions,2,0.0,neutral
+Time Management,2,0.0,excluded
+Nature & Existence Of God,2,0.0,nonfiction
+Non-governmental Organizations (NGOs),2,0.0,neutral
+"Magic, Spells & Alchemy",2,0.5,neutral
+Adult Literacy Guides & Handbooks,2,0.0,neutral
+Medical Research,2,0.0,excluded
+New Testaments,2,0.0,neutral
+Dinosaurs & The Prehistoric World,2,0.0,nonfiction
+Philosophy Of Mathematics,2,0.5,excluded
+Writing Skills,2,0.5,neutral
+Cartoons,2,1.0,fiction
+Zoology: Mammals,2,0.0,neutral
+Personal Finance,2,0.0,excluded
+Military Life & Institutions,2,0.0,neutral
+Trains & Railways,2,0.0,neutral
+Translation & Interpretation,2,1.0,neutral
+Microbiology (non-medical),2,0.0,excluded
+Microeconomics,2,0.0,neutral
+Philosophy Of Language,2,0.0,nonfiction
+Tribal Religions,2,0.0,nonfiction
+Pharmacology,2,0.5,excluded
+Tips & Advice,2,0.0,neutral
+Drug & Substance Abuse: Social Aspects,1,0.0,neutral
+Wines,1,0.0,neutral
+"Fishing, Angling",1,0.0,neutral
+Fishes (ichthyology),1,0.0,neutral
+First Experiences,1,1.0,neutral
+"Annuals, Anthologies & Poetry",1,0.0,fiction
+Fire Protection & Safety,1,0.0,neutral
+Drugs Trade / Drug Trafficking,1,0.0,neutral
+Fitness & Diet,1,0.0,excluded
+Financial Services Industry,1,0.0,neutral
+Sociology: Work & Labour,1,0.0,nonfiction
+"Animals & Nature In Art (still Life, Landscapes & Seascapes, Etc)",1,0.0,nonfiction
+Crafts & Hobbies,1,0.0,excluded
+"Wildlife: Butterflies, Other Insects & Spiders",1,0.0,nonfiction
+"Creative Therapy (eg Art, Music, Drama)",1,0.0,fiction
+Zoos & Wildlife Parks,1,1.0,nonfiction
+E-commerce: Business Aspects,1,0.0,excluded
+Early Man,1,0.0,neutral
+Dictionaries & Languages,1,1.0,excluded
+"Forests, Rainforests",1,0.0,neutral
+Forensic Science,1,0.0,neutral
+Food & Cookery,1,1.0,excluded
+Winter Sports,1,0.0,nonfiction
+Cricket,1,0.0,neutral
+Active Outdoor Pursuits,1,1.0,neutral
+"Countryside, Country Life",1,0.0,neutral
+Social Impact Of Environmental Issues,1,0.0,nonfiction
+Acting Techniques,1,0.0,neutral
+Wrestling,1,0.0,neutral
+Applied Mathematics,1,0.0,excluded
+Aquaculture & Fish-farming: Practice & Techniques,1,0.0,neutral
+Archaeology,1,0.0,neutral
+Archaeology By Period / Region,1,0.0,neutral
+Doctor/patient Relationship,1,0.0,neutral
+Acoustic & Sound Engineering,1,0.0,excluded
+Apiculture (beekeeping),1,0.0,neutral
+Antiques & Collectables,1,1.0,excluded
+Folk & Traditional Music,1,0.0,nonfiction
+Social Mobility,1,0.0,neutral
+Flower Arranging & Floral Crafts,1,1.0,excluded
+Domestic Trade,1,0.0,neutral
+"Yearbooks, Annuals, Almanacs",1,1.0,neutral
+Archery,1,0.0,neutral
+"Social Services & Welfare, Criminology",1,0.0,neutral
+Size & Shape,1,1.0,neutral
+Flood Control,1,0.0,neutral
+"Arid Zones, Deserts",1,0.0,neutral
+Distributive Industries,1,0.0,neutral
+Courts & Procedure,1,0.0,neutral
+Western Classical Music,1,0.0,nonfiction
+Fashion Design & Theory,1,0.0,neutral
+True Stories: Discovery / Historical / Scientific,1,0.0,nonfiction
+Terminal Care Nursing,1,0.0,excluded
+Environment Law,1,0.0,excluded
+Agnosticism & Atheism,1,0.0,neutral
+"Deltas, Estuaries, Coastal Regions",1,0.0,neutral
+Tennis,1,0.0,neutral
+DIY: House Maintenance Manuals,1,0.0,excluded
+Anarchism,1,0.0,neutral
+Epidemiology & Medical Statistics,1,0.0,excluded
+Experimental Psychology,1,0.0,nonfiction
+Faith (religious) Schools,1,0.0,nonfiction
+Engineering: General,1,0.0,excluded
+Teams & Clubs,1,1.0,neutral
+Universities,1,0.0,neutral
+Energy Industries & Utilities,1,0.0,neutral
+Environmental Economics,1,0.0,nonfiction
+Trauma & Shock,1,0.0,neutral
+Employment & Unemployment,1,0.0,neutral
+Trade Agreements,1,0.0,neutral
+Ethical Issues & Debates,1,0.0,neutral
+Ethical Issues: Abortion & Birth Control,1,0.0,neutral
+Ethical Issues: Censorship,1,0.0,neutral
+Theory Of Music & Musicology,1,0.0,nonfiction
+Theory Of Architecture,1,0.0,neutral
+"Deconstructionism, Structuralism, Post-structuralism",1,0.0,neutral
+Agronomy & Crop Production,1,0.0,neutral
+Terrorist Attack,1,0.0,neutral
+"Defence Strategy, Planning & Research",1,1.0,neutral
+Theatre: Individual Actors & Directors,1,0.0,neutral
+Amphibians,1,0.0,neutral
+Theatre Direction & Production,1,1.0,neutral
+Ethical Issues: Prostitution & Sex Industry,1,0.0,neutral
+Equestrian & Animal Sports,1,0.0,nonfiction
+Teaching Staff,1,0.0,excluded
+Teaching Skills & Techniques,1,0.0,excluded
+Adventure Holidays,1,0.0,fiction
+"Easy Listening, MOR Music",1,0.0,nonfiction
+Sub-aqua Swimming,1,0.0,neutral
+Styles: Surrealism & Dada,1,0.0,neutral
+Styles: Impressionism & Post-Impressionism,1,0.0,neutral
+Styles: Conceptual Art,1,0.0,neutral
+Web Graphics & Design,1,0.0,neutral
+Advertising & Society,1,0.0,neutral
+Farm Animals,1,1.0,neutral
+Weapons & Equipment,1,0.0,excluded
+Fashion & Society,1,0.0,neutral
+"Storage, Maintenance & Preservation Of Collections",1,0.0,neutral
+Stocks & Shares,1,0.0,neutral
+"Anglican & Episcopalian Churches, Church Of England",1,0.0,neutral
+Fashion & Textiles: Design,1,0.0,neutral
+Animal Behaviour,1,0.0,neutral
+Weather,1,0.0,neutral
+"Surfing, Windsurfing, Water Skiing",1,0.0,neutral
+Electronic Music,1,0.0,nonfiction
+War & Conflict,1,0.0,neutral
+Teaching Of Students With Specific Learning Difficulties / Needs,1,0.0,excluded
+"Electricity, Electromagnetism & Magnetism",1,0.0,neutral
+Educational Strategies & Policy,1,0.0,excluded
+Educational Psychology,1,0.0,excluded
+Teaching Of A Specific Subject,1,0.0,excluded
+Ecumenism,1,0.0,neutral
+Taxonomy & Systematics,1,0.0,neutral
+Criminal Procedure,1,1.0,neutral
+Developmental Biology,1,0.0,neutral
+Economic Statistics,1,0.0,excluded
+Systems Of Law,1,0.0,excluded
+Swimming & Water Sports (Children's/YA),1,0.0,nonfiction
+Water Supply & Treatment,1,1.0,neutral
+Cruises,1,0.0,neutral
+Children's Sports Books,1,0.0,nonfiction
+Cookery By Ingredient,1,0.0,excluded
+Freshwater Life,1,0.0,neutral
+Language Teaching & Learning (other Than ELT),1,1.0,excluded
+Perception,1,0.0,neutral
+Carvings: Artworks,1,0.0,neutral
+Kids’ Jewish Books,1,1.0,neutral
+Korean War,1,0.0,neutral
+Pasta Dishes,1,1.0,neutral
+"Parties, Etiquette & Entertaining",1,1.0,neutral
+Land Forces & Warfare,1,0.0,neutral
+Language Learning: Specific Skills,1,1.0,excluded
+Law,1,0.0,excluded
+"Cartography, Map-making & Projections",1,0.0,neutral
+Law For The Lay Person,1,0.0,excluded
+Legal Ethics & Professional Conduct,1,0.0,excluded
+Oriental Art,1,0.0,neutral
+Celtic Religion & Mythology,1,1.0,nonfiction
+Lettering & Calligraphy,1,1.0,neutral
+Liberalism & Centre Democratic Ideologies,1,0.0,neutral
+Organic Gardening,1,0.0,excluded
+Organic Farming,1,0.0,neutral
+Performance Art,1,0.0,neutral
+Personnel & Human Resources Management,1,1.0,excluded
+"Interior Design, Decor & Style Guides",1,0.0,excluded
+"Phonetics, Phonology",1,0.0,neutral
+Blues,1,0.0,neutral
+Boating,1,0.0,neutral
+Bridges,1,0.0,neutral
+"Civil Procedure, Litigation & Dispute Resolution",1,0.0,neutral
+Internet & WWW Industries,1,0.0,excluded
+Physiology,1,1.0,neutral
+Islamic Books for Kids,1,0.0,nonfiction
+Circus,1,0.0,neutral
+Business Applications,1,0.0,excluded
+Petroleum Technology,1,0.0,excluded
+"Islamic Worship, Rites & Ceremonies",1,0.0,nonfiction
+Jazz,1,0.0,neutral
+Cinema Industry,1,0.0,nonfiction
+Judaism: Life & Practice,1,0.0,nonfiction
+Judaism: Mysticism,1,0.0,nonfiction
+Jurisprudence & Philosophy Of Law,1,0.0,excluded
+Pharmaceutical Industries,1,0.0,excluded
+Keyboard Instruments,1,0.0,neutral
+"Ordnance, Weapons Technology",1,0.0,excluded
+"Library, Archive & Information Management",1,0.0,excluded
+Opera,1,1.0,neutral
+Motorcycles,1,0.0,neutral
+Christian Communities & Monasticism,1,0.0,nonfiction
+Materials Science,1,0.0,neutral
+Mathematics,1,1.0,excluded
+Mathematics & Numeracy,1,1.0,excluded
+Christian Churches & Denominations,1,0.0,nonfiction
+Music: Styles & Genres,1,0.0,nonfiction
+Music Recording & Reproduction,1,0.0,nonfiction
+Medical Study & Revision Guides & Reference Material,1,0.0,excluded
+Monetary Economics,1,0.0,neutral
+Oncology,1,0.0,neutral
+Medical Toxicology,1,0.0,excluded
+Christian & Quasi-Christian Cults & Sects,1,0.0,nonfiction
+Mining Technology & Engineering,1,0.0,excluded
+Children's Stationery,1,1.0,excluded
+Mercenaries,1,0.0,neutral
+Military Tactics,1,0.0,neutral
+Military Intelligence,1,0.0,neutral
+Children's Music Books,1,0.0,nonfiction
+Marine Engineering,1,0.0,excluded
+Manufacturing Industries,1,0.0,neutral
+Christian Hymnals,1,1.0,nonfiction
+Network Security,1,1.0,neutral
+Oils,1,0.0,neutral
+Limnology (freshwater),1,1.0,neutral
+Digital TV & Media Centres: Consumer/user Guides,1,0.0,neutral
+Occupational Therapy,1,0.0,neutral
+Occupational Medicine,1,0.0,excluded
+Occupational / Industrial Health & Safety,1,0.0,neutral
+Nursing,1,0.0,excluded
+Number Theory,1,0.0,neutral
+Christian Leaders & Leadership,1,0.0,nonfiction
+Nuclear Structure Physics,1,0.0,excluded
+Nuclear Power & Engineering,1,0.0,excluded
+Ceramics & Glass Technology,1,0.0,excluded
+Non-graphic Art Forms,1,0.0,neutral
+Christian Instruction,1,0.0,nonfiction
+Neurosurgery,1,0.0,excluded
+"Chakras, Auras & Spiritual Energy",1,0.0,neutral
+Chaos Theory,1,0.0,neutral
+"Birds, Including Cage Birds, As Pets",1,0.0,neutral
+Interfaith Relations,1,0.0,neutral
+Funding Of Education & Student Finance,1,0.0,excluded
+"Religious Intolerance, Persecution & Conflict",1,0.0,nonfiction
+Geometry,1,1.0,neutral
+Risk Assessment,1,0.0,neutral
+"Riding, Showjumping & Horsemanship",1,1.0,neutral
+Government Powers,1,0.0,neutral
+Graffiti & Street Art,1,0.0,neutral
+Research Methods: General,1,0.0,neutral
+Graphic Novel & Manga Artwork,1,1.0,fiction
+Cookery Dishes & Courses,1,0.0,excluded
+Microsoft Windows,1,0.0,neutral
+Art Treatments & Subjects,1,0.0,neutral
+Constitutional & Administrative Law,1,0.0,excluded
+Graphical & Digital Media Applications,1,1.0,neutral
+Religious Buildings,1,0.0,nonfiction
+Gulf War,1,0.0,neutral
+HIV / AIDS,1,0.0,neutral
+HIV / AIDS: Social Aspects,1,0.0,neutral
+Health Systems & Services,1,0.0,neutral
+Hindu Life & Practice,1,0.0,nonfiction
+General Study Books,1,1.0,neutral
+Rural Crafts,1,1.0,excluded
+Biochemistry,1,0.0,excluded
+Sciences,1,1.0,neutral
+Counselling & Advice Services,1,0.0,neutral
+Galaxies & Stars,1,0.0,neutral
+Self-sufficiency,1,0.0,neutral
+Art Finance,1,0.0,excluded
+Game Theory,1,0.0,neutral
+Sea Life & The Seashore,1,0.0,neutral
+Sculpture,1,0.0,neutral
+Gardening: Flowers,1,1.0,excluded
+Art History: c 1800 to c 1900,1,1.0,nonfiction
+Russian Revolution,1,0.0,nonfiction
+Science Funding & Policy,1,0.0,neutral
+Gardening: Herbs,1,1.0,excluded
+Science & Geography,1,0.0,neutral
+Art Resoration,1,0.0,neutral
+Genealogy,1,0.0,neutral
+Satanism & Demonology,1,0.0,neutral
+Sailing,1,0.0,neutral
+General Encyclopaedias,1,0.0,excluded
+Conscious & Unconscious,1,0.0,neutral
+Computing: General,1,0.0,excluded
+Regional Government,1,0.0,neutral
+Practical Interests,1,1.0,neutral
+Property & Real Estate,1,0.0,neutral
+Propaganda,1,0.0,neutral
+Professional Interior Design,1,0.0,excluded
+Horse Racing,1,0.0,neutral
+Household Hints,1,0.0,neutral
+Housing Law,1,0.0,excluded
+Pre-school & Kindergarten,1,0.0,excluded
+Prayers & Liturgical Material,1,0.0,neutral
+Behavioural Economics,1,0.0,neutral
+Regional & National History,1,1.0,nonfiction
+Ice Hockey,1,0.0,neutral
+Industrial Relations & Safety,1,0.0,neutral
+Pop-Up Books,1,1.0,neutral
+Political Structures: Totalitarianism & Dictatorship,1,0.0,nonfiction
+Industrialisation & Industrial History,1,0.0,nonfiction
+"Bibliographies, Catalogues, Discographies",1,1.0,neutral
+Political Parties,1,0.0,nonfiction
+Political Manifestos,1,0.0,nonfiction
+Homelessness,1,0.0,neutral
+Hobby and Gaming Books,1,0.0,neutral
+Community Nursing,1,0.0,excluded
+Psycholinguistics,1,0.0,neutral
+Refugees & Political Asylum,1,0.0,nonfiction
+Rap & Hip-Hop,1,0.0,neutral
+Radio & Television Industry,1,0.0,nonfiction
+Radio,1,0.0,neutral
+Quick & Easy Cooking,1,1.0,neutral
+Quantum Physics (quantum Mechanics & Quantum Field Theory),1,0.0,excluded
+Puzzle Books,1,1.0,excluded
+"Puppetry, Miniature & Toy Theatre",1,0.0,neutral
+Historical Jesus,1,0.0,nonfiction
+Computer Hardware,1,1.0,excluded
+Historiography,1,0.0,nonfiction
+Public Health & Preventive Medicine,1,0.0,excluded
+Complementary Medicine,1,0.0,excluded
+Ballet,1,0.0,neutral
+Psychology Of Gender,1,0.0,nonfiction
+History Of Architecture,1,0.0,nonfiction
+Psychological Methodology,1,0.0,nonfiction
+Zoroastrianism,1,1.0,neutral

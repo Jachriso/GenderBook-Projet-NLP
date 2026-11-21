@@ -1,0 +1,19 @@
+step,rows,comment
+0. Raw dataset,1109383,all rows of dataset.csv
+1. lang == 'en',986575,English SBERT model + English UI
+2. title & description not null,952244,nothing to embed otherwise
+3. format in Paperback/Hardback,832881,"drop audio CDs, calendars, toys..."
+4. rating_count >= 50,232731,known books with reliable ratings
+5. raw description >= 300 chars,136531,short blurbs carry too little meaning
+6. not only boilerplate,135877,"generic sentences removed in 1,018 texts; drop texts that were only boilerplate"
+7. >= 300 chars without press quotes,135257,enough content once marketing is removed
+8. leisure-reading categories,110905,"fiction + narrative non-fiction, no textbooks/cookery/IT..."
+9. at least one named author,110883,needed for display & dedup
+10. drop box sets / bundles,110632,a box set is not a single reading experience
+11. drop companion products,110303,"pop-up books, film tie-in guides, art books..."
+12. merge editions of the same work,95877,"same title+author, or same Goodreads ratings + similar title/author"
+13. drop shared descriptions,93724,generic publisher texts
+14. max 8 books per author,80718,avoid catalogue saturation by prolific authors / manga series
+"15. top 13,799 candidates by rating_count",13799,"well-known books: richer descriptions, recognisable in the demo"
+16. description really in English,13709,langdetect (seed fixed)
+"17. final catalogue (top 12,000)",12000,target size reached

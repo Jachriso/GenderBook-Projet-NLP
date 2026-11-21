@@ -1,0 +1,15 @@
+# Environnements
+.venv/
+venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.DS_Store
+.env
+
+# Données brutes Kaggle (trop lourdes, jamais commitées)
+data/raw/
+# Embeddings lourds (régénérables par le notebook 03)
+data/embeddings/*.npy
+# Réponses utilisateurs de l'app
+data/responses/
