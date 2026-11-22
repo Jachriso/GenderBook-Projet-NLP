@@ -1,16 +1,19 @@
 {
   "n_books": 12000,
   "z_min": 1.0,
+  "era_z_min": 2.0,
+  "themes_version": "v2",
   "genres": {
     "n_books": 12000,
-    "n_fallback_embedding": 7,
-    "pct_fallback": 0.06
+    "n_fallback_embedding": 276,
+    "pct_fallback": 2.3
   },
+  "pct_books_with_era": 14.6,
   "mean_labels": {
-    "genres": 2.42,
-    "themes": 1.95,
+    "genres": 2.4,
+    "themes": 1.99,
     "styles": 1.36,
-    "atmospheres": 1.32,
+    "atmospheres": 1.08,
     "keywords": 5.0
   }
 }
