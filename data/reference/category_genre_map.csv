@@ -1,0 +1,1075 @@
+category,n_books,rule_genres,emb_genre,emb_sim,genre_auto,genre_manual,genres_final
+Contemporary Fiction,3538,Literary Fiction,Literary Fiction,0.657,Literary Fiction,,Literary Fiction
+Thriller Books,1102,Thriller & Suspense,Thriller & Suspense,0.603,Thriller & Suspense,,Thriller & Suspense
+Thrillers,1102,Thriller & Suspense,Thriller & Suspense,0.521,Thriller & Suspense,,Thriller & Suspense
+Adult & Contemporary Romance,1073,Romance,Young Adult,0.602,Romance,,Romance
+Romance,1067,Romance,Romance,0.553,Romance,,Romance
+Romance Books,1067,Romance,Romance,0.678,Romance,,Romance
+Crime,971,,Mystery & Detective,0.454,Mystery & Detective,,Mystery & Detective
+Crime Fiction,971,Mystery & Detective,Mystery & Detective,0.575,Mystery & Detective,,Mystery & Detective
+Children's Fiction,906,Children's,Young Adult,0.61,Children's,,Children's
+Classic Books & Novels,855,Classics,Classics,0.71,Classics,,Classics
+Fantasy,813,Fantasy,Fantasy,0.532,Fantasy,,Fantasy
+Fantasy Books,813,Fantasy,Fantasy,0.744,Fantasy,,Fantasy
+Science Fiction,782,Science Fiction,Science Fiction,0.561,Science Fiction,,Science Fiction
+Historical Fiction,748,Historical Fiction,Historical Fiction,0.799,Historical Fiction,,Historical Fiction
+Adventure Books,710,,Children's,0.55,Children's,Thriller & Suspense,Thriller & Suspense
+Memoirs,629,Biography & Memoir,Biography & Memoir,0.584,Biography & Memoir,,Biography & Memoir
+Sci Fi Books for Kids,581,Science Fiction,Children's,0.544,Science Fiction,,Science Fiction
+Biography: General,564,Biography & Memoir,Biography & Memoir,0.53,Biography & Memoir,,Biography & Memoir
+Adventure Books for Kids,539,,Children's,0.689,Children's,,Children's
+Family,490,,Biography & Memoir,0.223,,Literary Fiction,Literary Fiction
+Horror,465,Horror,Horror,0.492,Horror,,Horror
+Children's General Story Books,412,Children's,Children's,0.663,Children's,,Children's
+Sagas,383,Historical Fiction,Fantasy,0.409,Historical Fiction,,Historical Fiction
+Fantasy Books for Kids,343,Fantasy,Children's,0.666,Fantasy,,Fantasy
+"Graphic Novels, Anime & Manga",321,Graphic Novels & Comics,Graphic Novels & Comics,0.753,Graphic Novels & Comics,,Graphic Novels & Comics
+Romance Books for Teenagers,306,Romance|Young Adult,Young Adult,0.746,Romance|Young Adult,,Romance|Young Adult
+Funny Books for Kids,299,Humour,Children's,0.641,Humour,,Humour
+Short Story Books,268,Children's,Children's,0.487,Children's,Literary Fiction,Literary Fiction
+History Of The Americas,267,History,History,0.461,History,,History
+"Biography: Historical, Political & Military",262,Biography & Memoir|History,Biography & Memoir,0.54,Biography & Memoir|History,,Biography & Memoir|History
+Classic Books for Children,259,Classics|Children's,Children's,0.652,Classics|Children's,,Classics|Children's
+Animal Stories,250,,Children's,0.575,Children's,,Children's
+Historical Romance,245,Romance|Historical Fiction,Historical Fiction,0.601,Romance|Historical Fiction,,Romance|Historical Fiction
+Poetry By Individual Poets,238,Poetry & Drama,Poetry & Drama,0.615,Poetry & Drama,,Poetry & Drama
+"Plays, Playscripts",213,Poetry & Drama,Poetry & Drama,0.413,Poetry & Drama,,Poetry & Drama
+Biography: Arts & Entertainment,210,Biography & Memoir,Biography & Memoir,0.569,Biography & Memoir,,Biography & Memoir
+Religious & Spiritual Fiction,210,Philosophy & Religion,Fantasy,0.592,Philosophy & Religion,,Philosophy & Religion
+Funny Books & Stories,204,Humour,Humour,0.679,Humour,,Humour
+Anthologies (non-poetry),203,Poetry & Drama,Poetry & Drama,0.465,Poetry & Drama,Literary Fiction,Literary Fiction
+Erotic Fiction,201,,Literary Fiction,0.544,Literary Fiction,Romance,Romance
+Military Fiction,198,,Literary Fiction,0.488,Literary Fiction,Historical Fiction,Historical Fiction
+Mystery Books for Kids,175,Mystery & Detective,Children's,0.626,Mystery & Detective,,Mystery & Detective
+Traditional,173,,Classics,0.281,,,
+Space Opera,173,Science Fiction,Science Fiction,0.308,Science Fiction,,Science Fiction
+Family Issues,165,,Self-help & Psychology,0.241,,,
+Literary Studies: General,161,Literary Fiction,Literary Fiction,0.599,Literary Fiction,,Literary Fiction
+Historical,160,,Historical Fiction,0.471,Historical Fiction,,Historical Fiction
+Graphic Novels: Superheroes,152,Graphic Novels & Comics,Graphic Novels & Comics,0.635,Graphic Novels & Comics,,Graphic Novels & Comics
+Christian Life & Practice,150,Philosophy & Religion,Philosophy & Religion,0.514,Philosophy & Religion,,Philosophy & Religion
+Popular Psychology,150,Self-help & Psychology,Science & Nature,0.453,Self-help & Psychology,,Self-help & Psychology
+Literary Essays,148,Literary Fiction,Literary Fiction,0.616,Literary Fiction,,Literary Fiction
+"Mind, Body, Spirit: Thought & Practice",147,,Philosophy & Religion,0.491,Philosophy & Religion,,Philosophy & Religion
+Political & Legal,146,,Philosophy & Religion,0.236,,Thriller & Suspense,Thriller & Suspense
+"Assertiveness, Motivation & Self-esteem",146,Self-help & Psychology,Self-help & Psychology,0.505,Self-help & Psychology,,Self-help & Psychology
+Espionage,144,Thriller & Suspense,Mystery & Detective,0.383,Thriller & Suspense,,Thriller & Suspense
+Autobiography: General,143,Biography & Memoir,Biography & Memoir,0.591,Biography & Memoir,,Biography & Memoir
+Gender Studies: Women,142,,Science & Nature,0.238,,,
+Relationships,140,,Romance,0.337,Romance,Self-help & Psychology,Self-help & Psychology
+Graphic Novels,128,Graphic Novels & Comics,Graphic Novels & Comics,0.688,Graphic Novels & Comics,,Graphic Novels & Comics
+Graphic Novels: Manga,128,Graphic Novels & Comics,Graphic Novels & Comics,0.742,Graphic Novels & Comics,,Graphic Novels & Comics
+Psychology,126,Self-help & Psychology,Self-help & Psychology,0.39,Self-help & Psychology,,Self-help & Psychology
+Historical Crime,126,,Historical Fiction,0.506,Historical Fiction,Mystery & Detective|Historical Fiction,Mystery & Detective|Historical Fiction
+Biography: Literary,121,Literary Fiction|Biography & Memoir,Biography & Memoir,0.678,Literary Fiction|Biography & Memoir,Biography & Memoir,Biography & Memoir
+Horror & Ghost,114,Horror,Horror,0.75,Horror,,Horror
+Military History,114,History,History,0.389,History,,History
+European History,112,History,History,0.398,History,,History
+Autobiography: Arts & Entertainment,101,Biography & Memoir,Biography & Memoir,0.666,Biography & Memoir,,Biography & Memoir
+Fiction In Translation,100,,Literary Fiction,0.547,Literary Fiction,,Literary Fiction
+Guidebooks,99,,Cooking & Lifestyle,0.577,Cooking & Lifestyle,,Cooking & Lifestyle
+20th Century History: C 1900  To C 2000,94,History,Historical Fiction,0.322,History,,History
+School Stories,93,,Children's,0.45,Children's,,Children's
+English Language: Reading Schemes,91,,Poetry & Drama,0.321,Poetry & Drama,Children's,Children's
+Travel Writing,91,Cooking & Lifestyle,Science & Nature,0.428,Cooking & Lifestyle,,Cooking & Lifestyle
+Spirituality & Religious Experience,89,Philosophy & Religion,Philosophy & Religion,0.674,Philosophy & Religion,,Philosophy & Religion
+True Crime Biographies,88,Biography & Memoir,Biography & Memoir,0.574,Biography & Memoir,,Biography & Memoir
+True Crime Books,88,,Thriller & Suspense,0.506,Thriller & Suspense,Biography & Memoir,Biography & Memoir
+Personal Development,86,Self-help & Psychology,Self-help & Psychology,0.492,Self-help & Psychology,,Self-help & Psychology
+Society & Social Issues,85,,Science & Nature,0.319,Science & Nature,,Science & Nature
+Advice On Careers & Achieving Success,84,,Business & Economics,0.252,,Business & Economics,Business & Economics
+Philosophy,84,Philosophy & Religion,Philosophy & Religion,0.645,Philosophy & Religion,,Philosophy & Religion
+Politics & Government,83,,Philosophy & Religion,0.32,Philosophy & Religion,History,History
+Family & Relationships,82,,Romance,0.3,Romance,Self-help & Psychology,Self-help & Psychology
+"Literary Studies: Fiction, Novelists & Prose Writers",80,Literary Fiction,Literary Fiction,0.698,Literary Fiction,,Literary Fiction
+World War 2 Books,75,History,History,0.557,History,,History
+People & Places,74,,Science & Nature,0.305,Science & Nature,History,History
+Political Science & Theory,72,Science & Nature,Business & Economics,0.284,Science & Nature,History,History
+Biography: Religious & Spiritual,71,Biography & Memoir|Philosophy & Religion,Philosophy & Religion,0.576,Biography & Memoir|Philosophy & Religion,,Biography & Memoir|Philosophy & Religion
+Myth & Legend Told As Fiction,71,,Fantasy,0.503,Fantasy,,Fantasy
+Social & Cultural History,71,History,History,0.469,History,,History
+Graphic Novels: Literary & Memoirs,68,Literary Fiction|Biography & Memoir|Graphic Novels & Comics,Literary Fiction,0.697,Literary Fiction|Biography & Memoir|Graphic Novels & Comics,Graphic Novels & Comics|Biography & Memoir,Graphic Novels & Comics|Biography & Memoir
+"Social, Group Or Collective Psychology",68,Self-help & Psychology,Science & Nature,0.324,Self-help & Psychology,,Self-help & Psychology
+General & World History,68,History,History,0.549,History,,History
+Christian Books,67,Philosophy & Religion,Humour,0.428,Philosophy & Religion,,Philosophy & Religion
+Self-Esteem,67,Self-help & Psychology,Self-help & Psychology,0.406,Self-help & Psychology,,Self-help & Psychology
+Black & Asian Studies,63,,History,0.31,History,,History
+Abnormal Psychology,63,Self-help & Psychology,Literary Fiction,0.316,Self-help & Psychology,,Self-help & Psychology
+Asian History,63,History,History,0.4,History,,History
+Picture Books,62,Children's,Children's,0.506,Children's,,Children's
+Religious Life & Practice,62,Philosophy & Religion,Philosophy & Religion,0.598,Philosophy & Religion,,Philosophy & Religion
+Popular Culture,62,,Science & Nature,0.338,Science & Nature,,Science & Nature
+Oriental & Indian Philosophy,56,Philosophy & Religion,Philosophy & Religion,0.434,Philosophy & Religion,,Philosophy & Religion
+Poetry Books for Kids,55,Poetry & Drama,Children's,0.587,Poetry & Drama,,Poetry & Drama
+Ethics & Moral Philosophy,55,Philosophy & Religion,Philosophy & Religion,0.62,Philosophy & Religion,,Philosophy & Religion
+Sociology,53,,Science & Nature,0.323,Science & Nature,,Science & Nature
+Modern History To 20th Century: C 1700 To C 1900,52,History,Historical Fiction,0.353,History,,History
+"Dating, Relationships, Living Together & Marriage",52,,Philosophy & Religion,0.349,Philosophy & Religion,,Philosophy & Religion
+"Literary Studies: Classical, Early & Medieval",51,Literary Fiction|History,Poetry & Drama,0.552,Literary Fiction|History,,Literary Fiction|History
+"Biography: Science, Technology & Engineering",51,Biography & Memoir|Science & Nature,Biography & Memoir,0.506,Biography & Memoir|Science & Nature,,Biography & Memoir|Science & Nature
+Literary Studies: Plays & Playwrights,50,Literary Fiction|Poetry & Drama,Poetry & Drama,0.691,Literary Fiction|Poetry & Drama,,Literary Fiction|Poetry & Drama
+Social & Cultural Anthropology,50,,Philosophy & Religion,0.389,Philosophy & Religion,,Philosophy & Religion
+Cognition & Cognitive Psychology,50,Self-help & Psychology,Philosophy & Religion,0.29,Self-help & Psychology,,Self-help & Psychology
+Social & Political Philosophy,50,Philosophy & Religion,Philosophy & Religion,0.512,Philosophy & Religion,,Philosophy & Religion
+British & Irish History,49,History,History,0.263,History,,History
+Science: General Issues,48,Science & Nature,Science & Nature,0.513,Science & Nature,,Science & Nature
+Westerns,48,,History,0.278,,,
+Christian Theology,47,Philosophy & Religion,Philosophy & Religion,0.48,Philosophy & Religion,,Philosophy & Religion
+"Autobiography: Historical, Political & Military",47,Biography & Memoir|History,Biography & Memoir,0.618,Biography & Memoir|History,,Biography & Memoir|History
+Classical History / Classical Civilisation,46,History,History,0.47,History,,History
+"Mind, Body, Spirit: Meditation & Visualisation",46,,Philosophy & Religion,0.5,Philosophy & Religion,,Philosophy & Religion
+Personal Christian Testimony & Popular Inspirational Works,45,Philosophy & Religion,Biography & Memoir,0.382,Philosophy & Religion,,Philosophy & Religion
+Popular Science,45,Science & Nature,Science & Nature,0.673,Science & Nature,,Science & Nature
+Society & Culture: General,44,,Literary Fiction,0.381,Literary Fiction,,Literary Fiction
+Constitution: Government & The State,44,,History,0.149,,,
+"Western Philosophy, From C 1900 -",44,Philosophy & Religion,Philosophy & Religion,0.437,Philosophy & Religion,,Philosophy & Religion
+Individual Actors & Performers,43,,Poetry & Drama,0.456,Poetry & Drama,,Poetry & Drama
+Television,42,,Science & Nature,0.246,,,
+Buddhist Books,42,Philosophy & Religion,History,0.421,Philosophy & Religion,,Philosophy & Religion
+Death & Bereavement,41,,Horror,0.246,,,
+Cartoons & Comic Strips,41,Graphic Novels & Comics,Graphic Novels & Comics,0.531,Graphic Novels & Comics,,Graphic Novels & Comics
+Holocaust,40,,Historical Fiction,0.27,,,
+Literary Studies: Poetry & Poets,40,Literary Fiction|Poetry & Drama,Poetry & Drama,0.688,Literary Fiction|Poetry & Drama,,Literary Fiction|Poetry & Drama
+Bullying & Abuse,40,,Young Adult,0.26,,,
+Philosophy Of Religion,40,Philosophy & Religion,Philosophy & Religion,0.668,Philosophy & Religion,,Philosophy & Religion
+Nonfiction History Books for Kids,39,Children's,History,0.591,Children's,,Children's
+Biography: Sport,38,Biography & Memoir,Biography & Memoir,0.512,Biography & Memoir,,Biography & Memoir
+History Of Science,38,History|Science & Nature,Science & Nature,0.488,History|Science & Nature,,History|Science & Nature
+Middle Eastern History,38,History,History,0.414,History,,History
+Advice On Parenting,38,,Young Adult,0.247,,,
+Children's Health Books,37,Children's,Children's,0.512,Children's,,Children's
+Literary Studies: C 1800 To C 1900,35,Literary Fiction,Literary Fiction,0.546,Literary Fiction,,Literary Fiction
+Early Learning,35,Children's,Children's,0.341,Children's,,Children's
+Miscellaneous Items,35,,Cooking & Lifestyle,0.227,,,
+History Of Western Philosophy,35,History|Philosophy & Religion,Philosophy & Religion,0.416,History|Philosophy & Religion,,History|Philosophy & Religion
+Natural History Books,34,Children's|History|Science & Nature,History,0.655,Children's|History|Science & Nature,,Children's|History|Science & Nature
+Poetry Books,34,Poetry & Drama,Poetry & Drama,0.672,Poetry & Drama,,Poetry & Drama
+Social Issues,33,,Self-help & Psychology,0.249,,,
+Feminism & Feminist Theory,33,,Philosophy & Religion,0.335,Philosophy & Religion,,Philosophy & Religion
+Philosophy Of Science,33,Science & Nature|Philosophy & Religion,Science & Nature,0.455,Science & Nature|Philosophy & Religion,,Science & Nature|Philosophy & Religion
+Graphic Novels: True Stories & Non-fiction,32,Graphic Novels & Comics,Graphic Novels & Comics,0.669,Graphic Novels & Comics,,Graphic Novels & Comics
+Historical Adventure,31,,Historical Fiction,0.578,Historical Fiction,,Historical Fiction
+Social Discrimination,31,,Literary Fiction,0.215,,,
+Economics,31,Business & Economics,Business & Economics,0.384,Business & Economics,,Business & Economics
+"Mind, Body & Spirit",31,,Philosophy & Religion,0.465,Philosophy & Religion,,Philosophy & Religion
+Political Structure & Processes,31,,Philosophy & Religion,0.204,,,
+Storybooks,31,,Graphic Novels & Comics,0.509,Graphic Novels & Comics,,Graphic Novels & Comics
+Coping With Death & Bereavement,30,,Horror,0.269,,,
+Management: Leadership & Motivation,30,Self-help & Psychology|Business & Economics,Business & Economics,0.318,Self-help & Psychology|Business & Economics,,Self-help & Psychology|Business & Economics
+Geographical Discovery & Exploration,30,,Science & Nature,0.357,Science & Nature,,Science & Nature
+Art History,30,History,History,0.421,History,,History
+Literary Studies: From C 1900 -,30,Literary Fiction,Literary Fiction,0.562,Literary Fiction,,Literary Fiction
+Evolution,30,,Science & Nature,0.31,Science & Nature,,Science & Nature
+"Self, Ego, Identity, Personality",29,,Philosophy & Religion,0.367,Philosophy & Religion,,Philosophy & Religion
+Central Government Policies,29,,History,0.15,,,
+Political Leaders & Leadership,29,Business & Economics,Business & Economics,0.301,Business & Economics,,Business & Economics
+Autobiography: Literary,29,Literary Fiction|Biography & Memoir,Biography & Memoir,0.752,Literary Fiction|Biography & Memoir,,Literary Fiction|Biography & Memoir
+Rock & Pop Music,29,,Poetry & Drama,0.249,,,
+International Relations,29,,History,0.239,,,
+Political Control & Freedoms,29,,Thriller & Suspense,0.185,,,
+Thriller Books for Children,28,Thriller & Suspense|Children's,Children's,0.585,Thriller & Suspense|Children's,,Thriller & Suspense|Children's
+Theatre Studies,28,Poetry & Drama,Poetry & Drama,0.553,Poetry & Drama,,Poetry & Drama
+Crime & Criminology,28,,Mystery & Detective,0.404,Mystery & Detective,,Mystery & Detective
+Religion: General,28,Philosophy & Religion,Philosophy & Religion,0.532,Philosophy & Religion,,Philosophy & Religion
+"Individual Artists, Art Monographs",28,,Classics,0.468,Classics,,Classics
+Biography: Royalty,28,Biography & Memoir,Biography & Memoir,0.552,Biography & Memoir,,Biography & Memoir
+Religious Books,28,Philosophy & Religion,Fantasy,0.457,Philosophy & Religion,,Philosophy & Religion
+Ancient History: To C 500 CE,27,History,History,0.302,History,,History
+"Postwar 20th Century History, From C 1945 To C 2000",27,History,History,0.325,History,,History
+"Folklore, Myths & Legends",27,,Fantasy,0.53,Fantasy,,Fantasy
+Psychotherapy,26,,Self-help & Psychology,0.316,Self-help & Psychology,,Self-help & Psychology
+Coping With Personal Problems,26,,Self-help & Psychology,0.437,Self-help & Psychology,,Self-help & Psychology
+"Western Philosophy: Ancient, To C 500",26,History|Philosophy & Religion,Philosophy & Religion,0.417,History|Philosophy & Religion,,History|Philosophy & Religion
+History Books for Kids,26,Children's|History,History,0.613,Children's|History,,Children's|History
+Parodies & Spoofs,26,,Humour,0.29,,,
+Multiculturalism,25,,Philosophy & Religion,0.271,,,
+"Physiological & Neuro-psychology, Biopsychology",25,Self-help & Psychology,Philosophy & Religion,0.357,Self-help & Psychology,,Self-help & Psychology
+African History,25,History,History,0.416,History,,History
+Economic History,25,History|Business & Economics,History,0.35,History|Business & Economics,,History|Business & Economics
+Ethnic Studies,25,,History,0.347,History,,History
+21st Century History: From C 2000 -,25,History,History,0.391,History,,History
+Poetry & Drama,24,Poetry & Drama,Poetry & Drama,0.775,Poetry & Drama,,Poetry & Drama
+General Cookery,24,Cooking & Lifestyle,Cooking & Lifestyle,0.364,Cooking & Lifestyle,,Cooking & Lifestyle
+"Gender Studies, Gender Groups",24,,Young Adult,0.286,,,
+Biblical Studies & Exegesis,24,,Philosophy & Religion,0.314,Philosophy & Religion,,Philosophy & Religion
+"Individual Composers & Musicians, Specific Bands & Groups",24,,Poetry & Drama,0.327,Poetry & Drama,,Poetry & Drama
+Business & Management,23,Business & Economics,Business & Economics,0.506,Business & Economics,,Business & Economics
+"Complementary Therapies, Healing & Health",23,,Philosophy & Religion,0.247,,,
+"Christian Aspects Of Sexuality, Gender & Relationships",23,Philosophy & Religion,Philosophy & Religion,0.373,Philosophy & Religion,,Philosophy & Religion
+Wildlife: General Interest,23,,Science & Nature,0.459,Science & Nature,,Science & Nature
+Sports Stories,23,,Biography & Memoir,0.426,Biography & Memoir,,Biography & Memoir
+Psychic Powers & Psychic Phenomena,23,,Horror,0.303,Horror,,Horror
+Other Performing Arts,22,,Poetry & Drama,0.522,Poetry & Drama,,Poetry & Drama
+Neurosciences,22,Science & Nature,Science & Nature,0.308,Science & Nature,,Science & Nature
+Cosmology & The Universe,22,,Science & Nature,0.326,Science & Nature,,Science & Nature
+Political Economy,22,Business & Economics,Business & Economics,0.271,Business & Economics,,Business & Economics
+Child & Developmental Psychology,22,Self-help & Psychology,Children's,0.444,Self-help & Psychology,,Self-help & Psychology
+Coping With Drug & Alcohol Abuse,21,,Self-help & Psychology,0.295,,,
+Civil Rights & Citizenship,21,,Biography & Memoir,0.216,,,
+Prose: Non-fiction,20,,Literary Fiction,0.645,Literary Fiction,,Literary Fiction
+Humour Collections & Anthologies,20,Humour,Humour,0.719,Humour,,Humour
+Philosophy Of Mind,20,Philosophy & Religion,Philosophy & Religion,0.469,Philosophy & Religion,,Philosophy & Religion
+Conservation Of The Environment,20,Science & Nature,Science & Nature,0.353,Science & Nature,,Science & Nature
+Warfare & Defence,20,,History,0.278,,,
+Early Modern History: C 1450/1500 To C 1700,20,History,Historical Fiction,0.3,History,,History
+Short Stories for Kids,20,,Children's,0.673,Children's,,Children's
+Creative Writing & Creative Writing Guides,20,,Cooking & Lifestyle,0.426,Cooking & Lifestyle,,Cooking & Lifestyle
+Christian Spirituality & Religious Experience,20,Philosophy & Religion,Philosophy & Religion,0.632,Philosophy & Religion,,Philosophy & Religion
+English Literature,19,,Literary Fiction,0.588,Literary Fiction,,Literary Fiction
+"Biology, Life Sciences",19,Science & Nature,Science & Nature,0.5,Science & Nature,,Science & Nature
+Psychology: Emotions,19,Self-help & Psychology,Romance,0.33,Self-help & Psychology,,Self-help & Psychology
+World War 2 Fiction,19,,History,0.499,History,,History
+Siblings,19,,Young Adult,0.216,,,
+Central Government,19,,History,0.148,,,
+Comparative Religion,19,Philosophy & Religion,Philosophy & Religion,0.333,Philosophy & Religion,,Philosophy & Religion
+Wildlife,18,,Science & Nature,0.386,Science & Nature,,Science & Nature
+Popular Medicine & Health,18,,Science & Nature,0.381,Science & Nature,,Science & Nature
+Sports Books,18,,Business & Economics,0.479,Business & Economics,,Business & Economics
+Neurology & Clinical Neurophysiology,18,,Mystery & Detective,0.169,,,
+Domestic Animals & Pets,18,,Children's,0.363,Children's,,Children's
+Phenomenology & Existentialism,18,,Philosophy & Religion,0.422,Philosophy & Religion,,Philosophy & Religion
+Zen Buddhism,18,Philosophy & Religion,Philosophy & Religion,0.43,Philosophy & Religion,,Philosophy & Religion
+Sociology: Customs & Traditions,17,,Philosophy & Religion,0.361,Philosophy & Religion,,Philosophy & Religion
+Indigenous Peoples,17,,History,0.26,,,
+Economic Theory & Philosophy,17,Philosophy & Religion|Business & Economics,Business & Economics,0.468,Philosophy & Religion|Business & Economics,,Philosophy & Religion|Business & Economics
+History Of Religion,17,History|Philosophy & Religion,Philosophy & Religion,0.428,History|Philosophy & Religion,,History|Philosophy & Religion
+Aspects Of Religion (non-Christian),17,Philosophy & Religion,Philosophy & Religion,0.502,Philosophy & Religion,,Philosophy & Religion
+Disability,17,,Self-help & Psychology,0.234,,,
+"Films, Cinema",17,,Science Fiction,0.327,Science Fiction,,Science Fiction
+Teaching Resources & Education,16,,Children's,0.349,Children's,,Children's
+"Diaries, Letters & Journals",16,Biography & Memoir,Science & Nature,0.479,Biography & Memoir,,Biography & Memoir
+Autobiography: Religious & Spiritual,16,Biography & Memoir|Philosophy & Religion,Biography & Memoir,0.597,Biography & Memoir|Philosophy & Religion,,Biography & Memoir|Philosophy & Religion
+Hindu Books,16,,History,0.442,History,,History
+"Astronomy, Space & Time",16,Science & Nature,Science Fiction,0.516,Science & Nature,,Science & Nature
+Biography: Business & Industry,16,Biography & Memoir|Business & Economics,Biography & Memoir,0.552,Biography & Memoir|Business & Economics,,Biography & Memoir|Business & Economics
+Religious Groups: Social & Cultural Aspects,16,Philosophy & Religion,Philosophy & Religion,0.486,Philosophy & Religion,,Philosophy & Religion
+Islamic Story & History Books,16,Children's|History|Philosophy & Religion,History,0.556,Children's|History|Philosophy & Religion,,Children's|History|Philosophy & Religion
+History Of Engineering & Technology,16,History,Science Fiction,0.263,History,,History
+Psychoanalytical Theory (Freudian Psychology),16,Self-help & Psychology,Literary Fiction,0.402,Self-help & Psychology,,Self-help & Psychology
+"Mysticism, Magic & Ritual",16,,Philosophy & Religion,0.466,Philosophy & Religion,,Philosophy & Religion
+Vintage Crime,15,,Mystery & Detective,0.418,Mystery & Detective,,Mystery & Detective
+Physics Books,15,Science & Nature,Science & Nature,0.434,Science & Nature,,Science & Nature
+Anthropology,15,,Philosophy & Religion,0.338,Philosophy & Religion,,Philosophy & Religion
+Art History: From c 1960,15,History,Classics,0.33,History,,History
+Food & Drink,15,Cooking & Lifestyle,Cooking & Lifestyle,0.326,Cooking & Lifestyle,,Cooking & Lifestyle
+Slavery & Abolition Of Slavery,15,,History,0.272,,,
+American Civil War,15,History,History,0.298,History,,History
+Sexual Behaviour,15,,Self-help & Psychology,0.276,,,
+True Story Books,15,Children's|Biography & Memoir,Biography & Memoir,0.615,Children's|Biography & Memoir,,Children's|Biography & Memoir
+Regional Studies,15,,Business & Economics,0.21,,,
+Wildlife: Mammals,15,,Science & Nature,0.352,Science & Nature,,Science & Nature
+Health Books,15,,Cooking & Lifestyle,0.483,Cooking & Lifestyle,,Cooking & Lifestyle
+Poetry Anthologies (various Poets),14,Poetry & Drama,Poetry & Drama,0.52,Poetry & Drama,,Poetry & Drama
+Sociology: Death & Dying,14,,Philosophy & Religion,0.345,Philosophy & Religion,,Philosophy & Religion
+Media Studies,14,,Science & Nature,0.315,Science & Nature,,Science & Nature
+Social Classes,14,,Self-help & Psychology,0.302,Self-help & Psychology,,Self-help & Psychology
+Writing & Editing Guides,14,,Cooking & Lifestyle,0.452,Cooking & Lifestyle,,Cooking & Lifestyle
+Philosophy: Epistemology & Theory Of Knowledge,14,Philosophy & Religion,Philosophy & Religion,0.422,Philosophy & Religion,,Philosophy & Religion
+Violence In Society,14,,Literary Fiction,0.357,Literary Fiction,,Literary Fiction
+Tibetan Buddhism,14,Philosophy & Religion,Philosophy & Religion,0.373,Philosophy & Religion,,Philosophy & Religion
+Shakespeare Plays,13,Poetry & Drama,Poetry & Drama,0.541,Poetry & Drama,,Poetry & Drama
+Philosophy: Metaphysics & Ontology,13,Science & Nature|Philosophy & Religion,Philosophy & Religion,0.509,Science & Nature|Philosophy & Religion,,Science & Nature|Philosophy & Religion
+Journalistic Style Guides,13,,Cooking & Lifestyle,0.44,Cooking & Lifestyle,,Cooking & Lifestyle
+Islamic Studies,13,Philosophy & Religion,Philosophy & Religion,0.343,Philosophy & Religion,,Philosophy & Religion
+Other Non-Christian Religions,13,Philosophy & Religion,Philosophy & Religion,0.328,Philosophy & Religion,,Philosophy & Religion
+Marxism & Communism,13,,Philosophy & Religion,0.348,Philosophy & Religion,,Philosophy & Religion
+Elections & Referenda,13,,Poetry & Drama,0.117,,,
+"Sex & Sexuality, Sex Manuals",13,,Self-help & Psychology,0.337,Self-help & Psychology,,Self-help & Psychology
+Theology,13,Philosophy & Religion,Philosophy & Religion,0.541,Philosophy & Religion,,Philosophy & Religion
+"Buddhist Worship, Rites & Ceremonies",13,Philosophy & Religion,Philosophy & Religion,0.375,Philosophy & Religion,,Philosophy & Religion
+"Terrorism, Armed Struggle",13,,Thriller & Suspense,0.331,Thriller & Suspense,,Thriller & Suspense
+Art Books,12,,Graphic Novels & Comics,0.544,Graphic Novels & Comics,,Graphic Novels & Comics
+Jewish Books,12,,History,0.381,History,,History
+Cultural Studies,12,,History,0.27,,,
+Medieval History,12,History,Historical Fiction,0.463,History,,History
+Linguistics,12,,Science & Nature,0.312,Science & Nature,,Science & Nature
+Psychiatry,12,,Horror,0.31,Horror,,Horror
+Autobiography: Sport,12,Biography & Memoir,Biography & Memoir,0.61,Biography & Memoir,,Biography & Memoir
+Coping With Illness,12,,Self-help & Psychology,0.311,Self-help & Psychology,,Self-help & Psychology
+Exercise & Workout Books,12,,Cooking & Lifestyle,0.425,Cooking & Lifestyle,,Cooking & Lifestyle
+Film Scripts & Screenplays,12,,Poetry & Drama,0.349,Poetry & Drama,,Poetry & Drama
+"Western Philosophy: Medieval & Renaissance, C 500 To C 1600",12,History|Philosophy & Religion,Philosophy & Religion,0.349,History|Philosophy & Religion,,History|Philosophy & Religion
+Fiction Texts,11,,Literary Fiction,0.594,Literary Fiction,,Literary Fiction
+Jokes & Humour,11,Humour,Humour,0.567,Humour,,Humour
+Popular Philosophy,11,Philosophy & Religion,Philosophy & Religion,0.458,Philosophy & Religion,,Philosophy & Religion
+History Of Ideas,11,History,Historical Fiction,0.402,History,,History
+Dogs As Pets,11,,Children's,0.317,Children's,,Children's
+Military Engineering,11,History,Science Fiction,0.24,History,,History
+Drawing,11,,Graphic Novels & Comics,0.382,Graphic Novels & Comics,,Graphic Novels & Comics
+Eclectic & Esoteric Religions & Belief Systems,11,Philosophy & Religion,Philosophy & Religion,0.468,Philosophy & Religion,,Philosophy & Religion
+Clinical Psychology,11,Self-help & Psychology,Self-help & Psychology,0.336,Self-help & Psychology,,Self-help & Psychology
+Poverty  & Unemployment,11,,Business & Economics,0.191,,,
+Human Biology,11,Science & Nature,Science & Nature,0.376,Science & Nature,,Science & Nature
+True War  & Combat Stories,11,History,Biography & Memoir,0.44,History,,History
+Genetics (non-medical),11,,Science & Nature,0.163,,,
+Sociology: Family & Relationships,11,,Philosophy & Religion,0.284,,,
+Language: Reference & General,11,,Science & Nature,0.241,,,
+Iraq War,11,History,History,0.235,History,,History
+Aerospace & Aviation Technology,11,,Science Fiction,0.32,Science Fiction,,Science Fiction
+Afghan War,11,History,History,0.246,History,,History
+Astrophysics,11,Science & Nature,Science & Nature,0.269,Science & Nature,,Science & Nature
+Christian Ministry & Pastoral Activity,11,Philosophy & Religion,Philosophy & Religion,0.39,Philosophy & Religion,,Philosophy & Religion
+Literary Studies: C 1500 To C 1800,11,Literary Fiction,Literary Fiction,0.512,Literary Fiction,,Literary Fiction
+"Roman Catholicism, Roman Catholic Church",11,,Philosophy & Religion,0.353,Philosophy & Religion,,Philosophy & Religion
+Children's Religious Books,11,Children's|Philosophy & Religion,Children's,0.579,Children's|Philosophy & Religion,,Children's|Philosophy & Religion
+Espionage & Secret Services,11,Thriller & Suspense,Thriller & Suspense,0.387,Thriller & Suspense,,Thriller & Suspense
+Film Theory & Criticism,11,,Literary Fiction,0.399,Literary Fiction,,Literary Fiction
+Philosophy & Theory Of Education,11,Philosophy & Religion,Philosophy & Religion,0.451,Philosophy & Religion,,Philosophy & Religion
+Dance & Other Performing Arts,10,,Poetry & Drama,0.433,Poetry & Drama,,Poetry & Drama
+History Of Medicine,10,History,Science & Nature,0.215,History,,History
+"True Stories Of Heroism, Endurance & Survival",10,,Biography & Memoir,0.554,Biography & Memoir,,Biography & Memoir
+Literature: History & Criticism,10,History,Classics,0.602,History,,History
+"Track & Field Sports, Athletics",10,,Business & Economics,0.255,,,
+Earth: Natural History General,10,History|Science & Nature,Science & Nature,0.431,History|Science & Nature,,History|Science & Nature
+Children's Foreign Language Books,10,Children's,Children's,0.679,Children's,,Children's
+Behavioural Theory (Behaviourism),10,,Self-help & Psychology,0.338,Self-help & Psychology,,Self-help & Psychology
+Sacred Texts,10,,Fantasy,0.434,Fantasy,,Fantasy
+Management & Management Techniques,10,Business & Economics,Business & Economics,0.319,Business & Economics,,Business & Economics
+Bibles,10,Philosophy & Religion,Fantasy,0.367,Philosophy & Religion,,Philosophy & Religion
+Human Rights,10,,Philosophy & Religion,0.249,,,
+Development Economics,10,Business & Economics,Business & Economics,0.246,Business & Economics,,Business & Economics
+Diplomacy,10,,History,0.189,,,
+Picture & Activity Books,10,,Children's,0.547,Children's,,Children's
+Conservatism & Right-of-centre Democratic Ideologies,10,,Philosophy & Religion,0.229,,,
+Music Reviews & Criticism,10,,Poetry & Drama,0.287,,,
+Mental Health Services,10,Self-help & Psychology,Self-help & Psychology,0.392,Self-help & Psychology,,Self-help & Psychology
+Market Research,9,,Business & Economics,0.352,Business & Economics,,Business & Economics
+"Walking, Hiking, Trekking",9,,Cooking & Lifestyle,0.285,,,
+Climbing & Mountaineering,9,,Cooking & Lifestyle,0.187,,,
+National & Regional Cuisine,9,,Cooking & Lifestyle,0.327,Cooking & Lifestyle,,Cooking & Lifestyle
+Religion & Science,9,Science & Nature|Philosophy & Religion,Philosophy & Religion,0.529,Science & Nature|Philosophy & Religion,,Science & Nature|Philosophy & Religion
+Impact Of Science & Technology On Society,9,Science & Nature,Science & Nature,0.457,Science & Nature,,Science & Nature
+Food & Society,9,Cooking & Lifestyle,Science & Nature,0.329,Cooking & Lifestyle,,Cooking & Lifestyle
+Industrial Relations,9,,Philosophy & Religion,0.206,,,
+Criminal Law & Procedure,9,,Mystery & Detective,0.357,Mystery & Detective,,Mystery & Detective
+Colours,9,,Philosophy & Religion,0.187,,,
+Drugs & Addiction,9,,Self-help & Psychology,0.371,Self-help & Psychology,,Self-help & Psychology
+Business Strategy,9,Business & Economics,Business & Economics,0.336,Business & Economics,,Business & Economics
+Early History: C 500 To C 1450/1500,9,History,Historical Fiction,0.275,History,,History
+History: Specific Events & Topics,9,History,History,0.574,History,,History
+Historical Geography,9,,History,0.463,History,,History
+Child Care & Upbringing,9,,Children's,0.272,,,
+Hindu Sacred Texts,9,,Fantasy,0.347,Fantasy,,Fantasy
+"Environmental Science, Engineering & Technology",9,Science & Nature,Science & Nature,0.421,Science & Nature,,Science & Nature
+"Trees, Wildflowers & Plants",9,,Science & Nature,0.308,Science & Nature,,Science & Nature
+Popular Astronomy & Space,9,Science & Nature,Science & Nature,0.435,Science & Nature,,Science & Nature
+"Media, Information & Communication Industries",9,,Business & Economics,0.277,,,
+Australasian & Pacific History,9,History,History,0.38,History,,History
+Jokes & Riddles,8,Humour,Humour,0.428,Humour,,Humour
+Mysticism,8,,Philosophy & Religion,0.482,Philosophy & Religion,,Philosophy & Religion
+Urban Communities,8,,Science & Nature,0.274,,,
+Characters,8,,Literary Fiction,0.324,Literary Fiction,,Literary Fiction
+Psychological Theory & Schools Of Thought,8,Self-help & Psychology,Self-help & Psychology,0.36,Self-help & Psychology,,Self-help & Psychology
+Anthologies,8,,Graphic Novels & Comics,0.48,Graphic Novels & Comics,,Graphic Novels & Comics
+Paintings,8,,Graphic Novels & Comics,0.374,Graphic Novels & Comics,,Graphic Novels & Comics
+Entrepreneurship,8,Business & Economics,Business & Economics,0.423,Business & Economics,,Business & Economics
+Penology & Punishment,8,,Literary Fiction,0.248,,,
+Other Nonconformist & Evangelical Churches,8,,Philosophy & Religion,0.207,,,
+Reference Works,8,,History,0.202,,,
+Taoism,8,,Philosophy & Religion,0.381,Philosophy & Religion,,Philosophy & Religion
+Social Issues & Processes,8,,Philosophy & Religion,0.248,,,
+Intergenerational Relationships,8,,Young Adult,0.285,,,
+Development Studies,8,,Children's,0.235,,,
+Ships & Shipping,8,,Science Fiction,0.182,,,
+Wildlife: Aquatic Creatures,8,,Science & Nature,0.343,Science & Nature,,Science & Nature
+Space Science,8,Science & Nature,Science Fiction,0.443,Science & Nature,,Science & Nature
+Graphic Novels: History & Criticism,8,History|Graphic Novels & Comics,Graphic Novels & Comics,0.627,History|Graphic Novels & Comics,,History|Graphic Novels & Comics
+Battles & Campaigns,8,,Thriller & Suspense,0.281,,,
+Social Groups,8,,Science & Nature,0.28,,,
+World War 1 Fiction,8,,History,0.51,History,,History
+Bible Stories,8,Philosophy & Religion,Fantasy,0.396,Philosophy & Religion,,Philosophy & Religion
+Contemporary Non-Christian & Para-Christian Cults & Sects,8,Philosophy & Religion,Philosophy & Religion,0.358,Philosophy & Religion,,Philosophy & Religion
+"Autobiography: Science, Technology & Engineering",8,Biography & Memoir|Science & Nature,Biography & Memoir,0.588,Biography & Memoir|Science & Nature,,Biography & Memoir|Science & Nature
+Techniques Of Music / Music Tutorials,8,,Poetry & Drama,0.31,Poetry & Drama,,Poetry & Drama
+Vietnam War,8,History,History,0.254,History,,History
+Economic Systems & Structures,8,Business & Economics,Business & Economics,0.323,Business & Economics,,Business & Economics
+"Ecological Science, The Biosphere",8,Science & Nature,Science & Nature,0.495,Science & Nature,,Science & Nature
+Applied Ecology,8,Science & Nature,Science & Nature,0.425,Science & Nature,,Science & Nature
+Music,8,,Poetry & Drama,0.331,Poetry & Drama,,Poetry & Drama
+Sociology & Anthropology,7,,Philosophy & Religion,0.389,Philosophy & Religion,,Philosophy & Religion
+Shakespeare Studies & Criticism,7,Poetry & Drama,Poetry & Drama,0.509,Poetry & Drama,,Poetry & Drama
+Management Decision Making,7,Business & Economics,Business & Economics,0.268,Business & Economics,,Business & Economics
+Language Teaching & Learning Material & Coursework,7,,Children's,0.372,Children's,,Children's
+Children's Literature Studies: General,7,Children's,Children's,0.522,Children's,,Children's
+Labour Economics,7,Business & Economics,Business & Economics,0.269,Business & Economics,,Business & Economics
+Western Philosophy: C 1600 To C 1900,7,Philosophy & Religion,Philosophy & Religion,0.393,Philosophy & Religion,,Philosophy & Religion
+"Revolutions, Uprisings, Rebellions",7,,History,0.298,,,
+Comic Book & Cartoon Art,7,Graphic Novels & Comics,Graphic Novels & Comics,0.707,Graphic Novels & Comics,,Graphic Novels & Comics
+Unexplained Phenomena / The Paranormal,7,,Horror,0.501,Horror,,Horror
+World War 1 Books,7,History,History,0.555,History,,History
+Special & Elite Forces,7,,Thriller & Suspense,0.205,,,
+Semantics,7,,Science & Nature,0.173,,,
+Gender Studies: Men,7,,Business & Economics,0.24,,,
+Coping With Disability,7,,Self-help & Psychology,0.324,Self-help & Psychology,,Self-help & Psychology
+Koran,7,,Fantasy,0.22,,,
+Art History: c 1900 -,7,History,History,0.347,History,,History
+Astral Projection & Out-of-body Experiences,7,,Horror,0.251,,,
+Reincarnation & Past Lives,7,,Historical Fiction,0.457,Historical Fiction,,Historical Fiction
+Philosophy: Aesthetics,7,Philosophy & Religion,Philosophy & Religion,0.455,Philosophy & Religion,,Philosophy & Religion
+Women's Health,7,,Self-help & Psychology,0.247,,,
+Animated Films,7,,Graphic Novels & Comics,0.351,Graphic Novels & Comics,,Graphic Novels & Comics
+Photographs: Collections,7,,Graphic Novels & Comics,0.325,Graphic Novels & Comics,,Graphic Novels & Comics
+Political Ideologies,7,,Philosophy & Religion,0.308,Philosophy & Religion,,Philosophy & Religion
+Basketball,7,,Business & Economics,0.174,,,
+War & Defence Operations,7,History,Thriller & Suspense,0.271,History,,History
+Cats As Pets,7,,Science & Nature,0.246,,,
+Political Activism,7,,Philosophy & Religion,0.279,,,
+"Migration, Immigration & Emigration",7,,Science Fiction,0.245,,,
+Literary Theory,7,Literary Fiction,Literary Fiction,0.617,Literary Fiction,,Literary Fiction
+Witchcraft & Wicca,7,Cooking & Lifestyle,Fantasy,0.411,Cooking & Lifestyle,,Cooking & Lifestyle
+Fascism & Nazism,7,,Horror,0.225,,,
+Buddhist Life & Practice,6,Philosophy & Religion,Philosophy & Religion,0.516,Philosophy & Religion,,Philosophy & Religion
+Organizational Theory & Behaviour,6,,Self-help & Psychology,0.256,,,
+Medicine,6,,Philosophy & Religion,0.245,,,
+Adoption,6,,Young Adult,0.246,,,
+"Social Forecasting, Future Studies",6,,Science Fiction,0.322,Science Fiction,,Science Fiction
+Art,6,,Graphic Novels & Comics,0.397,Graphic Novels & Comics,,Graphic Novels & Comics
+Natural Disasters,6,,Horror,0.289,,,
+Baby Books,6,Children's,Children's,0.495,Children's,,Children's
+American Football,6,,History,0.146,,,
+Social Impact Of Disasters,6,,Science & Nature,0.228,,,
+Painting & Art Manuals,6,,Graphic Novels & Comics,0.431,Graphic Novels & Comics,,Graphic Novels & Comics
+Encyclopaedias & Reference Works,6,,Classics,0.296,,,
+Information Technology Industries,6,,Science Fiction,0.171,,,
+Christian Mission & Evangelism,6,Philosophy & Religion,Philosophy & Religion,0.412,Philosophy & Religion,,Philosophy & Religion
+Coping With Old Age,6,,Young Adult,0.274,,,
+The Senses,6,,Horror,0.32,Horror,,Horror
+Fiction Books,6,,Literary Fiction,0.6,Literary Fiction,,Literary Fiction
+Art History: Renaissance,6,History,Historical Fiction,0.369,History,,History
+Religion & Politics,6,Philosophy & Religion,Philosophy & Religion,0.549,Philosophy & Religion,,Philosophy & Religion
+Coping With Stress,6,,Self-help & Psychology,0.3,Self-help & Psychology,,Self-help & Psychology
+Christian Social Thought & Activity,6,Philosophy & Religion,Philosophy & Religion,0.49,Philosophy & Religion,,Philosophy & Religion
+Autobiography: Business & Industry,6,Biography & Memoir|Business & Economics,Biography & Memoir,0.625,Biography & Memoir|Business & Economics,,Biography & Memoir|Business & Economics
+Time & Seasons,6,,Historical Fiction,0.289,,,
+Infectious & Contagious Diseases,6,,Mystery & Detective,0.097,,,
+Naval Forces & Warfare,6,,History,0.211,,,
+Buddhist Sacred Texts,6,Philosophy & Religion,Philosophy & Religion,0.402,Philosophy & Religion,,Philosophy & Religion
+History Of Other Lands,6,History,History,0.468,History,,History
+Political Structures: Democracy,6,,Philosophy & Religion,0.237,,,
+Screenwriting Techniques,6,,Graphic Novels & Comics,0.327,Graphic Novels & Comics,,Graphic Novels & Comics
+Military Veterans,6,History,Biography & Memoir,0.139,History,,History
+Beverages,6,,Biography & Memoir,0.155,,,
+"Punk, New Wave & Indie",6,,Young Adult,0.307,Young Adult,,Young Adult
+Non-Fiction,5,,Literary Fiction,0.556,Literary Fiction,,Literary Fiction
+Zoology & Animal Sciences,5,Science & Nature,Science & Nature,0.49,Science & Nature,,Science & Nature
+English Language: Reading & Writing Skills,5,,Children's,0.353,Children's,,Children's
+Study & Learning Skills: General,5,,Self-help & Psychology,0.307,Self-help & Psychology,,Self-help & Psychology
+Jewish Studies,5,,Philosophy & Religion,0.252,,,
+Literary Reference Works,5,Literary Fiction,Literary Fiction,0.544,Literary Fiction,,Literary Fiction
+"Higher & Further Education, Tertiary Education",5,,Business & Economics,0.298,,,
+Classic Science Fiction,5,Science Fiction|Classics,Science Fiction,0.532,Science Fiction|Classics,,Science Fiction|Classics
+Numbers & Counting,5,,Science & Nature,0.163,,,
+Child Abuse,5,,Young Adult,0.28,,,
+The Environment,5,Science & Nature,Science & Nature,0.41,Science & Nature,,Science & Nature
+"Charities, Voluntary Services & Philanthropy",5,,Self-help & Psychology,0.244,,,
+Human Geography,5,,Science & Nature,0.279,,,
+Illness & Addiction: Social Aspects,5,,Self-help & Psychology,0.422,Self-help & Psychology,,Self-help & Psychology
+Diets & Dieting,5,,Cooking & Lifestyle,0.41,Cooking & Lifestyle,,Cooking & Lifestyle
+Finance,5,Business & Economics,Business & Economics,0.453,Business & Economics,,Business & Economics
+Non-Western Philosophy,5,Philosophy & Religion,Philosophy & Religion,0.5,Philosophy & Religion,,Philosophy & Religion
+Veterinary Medicine,5,,Science & Nature,0.299,,,
+Children's Books,5,Children's,Children's,0.666,Children's,,Children's
+Globalization,5,,History,0.226,,,
+Travel & Holiday Guides,5,Cooking & Lifestyle,Cooking & Lifestyle,0.519,Cooking & Lifestyle,,Cooking & Lifestyle
+Citizenship & Social Education,5,,Philosophy & Religion,0.273,,,
+Children's Christian Books,5,Children's|Philosophy & Religion,Children's,0.56,Children's|Philosophy & Religion,,Children's|Philosophy & Religion
+Primary & Middle Schools,5,,Young Adult,0.354,Young Adult,,Young Adult
+Public Speaking Guides,5,,Cooking & Lifestyle,0.311,Cooking & Lifestyle,,Cooking & Lifestyle
+Communication Studies,5,,Science & Nature,0.269,,,
+Sexual Abuse & Harassment,5,,Humour,0.202,,,
+Dreams & Their Interpretation,5,,Philosophy & Religion,0.309,Philosophy & Religion,,Philosophy & Religion
+Wildlife: Birds & Birdwatching,5,,Science & Nature,0.319,Science & Nature,,Science & Nature
+Peace Studies & Conflict Resolution,5,,Philosophy & Religion,0.294,,,
+Botany & Plant Sciences,5,Science & Nature,Science & Nature,0.455,Science & Nature,,Science & Nature
+Popular Beliefs & Controversial Knowledge,5,,Science & Nature,0.369,Science & Nature,,Science & Nature
+Investment & Securities,5,Business & Economics,Business & Economics,0.428,Business & Economics,,Business & Economics
+Sports Psychology,5,Self-help & Psychology,Self-help & Psychology,0.248,Self-help & Psychology,,Self-help & Psychology
+Analytical & Jungian Psychology,5,Self-help & Psychology,Philosophy & Religion,0.363,Self-help & Psychology,,Self-help & Psychology
+Conspiracy Theories,5,,Thriller & Suspense,0.3,Thriller & Suspense,,Thriller & Suspense
+Organized Crime,5,,Mystery & Detective,0.331,Mystery & Detective,,Mystery & Detective
+Technology: General Issues,5,,Science Fiction,0.296,,,
+Science,5,Science & Nature,Science & Nature,0.498,Science & Nature,,Science & Nature
+Animals & Society,5,,Science & Nature,0.499,Science & Nature,,Science & Nature
+Global Warming,5,,Science & Nature,0.306,Science & Nature,,Science & Nature
+Natural History Books for Children,5,Children's,Children's,0.611,Children's,,Children's
+Business Ethics,5,Philosophy & Religion|Business & Economics,Philosophy & Religion,0.344,Philosophy & Religion|Business & Economics,,Philosophy & Religion|Business & Economics
+Air Forces & Warfare,5,,Thriller & Suspense,0.262,,,
+Business Communication & Presentation,5,Business & Economics,Business & Economics,0.235,Business & Economics,,Business & Economics
+Classic Travel Writing,5,Classics|Cooking & Lifestyle,Classics,0.426,Classics|Cooking & Lifestyle,,Classics|Cooking & Lifestyle
+Animal Husbandry,5,,Science & Nature,0.27,,,
+Ancient Religions & Mythologies,5,History|Philosophy & Religion,Fantasy,0.429,History|Philosophy & Religion,,History|Philosophy & Religion
+Classic Horror,4,Horror|Classics,Horror,0.485,Horror|Classics,,Horror|Classics
+Fiction Companions,4,,Literary Fiction,0.494,Literary Fiction,,Literary Fiction
+Plays,4,Poetry & Drama,Poetry & Drama,0.299,Poetry & Drama,,Poetry & Drama
+Occupational & Industrial Psychology,4,Self-help & Psychology,Self-help & Psychology,0.329,Self-help & Psychology,,Self-help & Psychology
+Local History,4,History,History,0.432,History,,History
+Pets,4,,Science & Nature,0.312,Science & Nature,,Science & Nature
+Children's Geography Books,4,Children's,Children's,0.593,Children's,,Children's
+Art & Design,4,,Graphic Novels & Comics,0.442,Graphic Novels & Comics,,Graphic Novels & Comics
+Art Techniques & Principles,4,,Graphic Novels & Comics,0.367,Graphic Novels & Comics,,Graphic Novels & Comics
+Art Theory,4,,Graphic Novels & Comics,0.424,Graphic Novels & Comics,,Graphic Novels & Comics
+Ethnic Minorities & Multicultural Studies,4,,History,0.234,,,
+Industrial / Commercial Art & Design,4,,Graphic Novels & Comics,0.374,Graphic Novels & Comics,,Graphic Novels & Comics
+Exhibition Catalogues & Specific Collections,4,,Graphic Novels & Comics,0.36,Graphic Novels & Comics,,Graphic Novels & Comics
+Forensic Medicine,4,,Mystery & Detective,0.483,Mystery & Detective,,Mystery & Detective
+Marathon & Cross-country Running,4,,Thriller & Suspense,0.138,,,
+Conservation Of Wildlife & Habitats,4,,Science & Nature,0.351,Science & Nature,,Science & Nature
+Relativity Physics,4,Science & Nature,Science Fiction,0.286,Science & Nature,,Science & Nature
+Financial Crises & Disasters,4,Business & Economics,Business & Economics,0.274,Business & Economics,,Business & Economics
+Television Technology,4,,Science Fiction,0.192,,,
+Dictionaries Of Biography (Who's Who),4,Biography & Memoir,Biography & Memoir,0.498,Biography & Memoir,,Biography & Memoir
+Social Research & Statistics,4,,Business & Economics,0.297,,,
+Maritime History,4,History,History,0.259,History,,History
+Library & Information Sciences,4,Science & Nature,Business & Economics,0.377,Science & Nature,,Science & Nature
+Memory Improvement & Thinking Techniques,4,,Self-help & Psychology,0.185,,,
+Service Industries,4,,Business & Economics,0.169,,,
+Management Of Land & Natural Resources,4,Business & Economics,History,0.205,Business & Economics,,Business & Economics
+Islamic Theology,4,Philosophy & Religion,Philosophy & Religion,0.479,Philosophy & Religion,,Philosophy & Religion
+First Words,4,,Science & Nature,0.185,,,
+Legal Profession: General,4,,Mystery & Detective,0.258,,,
+Musicals,4,,Poetry & Drama,0.438,Poetry & Drama,,Poetry & Drama
+"Christian Worship, Rites & Ceremonies",4,Philosophy & Religion,Philosophy & Religion,0.338,Philosophy & Religion,,Philosophy & Religion
+Television Scripts & Screenplays,4,,Poetry & Drama,0.35,Poetry & Drama,,Poetry & Drama
+Psychology Of Ageing,4,Self-help & Psychology,Young Adult,0.256,Self-help & Psychology,,Self-help & Psychology
+Combat Sports & Self-defence,4,,Self-help & Psychology,0.202,,,
+"Scientific Equipment, Experiments & Techniques",4,,Science & Nature,0.214,,,
+Coping With Anxiety & Phobias,4,,Horror,0.364,Horror,,Horror
+Christian Institutions & Organizations,4,Philosophy & Religion,Philosophy & Religion,0.316,Philosophy & Religion,,Philosophy & Religion
+Life Sciences: General Issues,4,Science & Nature,Science & Nature,0.467,Science & Nature,,Science & Nature
+Genocide & Ethnic Cleansing,4,,History,0.307,History,,History
+Press & Journalism,4,,Science & Nature,0.304,Science & Nature,,Science & Nature
+Philosophy: Logic,4,Philosophy & Religion,Philosophy & Religion,0.447,Philosophy & Religion,,Philosophy & Religion
+TV Tie-in Humour,4,Humour,Humour,0.384,Humour,,Humour
+Rural Communities,4,,Cooking & Lifestyle,0.199,,,
+Earth Sciences,4,Science & Nature,Science & Nature,0.487,Science & Nature,,Science & Nature
+Age Groups: Children,4,Children's,Young Adult,0.407,Children's,,Children's
+Teenagers: Advice For Parents,4,Young Adult,Young Adult,0.418,Young Adult,,Young Adult
+Battles,4,,Fantasy,0.256,,,
+International Economics,4,Business & Economics,Business & Economics,0.372,Business & Economics,,Business & Economics
+Extreme Sports,4,,Science & Nature,0.209,,,
+Banking,4,,Business & Economics,0.268,,,
+Urban & Municipal Planning,4,,Horror,0.153,,,
+Cycling,4,,Philosophy & Religion,0.16,,,
+"Calvinist, Reformed & Presbyterian Churches",4,,Philosophy & Religion,0.235,,,
+Transportation Books for Children,4,Children's,Children's,0.52,Children's,,Children's
+Christian Mysticism,4,Philosophy & Religion,Philosophy & Religion,0.507,Philosophy & Religion,,Philosophy & Religion
+Agriculture & Farming,4,,Cooking & Lifestyle,0.348,Cooking & Lifestyle,,Cooking & Lifestyle
+Horses & Ponies,4,,Children's,0.335,Children's,,Children's
+Nationalism,4,,History,0.274,,,
+Legal History,4,History,Historical Fiction,0.353,History,,History
+Religious & Spiritual Leaders,4,Philosophy & Religion,Philosophy & Religion,0.532,Philosophy & Religion,,Philosophy & Religion
+Protestantism & Protestant Churches,4,,Philosophy & Religion,0.231,,,
+Dictionaries & Dictionary Books,4,,Business & Economics,0.387,Business & Economics,,Business & Economics
+Gay Studies (Gay Men),4,,Young Adult,0.246,,,
+Aircraft,4,Cooking & Lifestyle,Science Fiction,0.265,Cooking & Lifestyle,,Cooking & Lifestyle
+Jurisprudence,3,,Philosophy & Religion,0.274,,,
+Expeditions,3,,Science Fiction,0.317,Science Fiction,,Science Fiction
+Advertising,3,,Science & Nature,0.196,,,
+Surgery,3,,Biography & Memoir,0.142,,,
+True Stories for Children,3,Children's,Children's,0.529,Children's,,Children's
+Agriculture & Related Industries,3,,Business & Economics,0.259,,,
+Food & Beverage Technology,3,Cooking & Lifestyle,Cooking & Lifestyle,0.274,Cooking & Lifestyle,,Cooking & Lifestyle
+Palaeontology,3,,History,0.312,History,,History
+Disability: Social Aspects,3,,Self-help & Psychology,0.28,,,
+Activity Books,3,,Self-help & Psychology,0.461,Self-help & Psychology,,Self-help & Psychology
+Meteorology & Climatology,3,,Science & Nature,0.316,Science & Nature,,Science & Nature
+Probability & Statistics,3,,Business & Economics,0.177,,,
+Oceanography (seas),3,,Science & Nature,0.193,,,
+Political Assassinations,3,,Thriller & Suspense,0.35,Thriller & Suspense,,Thriller & Suspense
+"Bible Readings, Selections & Meditations",3,Philosophy & Religion,Poetry & Drama,0.414,Philosophy & Religion,,Philosophy & Religion
+Reportage & Collected Journalism,3,,Biography & Memoir,0.34,Biography & Memoir,,Biography & Memoir
+Intelligence & Reasoning,3,,Philosophy & Religion,0.302,Philosophy & Religion,,Philosophy & Religion
+History Of Mathematics,3,History|Science & Nature,Classics,0.243,History|Science & Nature,,History|Science & Nature
+Sociology: Sexual Relations,3,,Young Adult,0.28,,,
+Religion & Beliefs,3,Philosophy & Religion,Philosophy & Religion,0.627,Philosophy & Religion,,Philosophy & Religion
+"Residential Buildings, Domestic Buildings",3,,Cooking & Lifestyle,0.155,,,
+Opposites,3,,Mystery & Detective,0.149,,,
+Spiritualism,3,Philosophy & Religion,Philosophy & Religion,0.589,Philosophy & Religion,,Philosophy & Religion
+Stationery,3,,Poetry & Drama,0.262,,,
+Prayer,3,,Philosophy & Religion,0.386,Philosophy & Religion,,Philosophy & Religion
+Sleep & Dreams,3,,Philosophy & Religion,0.283,,,
+Environment,3,Science & Nature,Science & Nature,0.351,Science & Nature,,Science & Nature
+"Rocks, Minerals & Fossils",3,,Science & Nature,0.307,Science & Nature,,Science & Nature
+Camping & Woodcraft,3,Cooking & Lifestyle,Cooking & Lifestyle,0.282,Cooking & Lifestyle,,Cooking & Lifestyle
+Colonialism & Imperialism,3,,History,0.357,History,,History
+English Language,3,,Science & Nature,0.259,,,
+Verse,3,,Poetry & Drama,0.448,Poetry & Drama,,Poetry & Drama
+ABC,3,,Science & Nature,0.253,,,
+Astronautics,3,,Science Fiction,0.37,Science Fiction,,Science Fiction
+Geopolitics,3,,History,0.248,,,
+Illustration,3,,Graphic Novels & Comics,0.386,Graphic Novels & Comics,,Graphic Novels & Comics
+Economic Forecasting,3,Business & Economics,Business & Economics,0.329,Business & Economics,,Business & Economics
+Artificial Intelligence,3,,Science Fiction,0.247,,,
+Work,3,,Self-help & Psychology,0.144,,,
+Occult Studies,3,Horror|Philosophy & Religion,Horror,0.392,Horror|Philosophy & Religion,,Horror|Philosophy & Religion
+Programming & Scripting Languages: General,3,,Fantasy,0.2,,,
+Gay & Lesbian Studies,3,,Science & Nature,0.278,,,
+Religious Subjects Depicted In Art,3,Philosophy & Religion,Philosophy & Religion,0.399,Philosophy & Religion,,Philosophy & Religion
+Orthodox & Oriental Churches,3,,Philosophy & Religion,0.239,,,
+Office & Workplace,3,,Business & Economics,0.176,,,
+Heavy Metal Music,3,,Poetry & Drama,0.221,,,
+Social Welfare & Social Services,3,,Self-help & Psychology,0.254,,,
+Individual Photographers,3,,Graphic Novels & Comics,0.207,,,
+Photographic Reportage,3,,Graphic Novels & Comics,0.277,,,
+Digital Lifestyle,3,Cooking & Lifestyle,Biography & Memoir,0.345,Cooking & Lifestyle,,Cooking & Lifestyle
+Internet Guides & Online Services,3,,Cooking & Lifestyle,0.453,Cooking & Lifestyle,,Cooking & Lifestyle
+Schools & Museums,3,,Children's,0.41,Children's,,Children's
+Addiction & Therapy,3,,Self-help & Psychology,0.445,Self-help & Psychology,,Self-help & Psychology
+Christian Prayer,3,Philosophy & Religion,Philosophy & Religion,0.409,Philosophy & Religion,,Philosophy & Religion
+Social Interaction,3,,Science & Nature,0.225,,,
+Comparative Politics,3,,History,0.24,,,
+"Pregnancy, Birth & Baby Care",3,Children's,Philosophy & Religion,0.211,Children's,,Children's
+Political Corruption,3,,Thriller & Suspense,0.156,,,
+Training & Coaching,3,,Cooking & Lifestyle,0.251,,,
+Multicultural Education,3,,Children's,0.244,,,
+I Ching,3,,Science & Nature,0.111,,,
+Confucianism,3,,Philosophy & Religion,0.365,Philosophy & Religion,,Philosophy & Religion
+Nuclear Weapons,3,,Humour,0.172,,,
+Atomic & Molecular Physics,3,Science & Nature,Science & Nature,0.202,Science & Nature,,Science & Nature
+Religious Fundamentalism,3,Philosophy & Religion,Philosophy & Religion,0.419,Philosophy & Religion,,Philosophy & Religion
+Medical Profession,3,,Biography & Memoir,0.247,,,
+Celebrity Biographies & Books,3,Biography & Memoir,Biography & Memoir,0.549,Biography & Memoir,,Biography & Memoir
+Freedom Of Information & Freedom Of Speech,3,,Philosophy & Religion,0.161,,,
+"Musical Scores, Lyrics & Libretti",3,,Poetry & Drama,0.527,Poetry & Drama,,Poetry & Drama
+Macroeconomics,3,Business & Economics,Business & Economics,0.353,Business & Economics,,Business & Economics
+Aviation Skills / Piloting,3,,Cooking & Lifestyle,0.247,,,
+"Football (Soccer, Association Football)",3,,Science & Nature,0.209,,,
+Publishing Industry,3,,Graphic Novels & Comics,0.331,Graphic Novels & Comics,,Graphic Novels & Comics
+Baseball,3,,Science & Nature,0.238,,,
+Hunting Or Shooting Animals & Game,3,,Children's,0.391,Children's,,Children's
+Geology & The Lithosphere,3,,Science & Nature,0.248,,,
+Sex Education,3,,Young Adult,0.248,,,
+Hispanic & Latino Studies,3,,Business & Economics,0.224,,,
+"Individual Film Directors, Film-makers",3,,Poetry & Drama,0.252,,,
+Alcoholic Beverages,3,,Business & Economics,0.16,,,
+Ethical & Social Aspects Of Computing,3,,Philosophy & Religion,0.302,Philosophy & Religion,,Philosophy & Religion
+Religious Institutions & Organizations,3,Philosophy & Religion,Philosophy & Religion,0.38,Philosophy & Religion,,Philosophy & Religion
+Sustainability,3,,Philosophy & Religion,0.285,,,
+Students & Student Organisations,3,,Business & Economics,0.235,,,
+Gardening Books,3,Cooking & Lifestyle,Cooking & Lifestyle,0.494,Cooking & Lifestyle,,Cooking & Lifestyle
+Sport & Leisure Industries,3,,Business & Economics,0.29,,,
+Revolutionary Groups & Movements,3,,Biography & Memoir,0.195,,,
+Medical Research,2,,Mystery & Detective,0.199,,,
+Cellular Biology (cytology),2,Science & Nature,Philosophy & Religion,0.167,Science & Nature,,Science & Nature
+Physical Anthropology & Ethnography,2,,Science & Nature,0.347,Science & Nature,,Science & Nature
+Schools,2,,Young Adult,0.308,Young Adult,,Young Adult
+Non-governmental Organizations (NGOs),2,,History,0.179,,,
+Study & Revision Guides,2,,Cooking & Lifestyle,0.365,Cooking & Lifestyle,,Cooking & Lifestyle
+Style Guides,2,,Cooking & Lifestyle,0.45,Cooking & Lifestyle,,Cooking & Lifestyle
+Teaching Of Students With English As A Second Language (TESOL),2,,Children's,0.292,,,
+Inventions & Inventors,2,,Science & Nature,0.292,,,
+Olympic Games,2,,History,0.213,,,
+Food Manufacturing & Related Industries,2,Cooking & Lifestyle,Cooking & Lifestyle,0.341,Cooking & Lifestyle,,Cooking & Lifestyle
+Anatomy,2,,Science & Nature,0.261,,,
+Sentencing & Punishment,2,,Literary Fiction,0.187,,,
+Social Theory,2,,Literary Fiction,0.278,,,
+Dinosaurs & The Prehistoric World,2,,Fantasy,0.285,,,
+General Reference,2,,History,0.248,,,
+Human Rights & Civil Liberties Law,2,,Philosophy & Religion,0.249,,,
+Time Management,2,Business & Economics,Science Fiction,0.317,Business & Economics,,Business & Economics
+Psychological Testing & Measurement,2,Self-help & Psychology,Self-help & Psychology,0.365,Self-help & Psychology,,Self-help & Psychology
+Religious Studies,2,Philosophy & Religion,Philosophy & Religion,0.467,Philosophy & Religion,,Philosophy & Religion
+Regiments,2,,Thriller & Suspense,0.138,,,
+Pregnancy,2,,Science & Nature,0.118,,,
+Safety In The Home,2,,Horror,0.199,,,
+Birds (ornithology),2,,Science & Nature,0.323,Science & Nature,,Science & Nature
+History: Earliest Times To Present Day,2,History,Historical Fiction,0.451,History,,History
+Pressure Groups & Lobbying,2,,Thriller & Suspense,0.168,,,
+Bullying & Anti-bullying Strategies,2,,Humour,0.224,,,
+Medical Ethics & Professional Conduct,2,Philosophy & Religion,Philosophy & Religion,0.307,Philosophy & Religion,,Philosophy & Religion
+Paediatric Medicine,2,,Children's,0.193,,,
+Places & Peoples: Pictorial Works,2,,Poetry & Drama,0.355,Poetry & Drama,,Poetry & Drama
+Business Negotiation,2,Business & Economics,Business & Economics,0.191,Business & Economics,,Business & Economics
+Demonstrations & Protest Movements,2,,Thriller & Suspense,0.124,,,
+"National Liberation & Independence, Post-colonialism",2,,History,0.29,,,
+Wave Mechanics (vibration & Acoustics),2,,Philosophy & Religion,0.152,,,
+Bible Studies: For Individual Or Small Group Study,2,Philosophy & Religion,Philosophy & Religion,0.278,Philosophy & Religion,,Philosophy & Religion
+Witches & Ghosts (Children's/YA),2,Horror|Children's,Horror,0.607,Horror|Children's,,Horror|Children's
+"Antiques & Collectables: Books, Manuscripts, Ephemera & Printed Matter",2,,Classics,0.379,Classics,,Classics
+Biodiversity,2,,Science & Nature,0.339,Science & Nature,,Science & Nature
+Photography,2,,Graphic Novels & Comics,0.228,,,
+Tips & Advice,2,,Cooking & Lifestyle,0.326,Cooking & Lifestyle,,Cooking & Lifestyle
+Mathematical Logic,2,Science & Nature,Mystery & Detective,0.167,Science & Nature,,Science & Nature
+Chemistry Books,2,Science & Nature,Self-help & Psychology,0.33,Science & Nature,,Science & Nature
+Inorganic Chemistry,2,Science & Nature,Science & Nature,0.199,Science & Nature,,Science & Nature
+Physical Geography & Topography,2,,Science & Nature,0.224,,,
+"Shamanism, Paganism & Druidry",2,,Fantasy,0.347,Fantasy,,Fantasy
+Public Administration,2,,Business & Economics,0.145,,,
+"Genealogy, Heraldry, Names & Honours",2,,History,0.282,,,
+Lesbian Studies,2,,Young Adult,0.286,,,
+Cybernetics & Systems Theory,2,,Science Fiction,0.202,,,
+Technical Design,2,,Graphic Novels & Comics,0.224,,,
+Personal Finance,2,Business & Economics,Business & Economics,0.414,Business & Economics,,Business & Economics
+Coping With Eating Disorders,2,,Self-help & Psychology,0.373,Self-help & Psychology,,Self-help & Psychology
+"Cosmetics, Hair & Beauty",2,,Philosophy & Religion,0.262,,,
+Armed Conflict,2,,Thriller & Suspense,0.242,,,
+Dance,2,,Poetry & Drama,0.208,,,
+New Testaments,2,,Classics,0.32,Classics,,Classics
+Electronic & Video Art,2,,Graphic Novels & Comics,0.336,Graphic Novels & Comics,,Graphic Novels & Comics
+Photographs: Portraits,2,,Biography & Memoir,0.307,Biography & Memoir,,Biography & Memoir
+Religious Counselling,2,Philosophy & Religion,Philosophy & Religion,0.418,Philosophy & Religion,,Philosophy & Religion
+Society & Social Sciences,2,Science & Nature,Science & Nature,0.436,Science & Nature,,Science & Nature
+Sales & Marketing,2,Business & Economics,Business & Economics,0.379,Business & Economics,,Business & Economics
+School,2,,Young Adult,0.316,Young Adult,,Young Adult
+Hoaxes & Deceptions,2,,Biography & Memoir,0.342,Biography & Memoir,,Biography & Memoir
+Geography Books,2,,History,0.509,History,,History
+Socialism & Left-of-centre Democratic Ideologies,2,,Philosophy & Religion,0.25,,,
+Corporate Finance,2,Business & Economics,Business & Economics,0.445,Business & Economics,,Business & Economics
+"Spirit Guides, Angels & Channelling",2,,Horror,0.32,Horror,,Horror
+Cartoons,2,Graphic Novels & Comics,Graphic Novels & Comics,0.388,Graphic Novels & Comics,,Graphic Novels & Comics
+Music Industry,2,,Poetry & Drama,0.302,Poetry & Drama,,Poetry & Drama
+Fortune-telling & Divination,2,,Philosophy & Religion,0.255,,,
+Fiction: Special Features,2,,Literary Fiction,0.603,Literary Fiction,,Literary Fiction
+Zoology: Mammals,2,,Science & Nature,0.349,Science & Nature,,Science & Nature
+Military Life & Institutions,2,History,History,0.244,History,,History
+Philosophy Of Language,2,Philosophy & Religion,Philosophy & Religion,0.355,Philosophy & Religion,,Philosophy & Religion
+Church History,2,History,Historical Fiction,0.283,History,,History
+Tribal Religions,2,Philosophy & Religion,Philosophy & Religion,0.378,Philosophy & Religion,,Philosophy & Religion
+Adult Literacy Guides & Handbooks,2,,Young Adult,0.475,Young Adult,,Young Adult
+Writing Skills,2,,Science & Nature,0.385,Science & Nature,,Science & Nature
+Philosophy Of Mathematics,2,Science & Nature|Philosophy & Religion,Philosophy & Religion,0.386,Science & Nature|Philosophy & Religion,,Science & Nature|Philosophy & Religion
+Multidiscipline Sports,2,,Science & Nature,0.252,,,
+Microeconomics,2,Business & Economics,Business & Economics,0.328,Business & Economics,,Business & Economics
+Prints,2,,Graphic Novels & Comics,0.297,,,
+Industry & Industrial Studies,2,,Business & Economics,0.361,Business & Economics,,Business & Economics
+Police & Security Services,2,,Mystery & Detective,0.326,Mystery & Detective,,Mystery & Detective
+American War Of Independence,2,History,History,0.252,History,,History
+Drama,2,Poetry & Drama,Literary Fiction,0.295,Poetry & Drama,,Poetry & Drama
+Fashion & Style Guides,2,,Cooking & Lifestyle,0.473,Cooking & Lifestyle,,Cooking & Lifestyle
+Translation & Interpretation,2,,Philosophy & Religion,0.255,,,
+Crystals & Colour-healing,2,,Fantasy,0.139,,,
+Humanistic Psychology,2,Self-help & Psychology,Philosophy & Religion,0.444,Self-help & Psychology,,Self-help & Psychology
+Microbiology (non-medical),2,Science & Nature,Science & Nature,0.207,Science & Nature,,Science & Nature
+Literary Companions,2,Literary Fiction,Literary Fiction,0.554,Literary Fiction,,Literary Fiction
+PSHE,2,,Humour,0.169,,,
+Ethical Issues: Pornography & Obscenity,2,,Philosophy & Religion,0.249,,,
+Population & Demography,2,,History,0.144,,,
+Trains & Railways,2,,Poetry & Drama,0.156,,,
+Criminal Or Forensic Psychology,2,Self-help & Psychology,Mystery & Detective,0.56,Self-help & Psychology,,Self-help & Psychology
+Computer Security,2,,Mystery & Detective,0.227,,,
+Nature & Existence Of God,2,Science & Nature,Philosophy & Religion,0.412,Science & Nature,,Science & Nature
+Mathematical Physics,2,Science & Nature,Science & Nature,0.258,Science & Nature,,Science & Nature
+Classical Mechanics,2,,Science Fiction,0.229,,,
+International Business,2,Business & Economics,Business & Economics,0.297,Business & Economics,,Business & Economics
+Sustainable Agriculture,2,,Cooking & Lifestyle,0.239,,,
+Dictionaries Of Quotations,2,,Poetry & Drama,0.306,Poetry & Drama,,Poetry & Drama
+Separation & Divorce,2,,Philosophy & Religion,0.155,,,
+"Birth Control, Contraception, Family Planning",2,,Self-help & Psychology,0.225,,,
+Organization & Management Of Education,2,Business & Economics,Business & Economics,0.286,Business & Economics,,Business & Economics
+Political Oppression & Persecution,2,,Philosophy & Religion,0.229,,,
+Literacy,2,,Science & Nature,0.348,Science & Nature,,Science & Nature
+Historical & Comparative Linguistics,2,,Classics,0.301,Classics,,Classics
+Road Vehicle Manufacturing Industry,2,,Science Fiction,0.131,,,
+Outdoor Survival Skills,2,,Children's,0.271,,,
+Napoleonic,2,,Biography & Memoir,0.178,,,
+Mysteries & The Supernatural (Children's/YA),2,Horror|Children's,Horror,0.55,Horror|Children's,,Horror|Children's
+Age Groups: The Elderly,2,,Young Adult,0.214,,,
+Religious Communities & Monasticism,2,Philosophy & Religion,Philosophy & Religion,0.422,Philosophy & Religion,,Philosophy & Religion
+Spirits & Cocktails,2,,Horror,0.261,,,
+Architecture,2,,Graphic Novels & Comics,0.202,,,
+Graphic Design,2,,Graphic Novels & Comics,0.462,Graphic Novels & Comics,,Graphic Novels & Comics
+Scrapbook Keeping,2,,Cooking & Lifestyle,0.291,,,
+Pharmacology,2,,Business & Economics,0.175,,,
+Oriental Martial Arts,2,,Graphic Novels & Comics,0.232,,,
+Biology,2,Science & Nature,Science & Nature,0.444,Science & Nature,,Science & Nature
+"Magic, Spells & Alchemy",2,,Fantasy,0.394,Fantasy,,Fantasy
+DNA & Genome,2,,Science & Nature,0.249,,,
+Family Break-Up,2,,Romance,0.209,,,
+Primates,2,,Science & Nature,0.208,,,
+Prisoners Of War,2,History,Thriller & Suspense,0.351,History,,History
+War Crimes,2,History,Thriller & Suspense,0.293,History,,History
+Economic Statistics,1,Business & Economics,Business & Economics,0.358,Business & Economics,,Business & Economics
+Hindu Life & Practice,1,,Philosophy & Religion,0.48,Philosophy & Religion,,Philosophy & Religion
+Agronomy & Crop Production,1,,Cooking & Lifestyle,0.205,,,
+General Study Books,1,,Business & Economics,0.514,Business & Economics,,Business & Economics
+Styles: Conceptual Art,1,,Graphic Novels & Comics,0.436,Graphic Novels & Comics,,Graphic Novels & Comics
+Agnosticism & Atheism,1,,Philosophy & Religion,0.373,Philosophy & Religion,,Philosophy & Religion
+Boating,1,,Science & Nature,0.24,,,
+"Creative Therapy (eg Art, Music, Drama)",1,Poetry & Drama,Literary Fiction,0.437,Poetry & Drama,,Poetry & Drama
+Graffiti & Street Art,1,,Graphic Novels & Comics,0.322,Graphic Novels & Comics,,Graphic Novels & Comics
+Homelessness,1,,Self-help & Psychology,0.261,,,
+Industrial Relations & Safety,1,,Philosophy & Religion,0.173,,,
+Game Theory,1,,Mystery & Detective,0.206,,,
+Animal Behaviour,1,,Children's,0.37,Children's,,Children's
+Non-graphic Art Forms,1,,Graphic Novels & Comics,0.449,Graphic Novels & Comics,,Graphic Novels & Comics
+Organic Gardening,1,Cooking & Lifestyle,Cooking & Lifestyle,0.271,Cooking & Lifestyle,,Cooking & Lifestyle
+Christian Hymnals,1,Philosophy & Religion,Poetry & Drama,0.432,Philosophy & Religion,,Philosophy & Religion
+Occupational / Industrial Health & Safety,1,,Self-help & Psychology,0.215,,,
+Medical Toxicology,1,,Science & Nature,0.164,,,
+Zoroastrianism,1,,Philosophy & Religion,0.295,,,
+Tennis,1,,Science & Nature,0.172,,,
+Oncology,1,,Philosophy & Religion,0.246,,,
+Teaching Staff,1,,Children's,0.277,,,
+Prayers & Liturgical Material,1,,Poetry & Drama,0.444,Poetry & Drama,,Poetry & Drama
+Mathematics,1,Science & Nature,Science & Nature,0.295,Science & Nature,,Science & Nature
+Geometry,1,,Philosophy & Religion,0.149,,,
+Graphical & Digital Media Applications,1,,Graphic Novels & Comics,0.321,Graphic Novels & Comics,,Graphic Novels & Comics
+Property & Real Estate,1,,Business & Economics,0.275,,,
+Islamic Books for Kids,1,Philosophy & Religion,Children's,0.557,Philosophy & Religion,,Philosophy & Religion
+"Islamic Worship, Rites & Ceremonies",1,Philosophy & Religion,Philosophy & Religion,0.311,Philosophy & Religion,,Philosophy & Religion
+"Forests, Rainforests",1,,Science & Nature,0.328,Science & Nature,,Science & Nature
+Weather,1,,Thriller & Suspense,0.156,,,
+Performance Art,1,,Poetry & Drama,0.359,Poetry & Drama,,Poetry & Drama
+Lettering & Calligraphy,1,,Graphic Novels & Comics,0.414,Graphic Novels & Comics,,Graphic Novels & Comics
+Archaeology By Period / Region,1,,Historical Fiction,0.406,Historical Fiction,,Historical Fiction
+Sculpture,1,,Literary Fiction,0.28,,,
+Carvings: Artworks,1,,Graphic Novels & Comics,0.323,Graphic Novels & Comics,,Graphic Novels & Comics
+Judaism: Life & Practice,1,,Philosophy & Religion,0.475,Philosophy & Religion,,Philosophy & Religion
+Judaism: Mysticism,1,,Philosophy & Religion,0.455,Philosophy & Religion,,Philosophy & Religion
+Physiology,1,,Science & Nature,0.272,,,
+"Arid Zones, Deserts",1,,Cooking & Lifestyle,0.184,,,
+Cookery Dishes & Courses,1,Cooking & Lifestyle,Cooking & Lifestyle,0.493,Cooking & Lifestyle,,Cooking & Lifestyle
+Constitutional & Administrative Law,1,,Humour,0.15,,,
+Social Impact Of Environmental Issues,1,Science & Nature,Science & Nature,0.375,Science & Nature,,Science & Nature
+Genealogy,1,,History,0.347,History,,History
+Antiques & Collectables,1,,Classics,0.282,,,
+Size & Shape,1,,Cooking & Lifestyle,0.132,,,
+Chaos Theory,1,,Horror,0.245,,,
+Legal Ethics & Professional Conduct,1,Philosophy & Religion,Philosophy & Religion,0.304,Philosophy & Religion,,Philosophy & Religion
+Courts & Procedure,1,,Poetry & Drama,0.196,,,
+Sea Life & The Seashore,1,,Biography & Memoir,0.26,,,
+"Chakras, Auras & Spiritual Energy",1,Philosophy & Religion,Philosophy & Religion,0.311,Philosophy & Religion,,Philosophy & Religion
+Galaxies & Stars,1,,Science Fiction,0.26,,,
+Psychological Methodology,1,Self-help & Psychology,Self-help & Psychology,0.365,Self-help & Psychology,,Self-help & Psychology
+E-commerce: Business Aspects,1,Business & Economics,Business & Economics,0.229,Business & Economics,,Business & Economics
+"Animals & Nature In Art (still Life, Landscapes & Seascapes, Etc)",1,Science & Nature,Science & Nature,0.519,Science & Nature,,Science & Nature
+HIV / AIDS: Social Aspects,1,,Philosophy & Religion,0.276,,,
+Public Health & Preventive Medicine,1,,Self-help & Psychology,0.194,,,
+Health Systems & Services,1,,Cooking & Lifestyle,0.264,,,
+HIV / AIDS,1,,Philosophy & Religion,0.196,,,
+Professional Interior Design,1,,Cooking & Lifestyle,0.283,,,
+"Interior Design, Decor & Style Guides",1,,Cooking & Lifestyle,0.498,Cooking & Lifestyle,,Cooking & Lifestyle
+Religious Buildings,1,Philosophy & Religion,Philosophy & Religion,0.351,Philosophy & Religion,,Philosophy & Religion
+History Of Architecture,1,History,History,0.252,History,,History
+Fashion & Society,1,,Literary Fiction,0.393,Literary Fiction,,Literary Fiction
+Oils,1,,Cooking & Lifestyle,0.194,,,
+Dictionaries & Languages,1,,Children's,0.24,,,
+Teaching Of A Specific Subject,1,,Children's,0.3,,,
+Computing: General,1,,Science & Nature,0.157,,,
+Financial Services Industry,1,Business & Economics,Business & Economics,0.346,Business & Economics,,Business & Economics
+Educational Strategies & Policy,1,,Children's,0.285,,,
+Pre-school & Kindergarten,1,,Children's,0.379,Children's,,Children's
+Archaeology,1,,History,0.311,History,,History
+Pharmaceutical Industries,1,,Business & Economics,0.189,,,
+Environmental Economics,1,Science & Nature|Business & Economics,Science & Nature,0.337,Science & Nature|Business & Economics,,Science & Nature|Business & Economics
+Russian Revolution,1,,Historical Fiction,0.179,,,
+Land Forces & Warfare,1,,History,0.292,,,
+Political Parties,1,,Science & Nature,0.18,,,
+Kids’ Jewish Books,1,,Children's,0.507,Children's,,Children's
+Sciences,1,Science & Nature,Science & Nature,0.53,Science & Nature,,Science & Nature
+Farm Animals,1,,Children's,0.299,,,
+Experimental Psychology,1,Self-help & Psychology,Self-help & Psychology,0.267,Self-help & Psychology,,Self-help & Psychology
+Theatre Direction & Production,1,Poetry & Drama,Poetry & Drama,0.542,Poetry & Drama,,Poetry & Drama
+Styles: Surrealism & Dada,1,,Literary Fiction,0.36,Literary Fiction,,Literary Fiction
+Housing Law,1,,Horror,0.126,,,
+Flood Control,1,,Horror,0.182,,,
+Food & Cookery,1,Cooking & Lifestyle,Cooking & Lifestyle,0.514,Cooking & Lifestyle,,Cooking & Lifestyle
+Digital TV & Media Centres: Consumer/user Guides,1,,Cooking & Lifestyle,0.262,,,
+Theory Of Music & Musicology,1,,Poetry & Drama,0.343,Poetry & Drama,,Poetry & Drama
+Terrorist Attack,1,,Thriller & Suspense,0.338,Thriller & Suspense,,Thriller & Suspense
+Occupational Medicine,1,,Self-help & Psychology,0.214,,,
+Art Treatments & Subjects,1,,Literary Fiction,0.39,Literary Fiction,,Literary Fiction
+Marine Engineering,1,,Science Fiction,0.182,,,
+Nuclear Power & Engineering,1,,Business & Economics,0.146,,,
+"Ordnance, Weapons Technology",1,,Science Fiction,0.155,,,
+Engineering: General,1,,Science & Nature,0.228,,,
+Systems Of Law,1,,Mystery & Detective,0.209,,,
+"Religious Intolerance, Persecution & Conflict",1,Philosophy & Religion,Philosophy & Religion,0.329,Philosophy & Religion,,Philosophy & Religion
+Practical Interests,1,,Science & Nature,0.313,Science & Nature,,Science & Nature
+Risk Assessment,1,,Thriller & Suspense,0.212,,,
+Refugees & Political Asylum,1,,Horror,0.162,,,
+Domestic Trade,1,,History,0.186,,,
+Organic Farming,1,,Cooking & Lifestyle,0.289,,,
+Flower Arranging & Floral Crafts,1,Cooking & Lifestyle,Cooking & Lifestyle,0.242,Cooking & Lifestyle,,Cooking & Lifestyle
+Gardening: Flowers,1,Cooking & Lifestyle,Science & Nature,0.299,Cooking & Lifestyle,,Cooking & Lifestyle
+Behavioural Economics,1,Business & Economics,Self-help & Psychology,0.272,Business & Economics,,Business & Economics
+Science & Geography,1,Science & Nature,Science & Nature,0.53,Science & Nature,,Science & Nature
+Quick & Easy Cooking,1,Cooking & Lifestyle,Cooking & Lifestyle,0.401,Cooking & Lifestyle,,Cooking & Lifestyle
+Pasta Dishes,1,,Cooking & Lifestyle,0.298,,,
+"Civil Procedure, Litigation & Dispute Resolution",1,,Mystery & Detective,0.171,,,
+Environment Law,1,Science & Nature,Science & Nature,0.253,Science & Nature,,Science & Nature
+Law For The Lay Person,1,,Biography & Memoir,0.248,,,
+Music: Styles & Genres,1,,Poetry & Drama,0.403,Poetry & Drama,,Poetry & Drama
+Folk & Traditional Music,1,,Poetry & Drama,0.362,Poetry & Drama,,Poetry & Drama
+Materials Science,1,Science & Nature,Science & Nature,0.307,Science & Nature,,Science & Nature
+Nuclear Structure Physics,1,Science & Nature,Science & Nature,0.086,Science & Nature,,Science & Nature
+Applied Mathematics,1,Science & Nature,Science & Nature,0.212,Science & Nature,,Science & Nature
+Military Intelligence,1,History,Thriller & Suspense,0.338,History,,History
+"Annuals, Anthologies & Poetry",1,Poetry & Drama,Poetry & Drama,0.452,Poetry & Drama,,Poetry & Drama
+Children's Stationery,1,Children's,Children's,0.398,Children's,,Children's
+Counselling & Advice Services,1,,Self-help & Psychology,0.28,,,
+Biochemistry,1,Science & Nature,Science & Nature,0.299,Science & Nature,,Science & Nature
+Styles: Impressionism & Post-Impressionism,1,,Literary Fiction,0.318,Literary Fiction,,Literary Fiction
+Stocks & Shares,1,,Business & Economics,0.353,Business & Economics,,Business & Economics
+Fire Protection & Safety,1,,Thriller & Suspense,0.164,,,
+Criminal Procedure,1,,Mystery & Detective,0.394,Mystery & Detective,,Mystery & Detective
+"Puppetry, Miniature & Toy Theatre",1,Poetry & Drama,Children's,0.338,Poetry & Drama,,Poetry & Drama
+Bridges,1,,Science Fiction,0.165,,,
+"Deconstructionism, Structuralism, Post-structuralism",1,,Philosophy & Religion,0.227,,,
+Network Security,1,,Thriller & Suspense,0.213,,,
+"Yearbooks, Annuals, Almanacs",1,,Cooking & Lifestyle,0.358,Cooking & Lifestyle,,Cooking & Lifestyle
+Western Classical Music,1,,Poetry & Drama,0.382,Poetry & Drama,,Poetry & Drama
+Regional Government,1,,Horror,0.14,,,
+Jazz,1,,Science Fiction,0.131,,,
+Blues,1,,Horror,0.166,,,
+Historiography,1,,Historical Fiction,0.469,Historical Fiction,,Historical Fiction
+Historical Jesus,1,,Historical Fiction,0.438,Historical Fiction,,Historical Fiction
+"Cartography, Map-making & Projections",1,,Cooking & Lifestyle,0.198,,,
+"Surfing, Windsurfing, Water Skiing",1,,Children's,0.211,,,
+Archery,1,,Poetry & Drama,0.171,,,
+"Riding, Showjumping & Horsemanship",1,,Poetry & Drama,0.2,,,
+"Defence Strategy, Planning & Research",1,,Thriller & Suspense,0.306,Thriller & Suspense,,Thriller & Suspense
+Christian Instruction,1,Philosophy & Religion,Philosophy & Religion,0.346,Philosophy & Religion,,Philosophy & Religion
+Faith (religious) Schools,1,Philosophy & Religion,Philosophy & Religion,0.414,Philosophy & Religion,,Philosophy & Religion
+Universities,1,,Business & Economics,0.225,,,
+Active Outdoor Pursuits,1,,Self-help & Psychology,0.227,,,
+Occupational Therapy,1,,Self-help & Psychology,0.326,Self-help & Psychology,,Self-help & Psychology
+Perception,1,,Literary Fiction,0.229,,,
+Industrialisation & Industrial History,1,History,History,0.295,History,,History
+Jurisprudence & Philosophy Of Law,1,Philosophy & Religion,Philosophy & Religion,0.393,Philosophy & Religion,,Philosophy & Religion
+Advertising & Society,1,,Science & Nature,0.253,,,
+Military Tactics,1,History,Thriller & Suspense,0.327,History,,History
+Equestrian & Animal Sports,1,,Children's,0.324,Children's,,Children's
+Horse Racing,1,,Science & Nature,0.213,,,
+Law,1,,Humour,0.232,,,
+Government Powers,1,,Thriller & Suspense,0.156,,,
+DIY: House Maintenance Manuals,1,,Cooking & Lifestyle,0.385,Cooking & Lifestyle,,Cooking & Lifestyle
+Household Hints,1,,Cooking & Lifestyle,0.281,,,
+Mining Technology & Engineering,1,,Science Fiction,0.18,,,
+Trauma & Shock,1,,Horror,0.224,,,
+"Social Services & Welfare, Criminology",1,,Mystery & Detective,0.234,,,
+Fitness & Diet,1,Cooking & Lifestyle,Cooking & Lifestyle,0.383,Cooking & Lifestyle,,Cooking & Lifestyle
+Oriental Art,1,,Graphic Novels & Comics,0.402,Graphic Novels & Comics,,Graphic Novels & Comics
+Cookery By Ingredient,1,Cooking & Lifestyle,Cooking & Lifestyle,0.385,Cooking & Lifestyle,,Cooking & Lifestyle
+"Parties, Etiquette & Entertaining",1,,Humour,0.324,Humour,,Humour
+Opera,1,,Poetry & Drama,0.258,,,
+Wines,1,Cooking & Lifestyle,Cooking & Lifestyle,0.183,Cooking & Lifestyle,,Cooking & Lifestyle
+Neurosurgery,1,,Horror,0.154,,,
+Conscious & Unconscious,1,,Philosophy & Religion,0.219,,,
+Electronic Music,1,,Poetry & Drama,0.22,,,
+"Bibliographies, Catalogues, Discographies",1,,Graphic Novels & Comics,0.361,Graphic Novels & Comics,,Graphic Novels & Comics
+Circus,1,,Fantasy,0.234,,,
+Motorcycles,1,,Science Fiction,0.163,,,
+Christian Leaders & Leadership,1,Philosophy & Religion|Business & Economics,Philosophy & Religion,0.301,Philosophy & Religion|Business & Economics,,Philosophy & Religion|Business & Economics
+Business Applications,1,Business & Economics,Business & Economics,0.31,Business & Economics,,Business & Economics
+Web Graphics & Design,1,,Graphic Novels & Comics,0.377,Graphic Novels & Comics,,Graphic Novels & Comics
+Microsoft Windows,1,,Science & Nature,0.118,,,
+Psychology Of Gender,1,Self-help & Psychology,Literary Fiction,0.276,Self-help & Psychology,,Self-help & Psychology
+Gulf War,1,History,History,0.292,History,,History
+Quantum Physics (quantum Mechanics & Quantum Field Theory),1,Science & Nature,Science & Nature,0.275,Science & Nature,,Science & Nature
+Cricket,1,,Humour,0.215,,,
+Self-sufficiency,1,,Self-help & Psychology,0.358,Self-help & Psychology,,Self-help & Psychology
+Computer Hardware,1,,Science Fiction,0.176,,,
+Celtic Religion & Mythology,1,Philosophy & Religion,Fantasy,0.343,Philosophy & Religion,,Philosophy & Religion
+True Stories: Discovery / Historical / Scientific,1,,Science & Nature,0.516,Science & Nature,,Science & Nature
+Teaching Of Students With Specific Learning Difficulties / Needs,1,,Children's,0.353,Children's,,Children's
+Christian & Quasi-Christian Cults & Sects,1,Philosophy & Religion,Philosophy & Religion,0.307,Philosophy & Religion,,Philosophy & Religion
+Rap & Hip-Hop,1,,Poetry & Drama,0.209,,,
+Adventure Holidays,1,,Fantasy,0.374,Fantasy,,Fantasy
+Limnology (freshwater),1,,Science & Nature,0.204,,,
+Water Supply & Treatment,1,,Poetry & Drama,0.086,,,
+Art History: c 1800 to c 1900,1,History,Classics,0.343,History,,History
+Energy Industries & Utilities,1,,Business & Economics,0.261,,,
+Petroleum Technology,1,,Science Fiction,0.144,,,
+"Birds, Including Cage Birds, As Pets",1,,Children's,0.272,,,
+"Library, Archive & Information Management",1,Business & Economics,History,0.223,Business & Economics,,Business & Economics
+"Storage, Maintenance & Preservation Of Collections",1,,Historical Fiction,0.194,,,
+Sailing,1,,Science & Nature,0.226,,,
+Weapons & Equipment,1,,Cooking & Lifestyle,0.172,,,
+Personnel & Human Resources Management,1,Business & Economics,Business & Economics,0.238,Business & Economics,,Business & Economics
+Sociology: Work & Labour,1,,Philosophy & Religion,0.254,,,
+Employment & Unemployment,1,,Mystery & Detective,0.187,,,
+Art Resoration,1,,Graphic Novels & Comics,0.305,Graphic Novels & Comics,,Graphic Novels & Comics
+"Electricity, Electromagnetism & Magnetism",1,,Science & Nature,0.157,,,
+Wrestling,1,,Science & Nature,0.21,,,
+Fashion & Textiles: Design,1,,Graphic Novels & Comics,0.239,,,
+Sub-aqua Swimming,1,,Science & Nature,0.189,,,
+Hobby and Gaming Books,1,,Fantasy,0.455,Fantasy,,Fantasy
+Crafts & Hobbies,1,Cooking & Lifestyle,Cooking & Lifestyle,0.454,Cooking & Lifestyle,,Cooking & Lifestyle
+Theory Of Architecture,1,,Graphic Novels & Comics,0.191,,,
+Graphic Novel & Manga Artwork,1,Graphic Novels & Comics,Graphic Novels & Comics,0.776,Graphic Novels & Comics,,Graphic Novels & Comics
+Ethical Issues: Prostitution & Sex Industry,1,,Philosophy & Religion,0.215,,,
+Ceramics & Glass Technology,1,,Science Fiction,0.144,,,
+Drugs Trade / Drug Trafficking,1,,Thriller & Suspense,0.139,,,
+Trade Agreements,1,,Business & Economics,0.141,,,
+Acting Techniques,1,,Poetry & Drama,0.316,Poetry & Drama,,Poetry & Drama
+Puzzle Books,1,,Mystery & Detective,0.438,Mystery & Detective,,Mystery & Detective
+Mathematics & Numeracy,1,Science & Nature,Philosophy & Religion,0.103,Science & Nature,,Science & Nature
+Political Structures: Totalitarianism & Dictatorship,1,,History,0.204,,,
+Rural Crafts,1,Cooking & Lifestyle,Cooking & Lifestyle,0.359,Cooking & Lifestyle,,Cooking & Lifestyle
+Ethical Issues: Censorship,1,,Philosophy & Religion,0.234,,,
+Children's Music Books,1,Children's,Children's,0.59,Children's,,Children's
+Distributive Industries,1,,Business & Economics,0.19,,,
+Forensic Science,1,Science & Nature,Mystery & Detective,0.5,Science & Nature,,Science & Nature
+Regional & National History,1,History,History,0.414,History,,History
+Ethical Issues & Debates,1,,Philosophy & Religion,0.426,Philosophy & Religion,,Philosophy & Religion
+Ethical Issues: Abortion & Birth Control,1,,Philosophy & Religion,0.239,,,
+Art Finance,1,Business & Economics,Graphic Novels & Comics,0.431,Business & Economics,,Business & Economics
+Political Manifestos,1,,Philosophy & Religion,0.3,,,
+Nursing,1,,Biography & Memoir,0.204,,,
+"Phonetics, Phonology",1,,Poetry & Drama,0.204,,,
+War & Conflict,1,History,History,0.328,History,,History
+Funding Of Education & Student Finance,1,Business & Economics,Business & Economics,0.313,Business & Economics,,Business & Economics
+Language Learning: Specific Skills,1,,Children's,0.34,Children's,,Children's
+"Anglican & Episcopalian Churches, Church Of England",1,,Philosophy & Religion,0.243,,,
+Teams & Clubs,1,,Science & Nature,0.204,,,
+Language Teaching & Learning (other Than ELT),1,,Children's,0.369,Children's,,Children's
+Radio,1,,Philosophy & Religion,0.181,,,
+Zoos & Wildlife Parks,1,,Children's,0.381,Children's,,Children's
+Early Man,1,,Classics,0.208,,,
+Children's Sports Books,1,Children's,Children's,0.509,Children's,,Children's
+Swimming & Water Sports (Children's/YA),1,Children's,Children's,0.317,Children's,,Children's
+Epidemiology & Medical Statistics,1,,Science & Nature,0.219,,,
+Mercenaries,1,,Thriller & Suspense,0.225,,,
+Ballet,1,,Poetry & Drama,0.27,,,
+Freshwater Life,1,,Science & Nature,0.251,,,
+Psycholinguistics,1,,Literary Fiction,0.334,Literary Fiction,,Literary Fiction
+"Fishing, Angling",1,,Children's,0.187,,,
+Research Methods: General,1,,Self-help & Psychology,0.244,,,
+Terminal Care Nursing,1,,Biography & Memoir,0.21,,,
+Community Nursing,1,,Young Adult,0.196,,,
+Science Funding & Policy,1,Science & Nature,Science & Nature,0.351,Science & Nature,,Science & Nature
+Propaganda,1,,Biography & Memoir,0.198,,,
+Christian Communities & Monasticism,1,Philosophy & Religion,Philosophy & Religion,0.4,Philosophy & Religion,,Philosophy & Religion
+Gardening: Herbs,1,Cooking & Lifestyle,Cooking & Lifestyle,0.286,Cooking & Lifestyle,,Cooking & Lifestyle
+Satanism & Demonology,1,,Horror,0.443,Horror,,Horror
+Winter Sports,1,,Thriller & Suspense,0.191,,,
+Christian Churches & Denominations,1,Philosophy & Religion,Philosophy & Religion,0.348,Philosophy & Religion,,Philosophy & Religion
+Ecumenism,1,,Philosophy & Religion,0.305,Philosophy & Religion,,Philosophy & Religion
+Drug & Substance Abuse: Social Aspects,1,,Self-help & Psychology,0.317,Self-help & Psychology,,Self-help & Psychology
+Radio & Television Industry,1,,Science & Nature,0.179,,,
+"Easy Listening, MOR Music",1,,Children's,0.215,,,
+Liberalism & Centre Democratic Ideologies,1,,Philosophy & Religion,0.279,,,
+First Experiences,1,,Horror,0.303,Horror,,Horror
+Pop-Up Books,1,,Young Adult,0.337,Young Adult,,Young Adult
+Aquaculture & Fish-farming: Practice & Techniques,1,,Cooking & Lifestyle,0.293,,,
+Fashion Design & Theory,1,,Literary Fiction,0.289,,,
+Manufacturing Industries,1,,Business & Economics,0.195,,,
+Number Theory,1,,Science & Nature,0.149,,,
+Ice Hockey,1,,Fantasy,0.191,,,
+Monetary Economics,1,Business & Economics,Business & Economics,0.248,Business & Economics,,Business & Economics
+Medical Study & Revision Guides & Reference Material,1,,Cooking & Lifestyle,0.368,Cooking & Lifestyle,,Cooking & Lifestyle
+Cinema Industry,1,,Poetry & Drama,0.277,,,
+Taxonomy & Systematics,1,,Science & Nature,0.262,,,
+Fishes (ichthyology),1,,Science & Nature,0.172,,,
+Amphibians,1,,Humour,0.213,,,
+Korean War,1,History,History,0.194,History,,History
+"Countryside, Country Life",1,,Horror,0.24,,,
+Educational Psychology,1,Self-help & Psychology,Self-help & Psychology,0.32,Self-help & Psychology,,Self-help & Psychology
+Apiculture (beekeeping),1,,Cooking & Lifestyle,0.218,,,
+"Wildlife: Butterflies, Other Insects & Spiders",1,,Science & Nature,0.33,Science & Nature,,Science & Nature
+Keyboard Instruments,1,,Poetry & Drama,0.203,,,
+Social Mobility,1,,Young Adult,0.224,,,
+Doctor/patient Relationship,1,,Romance,0.201,,,
+Internet & WWW Industries,1,,Business & Economics,0.291,,,
+Anarchism,1,,Philosophy & Religion,0.253,,,
+Cruises,1,,Science Fiction,0.217,,,
+Theatre: Individual Actors & Directors,1,Poetry & Drama,Poetry & Drama,0.511,Poetry & Drama,,Poetry & Drama
+Complementary Medicine,1,,Science & Nature,0.162,,,
+Teaching Skills & Techniques,1,,Children's,0.375,Children's,,Children's
+"Deltas, Estuaries, Coastal Regions",1,,Cooking & Lifestyle,0.208,,,
+General Encyclopaedias,1,,Fantasy,0.193,,,
+Interfaith Relations,1,,Philosophy & Religion,0.268,,,
+Developmental Biology,1,Science & Nature,Children's,0.304,Science & Nature,,Science & Nature
+Music Recording & Reproduction,1,,Poetry & Drama,0.301,Poetry & Drama,,Poetry & Drama
+Acoustic & Sound Engineering,1,,Business & Economics,0.133,,,

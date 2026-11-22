@@ -1,0 +1,34 @@
+# 3. Référentiel de blocs et enrichissement sémantique (P2)
+
+Le sujet propose de décrire chaque livre par un genre, des thèmes, un style et des mots-clés. Le dataset Book Depository ne fournit rien de tout cela : il contient seulement des descriptions libres et plus de mille catégories commerciales très bruitées (« Fiction », « Teaching Resources & Education »…). Plutôt que d'annoter 12 000 livres à la main, nous avons **dérivé ces informations par analyse sémantique**, ce qui est cohérent avec l'objectif du projet. L'ensemble se reproduit avec une seule commande (`python -m scripts.run_enrichment`) qui produit directement le fichier final `books_enriched.parquet`.
+
+**Référentiel.** Nous avons construit `blocks.json`, une taxonomie en quatre blocs : Genre (21 labels), Thèmes (20), Style (10) et Atmosphère (15, dont 6 époques et 9 ambiances). Chaque label est accompagné d'une **phrase descriptive en langage naturel** (« A story about grief, death, mourning, loss and learning to live with absence »). C'est cette phrase qui est encodée, et non le mot seul : un résumé évoquant un « jeune garçon qui découvre qu'il est sorcier » se rapproche ainsi de *Fantasy* et de *Coming of age* sans qu'aucun de ces mots n'y figure. La taxonomie s'inspire des grandes familles de l'édition (rayons de librairie, BISAC) et de thèmes classiques de l'analyse littéraire.
+
+**Genres.** Les 1 074 catégories Book Depository sont mappées vers nos genres en deux temps : des règles à base d'expressions régulières pour les cas évidents (« Fantasy Books » → Fantasy, avec exclusions comme « Romance Languages »), puis, pour le reste, le genre le plus proche par similarité cosinus entre l'embedding du nom de catégorie et celui de la phrase du genre (accepté si cosinus ≥ 0,30). Nous avons relu les 100 catégories les plus fréquentes et corrigé 18 d'entre elles à la main (par exemple *Adventure Books*, 710 livres, classée à tort en littérature jeunesse). Un livre hérite des genres de ses catégories, classés par nombre de catégories concordantes puis par proximité avec sa description ; le genre le plus proche de la description vote aussi, ce qui corrige les catégories commerciales trompeuses (*Harry Potter* est rangé en « Sci Fi » par Book Depository). **Les genres « Young Adult » et « Children's » proviennent uniquement de la colonne `audience`** : une première version les attribuait à plus de 600 livres adultes via les catégories et les embeddings, ce qui était faux.
+
+**Thèmes, style, atmosphère.** Ces labels sont attribués par *zero-shot* par embeddings : cosinus entre la description du livre (SBERT `all-MiniLM-L6-v2`, vecteurs normalisés) et chaque phrase de label. Ce choix est rapide (tout le catalogue en quelques secondes sur CPU) alors qu'un zero-shot NLI exigerait une passe de modèle par couple livre × label. Trois choix rendent le résultat exploitable :
+
+- une **normalisation par label** (soustraction de la moyenne du label sur le catalogue, échelle commune au bloc), parce que certaines phrases sont proches de tous les livres ; un écart-type par label gonflait au contraire les labels peu dispersés ;
+- un **seuil calibré** (z ≥ 1,0) avec au moins un label garanti pour les thèmes et les styles ;
+- pour les **thèmes (v2)**, chaque thème est représenté par la moyenne de l'embedding de sa phrase et de trois variantes plus concrètes (`theme_variants.json`), car une phrase abstraite unique s'éloignait du vocabulaire réel des résumés. Ces variantes sont intégrées au pipeline lui-même : relancer l'enrichissement reproduit toujours la v2.
+
+**Atmosphère.** Au moins une valeur est toujours attribuée (la meilleure ambiance), mais **l'époque du récit n'est jamais forcée** : elle n'est gardée que si son score est élevé et nettement supérieur à celui de la deuxième meilleure époque. Une première version imposait une époque à tous les livres et se trompait souvent (par exemple *Harry Potter* classé « Medieval »). Un livre peut donc avoir une ou deux valeurs d'atmosphère, et l'absence d'époque est un résultat valable. Tous les cosinus sont conservés dans `label_scores`, que le moteur de scoring réutilise.
+
+**Mots-clés.** Nous appliquons le principe de KeyBERT (similarité candidat–document puis diversification MMR, 5 mots-clés par livre). Les candidats sont **uniquement des groupes nominaux** : un étiquetage grammatical (spaCy) garde les suites adjectifs + noms, ce qui écarte les paires verbe + nom (« deals issues ») ; une liste noire retire le vocabulaire d'éditeur et de mise en page (« font size », « edition »), et les noms d'auteurs du livre sont exclus. Pour tenir sur CPU, les candidats sont pré-classés par TF-IDF (15 par livre) avant d'être réordonnés par embeddings.
+
+**Validation.** Nous avons annoté 60 livres (genres et thèmes). La proposition initiale a été produite par un LLM à partir des descriptions, sans accès aux prédictions du modèle, puis **relue et corrigée à la main** par l’auteure du pipeline (Hajar, P2). Ces 60 livres ont toutefois servi à **choisir les phrases de thèmes et le seuil** : leurs scores sont donc optimistes. Pour mesurer la performance réelle, nous avons annoté séparément **40 livres jamais utilisés pour le réglage** (jeu de test), tirés au hasard parmi les livres restants (30 de fiction et 10 de non-fiction). Seuls les résultats du jeu de test mesurent la qualité du système. Les intervalles de confiance sont larges, car le jeu est petit.
+
+<!-- EVAL:START -->
+| Jeu | Livres | Genres : précision / rappel / ≥1 bon label | Thèmes : précision / rappel / ≥1 bon label |
+|---|---|---|---|
+| Réglage (60 livres, vus pendant le réglage) | 60 | 0.64 [0.58-0.71] / 0.78 [0.71-0.85] / 97% [92%-100%] | 0.51 [0.41-0.61] / 0.39 [0.31-0.46] / 72% [60%-83%] |
+| **Test (livres jamais vus)** | 40 | 0.72 [0.63-0.80] / 0.64 [0.56-0.72] / 100% [100%-100%] | 0.50 [0.38-0.61] / 0.34 [0.25-0.43] / 68% [52%-80%] |
+
+Les valeurs entre crochets sont des intervalles de confiance à 95 % (bootstrap sur les livres).
+Les performances à retenir sont celles du jeu de test : sur 40 livres jamais utilisés pour le réglage, les thèmes atteignent une F1 de 0.40.
+Annotations relues par : Hajar (proposition initiale assistée par un LLM).
+<!-- EVAL:END -->
+
+Les thèmes sont plus difficiles que les genres : un livre peut légitimement porter quatre thèmes alors que nous n'en annotons que deux ou trois, et les thèmes proches (*Grief & loss*, *Family relationships*) se confondent. Les erreurs viennent aussi de descriptions marketing peu informatives.
+
+**Limites.** Le biais de ton des descriptions commerciales, la troncature à 256 tokens de MiniLM, la subjectivité des thèmes (annotation par une seule personne, l’auteure du pipeline, sans mesure d’accord), la taille du jeu de test, et le fait que les phrases de variantes ont été écrites par nous et ajustées sur le jeu de réglage. Pistes : un modèle plus fin (MPNet), un NLI sur les cas ambigus, des corrections manuelles ciblées.
