@@ -1,5 +1,10 @@
 """Compare les phrases actuelles des thèmes à des variantes plus concrètes (moyenne ou max).
-Réutilise les embeddings de livres déjà calculés. Ne modifie ni blocks.json ni le parquet."""
+Réutilise les embeddings de livres déjà calculés. Ne modifie ni blocks.json ni le parquet.
+
+IMPORTANT : ce script évalue sur le jeu de RÉGLAGE (gold_60_clean.csv) uniquement. Ne JAMAIS l'utiliser avec
+le jeu de test (gold_holdout.csv) : il est réservé à la mesure finale (scripts/evaluate_enrichment.py).
+Les variantes retenues sont déjà dans data/reference/theme_variants.json ; `--write` les réécrit depuis VARIANTS
+(par défaut le fichier n'est plus modifié, pour éviter un écrasement accidentel)."""
 import json, sys
 from pathlib import Path
 import numpy as np, pandas as pd
@@ -112,4 +117,6 @@ for name, sims in SIMS.items():
         rows.append(dict(methode=name, z_min=z_min, labels_par_livre=round(np.mean([len(c) for c in ch]), 2),
                          precision=round(P, 2), rappel=round(R, 2), F1=round(2*P*R/(P+R+1e-9), 2), au_moins_1=f"{H:.0%}"))
 print(pd.DataFrame(rows).to_string(index=False))
-json.dump(VARIANTS, open(ROOT / "data/reference/theme_variants.json", "w"), ensure_ascii=False, indent=1)
+if "--write" in sys.argv:
+    json.dump(VARIANTS, open(ROOT / "data/reference/theme_variants.json", "w"), ensure_ascii=False, indent=1)
+    print("theme_variants.json réécrit")
