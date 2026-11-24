@@ -1,79 +1,79 @@
-# GenderBook : recommandation sémantique de livres (Projet NLP ECE ING5)
+# GenderBook: semantic book recommendation (ECE ING5 NLP project)
 
-Système de recommandation de livres fondé sur l'**analyse sémantique** des préférences du lecteur exprimées en langage naturel. C'est le thème 3 du sujet *Semantic Analysis and Intelligent Contextual Recommendation Systems*. Le plan complet et la répartition des tâches sont dans [PLAN_PROJET.md](PLAN_PROJET.md).
+Book recommendation system based on the **semantic analysis** of the reader's preferences expressed in natural language. It is theme 3 of the assignment *Semantic Analysis and Intelligent Contextual Recommendation Systems*. The full plan and the split of tasks are in [PLAN_PROJET.md](PLAN_PROJET.md).
 
 ## Installation
 
 ```bash
-python3 -m venv .venv          # Python 3.11+ (testé en 3.12)
+python3 -m venv .venv          # Python 3.11+ (tested with 3.12)
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## Données (personne 1 : terminé ✅)
+## Data (person 1: done ✅)
 
-Le catalogue propre est **déjà versionné** dans le repo. Inutile de télécharger le dataset brut pour travailler :
+The clean catalogue is **already versioned** in the repo. There is no need to download the raw dataset to work:
 
-| Fichier | Contenu |
+| File | Content |
 |---|---|
-| `data/processed/books_clean.parquet` | **catalogue final : 12 000 livres** (une ligne par œuvre) |
-| `data/processed/books_sample.parquet` | 500 livres stratifiés, **schéma final complet** (colonnes de P2 présentes mais vides) |
-| `data/reference/category_stats.csv` | fréquence des 1 078 catégories Book Depository du catalogue (pour le mapping catégories → genres de P2) |
-| `data/reference/filtering_report.csv` | nombre de livres après chaque étape de filtrage |
+| `data/processed/books_clean.parquet` | **final catalogue: 12,000 books** (one row per work) |
+| `data/processed/books_sample.parquet` | 500 stratified books, **full final schema** (P2 columns present but empty) |
+| `data/reference/category_stats.csv` | frequency of the catalogue's 1,078 Book Depository categories (for P2's categories → genres mapping) |
+| `data/reference/filtering_report.csv` | number of books after each filtering step |
 
-Pour tout régénérer depuis le dataset Kaggle brut (téléchargement automatique, ≈ 1,1 Go dans `data/raw/`, ≈ 2 min) :
+To regenerate everything from the raw Kaggle dataset (automatic download, ≈ 1.1 GB in `data/raw/`, ≈ 2 min):
 
 ```bash
 python -m scripts.build_dataset
 ```
 
-### Utilisation dans le code
+### Usage in the code
 
 ```python
 from src.data_loader import load_books, get_books_by_author, apply_constraints
 
-books = load_books()                       # enrichi > propre > échantillon (le meilleur disponible)
-get_books_by_author(books, "jk rowling")   # toutes les orthographes -> les 7 Harry Potter + The Cuckoo's Calling
-get_books_by_author(books, "stephen kng")  # matching flou -> livres de Stephen King
+books = load_books()                       # enriched > clean > sample (the best available)
+get_books_by_author(books, "jk rowling")   # all spellings -> the 7 Harry Potter books + The Cuckoo's Calling
+get_books_by_author(books, "stephen kng")  # fuzzy matching -> Stephen King's books
 mask = apply_constraints(books, audience="Young Adult", formats=["Paperback"],
                          excluded_authors=["Suzanne Collins"], fiction_only=True)
 ```
 
-### Colonnes de `books_clean.parquet`
+### Columns of `books_clean.parquet`
 
-| Colonne | Description |
+| Column | Description |
 |---|---|
-| `book_id` | identifiant (ISBN-13 de l'édition retenue) |
-| `title` | titre d'affichage, sans mentions d'édition (« Deluxe Edition »…) |
-| `authors` / `authors_str` / `main_author` | liste des auteurs (**une seule orthographe par auteur**) / chaîne / auteur principal (hors illustrateur, traducteur) |
-| `categories` | catégories Book Depository (liste de noms) |
-| `description` | **texte pour le NLP** : nettoyé, sans texte générique, citations de presse, bandeaux commerciaux ni sections « Praise for… » |
-| `description_raw` | description avec nettoyage minimal seulement (traçabilité) |
-| `embed_text` | **texte à encoder** = `title. description`, tronqué proprement à ≈ 1 500 caractères |
-| `pub_year` | année de publication de l'**édition** (pas l'époque du récit !) |
-| `rating_avg`, `rating_count` | notes Goodreads |
-| `popularity` | score ∈ [0,1] = (note/5) × log(1+nb notes)/log(1+max) |
-| `audience` | `Children` / `Young Adult` / `Adult` (for-ages + catégories) |
+| `book_id` | identifier (ISBN-13 of the edition kept) |
+| `title` | display title, without edition mentions ("Deluxe Edition"…) |
+| `authors` / `authors_str` / `main_author` | list of authors (**a single spelling per author**) / string / main author (excluding illustrator, translator) |
+| `categories` | Book Depository categories (list of names) |
+| `description` | **text for NLP**: cleaned, without generic text, press quotes, commercial banners or "Praise for…" sections |
+| `description_raw` | description with minimal cleaning only (traceability) |
+| `embed_text` | **text to encode** = `title. description`, cleanly truncated at ≈ 1,500 characters |
+| `pub_year` | publication year of the **edition** (not the period of the story!) |
+| `rating_avg`, `rating_count` | Goodreads ratings |
+| `popularity` | score ∈ [0,1] = (rating/5) × log(1+number of ratings)/log(1+max) |
+| `audience` | `Children` / `Young Adult` / `Adult` (for-ages + categories) |
 | `domain`, `is_fiction` | `Fiction` / `Non-fiction` |
-| `format`, `for_ages`, `bestsellers_rank`, `image_url`, `url`, `isbn13`, `n_editions`, `n_words` | métadonnées |
+| `format`, `for_ages`, `bestsellers_rank`, `image_url`, `url`, `isbn13`, `n_editions`, `n_words` | metadata |
 
-## Structure du repo
+## Repo structure
 
 ```
-data/          raw/ (non versionné) · processed/ · reference/ · embeddings/
+data/          raw/ (not versioned) · processed/ · reference/ · embeddings/
 notebooks/     01_data_preparation.ipynb (P1) … 06_evaluation.ipynb
 src/           config.py · data_loader.py + marketing.py (P1) · enrichment.py · embeddings.py · scoring.py · …
 scripts/       build_dataset.py
-tests/         tests unitaires (python -m pytest tests -q)
-docs/          figures/ · report/ (sections du rapport PDF) · slides/
-app/           application Streamlit
+tests/         unit tests (python -m pytest tests -q)
+docs/          figures/ · report/ (sections of the PDF report) · slides/
+app/           Streamlit application
 ```
 
-## Avancement
+## Progress
 
-- [x] **P1 : Données** : catalogue, EDA, utilitaires, 52 tests, section du rapport (`docs/report/01_dataset.md`), slides (`docs/slides/01_dataset_slides.md`)
-- [ ] P2 : Référentiel des blocs et enrichissement (`books_enriched.parquet`)
-- [ ] P3 : Moteur sémantique (embeddings)
-- [ ] P4 : Scoring et recommandation
-- [ ] P5 : Application Streamlit et visualisations
-- [ ] P6 : Évaluation, rapport, slides
+- [x] **P1: Data**: catalogue, EDA, utilities, 52 tests, report section (`docs/report/01_dataset.md`), slides (`docs/slides/01_dataset_slides.md`)
+- [ ] P2: Block taxonomy and enrichment (`books_enriched.parquet`)
+- [ ] P3: Semantic engine (embeddings)
+- [ ] P4: Scoring and recommendation
+- [ ] P5: Streamlit application and visualisations
+- [ ] P6: Evaluation, report, slides

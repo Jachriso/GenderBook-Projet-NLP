@@ -1,10 +1,10 @@
 """
-Applique les corrections manuelles (relecture des 100 catégories les plus fréquentes)
-dans data/reference/category_genre_map.csv, colonne genre_manual.
+Apply the manual corrections (review of the 100 most frequent categories)
+in data/reference/category_genre_map.csv, genre_manual column.
 
     python scripts/apply_category_fixes.py
 
-Ensuite : python -m scripts.run_enrichment   (la colonne genre_manual est conservée à chaque relance)
+Then: python -m scripts.run_enrichment   (the genre_manual column is kept on every rerun)
 """
 import json
 from pathlib import Path
@@ -16,19 +16,19 @@ CSV = ROOT / "data" / "reference" / "category_genre_map.csv"
 BLOCKS = json.loads((ROOT / "data" / "reference" / "blocks.json").read_text(encoding="utf-8"))
 VALID = set(BLOCKS["Genre"])
 
-# catégorie -> genre(s) corrigé(s), séparés par « | ». Raison de chaque correction en commentaire.
+# category -> corrected genre(s), separated by "|". The reason for each correction is in a comment.
 FIXES = {
-    "Adventure Books": "Thriller & Suspense",                      # adulte, pas jeunesse (710 livres)
-    "Short Story Books": "Literary Fiction",                       # nouvelles, pas jeunesse
+    "Adventure Books": "Thriller & Suspense",                      # adult, not children's (710 books)
+    "Short Story Books": "Literary Fiction",                       # short stories, not children's
     "Erotic Fiction": "Romance",
     "Military Fiction": "Historical Fiction",
     "Anthologies (non-poetry)": "Literary Fiction",
-    "Biography: Literary": "Biography & Memoir",                   # retire Literary Fiction
+    "Biography: Literary": "Biography & Memoir",                   # removes Literary Fiction
     "Graphic Novels: Literary & Memoirs": "Graphic Novels & Comics|Biography & Memoir",
-    "Family": "Literary Fiction",                                  # romans familiaux (catégorie sans genre)
+    "Family": "Literary Fiction",                                  # family novels (category without a genre)
     "Relationships": "Self-help & Psychology",
     "Family & Relationships": "Self-help & Psychology",
-    "Political & Legal": "Thriller & Suspense",                    # thrillers politiques / judiciaires
+    "Political & Legal": "Thriller & Suspense",                    # political / legal thrillers
     "Politics & Government": "History",
     "Political Science & Theory": "History",
     "True Crime Books": "Biography & Memoir",                      # non-fiction

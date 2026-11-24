@@ -1,11 +1,11 @@
-"""Tests unitaires de la partie P4 (profil, scoring, recommandation, explications).
+"""Unit tests of the P4 part (profile, scoring, recommendation, explanations).
 
-Lancer : python -m pytest tests/test_scoring.py -q
+Run: python -m pytest tests/test_scoring.py -q
 
-Ces tests n'ont besoin NI d'Internet NI du modèle SBERT : ils utilisent un
-encodeur « sac de mots haché » déterministe et un mini-catalogue synthétique.
-On teste la LOGIQUE (formule, filtres, top_k, diversité, déterminisme), pas la
-qualité des embeddings (c'est le rôle du notebook 04 et de l'évaluation de P6).
+These tests need NEITHER Internet NOR the SBERT model: they use a deterministic
+"hashed bag of words" encoder and a small synthetic catalogue.
+We test the LOGIC (formula, filters, top_k, diversity, determinism), not the
+quality of the embeddings (that is the role of notebook 04 and of P6's evaluation).
 """
 import dataclasses
 import re
@@ -23,10 +23,10 @@ from src.schemas import BLOCKS, Recommendation, UserProfile
 
 
 # ---------------------------------------------------------------------------
-# Données de test
+# Test data
 # ---------------------------------------------------------------------------
 class HashEncoder:
-    """Encodeur déterministe : chaque mot est haché dans un vecteur de 512 dimensions."""
+    """Deterministic encoder: each word is hashed into a 512-dimensional vector."""
 
     model_name = "hash512"
 
@@ -34,9 +34,9 @@ class HashEncoder:
         out = np.zeros((len(texts), 512), dtype=np.float32)
         for i, t in enumerate(texts):
             for w in re.findall(r"[a-z]+", str(t).lower()):
-                # hachage stable (hash() de Python change d'une exécution à l'autre)
+                # stable hashing (Python's hash() changes from one run to another)
                 out[i, sum(ord(c) * 31 ** k for k, c in enumerate(w)) % 512] += 1.0
-        out[:, 0] += 1e-3  # évite les vecteurs nuls
+        out[:, 0] += 1e-3  # avoids zero vectors
         return l2_normalize(out)
 
 
@@ -88,7 +88,7 @@ def books():
 @pytest.fixture(scope="module")
 def reco(books):
     engine = LocalEngine(books, BLOCKS_REF, encoder=HashEncoder(), cache=False)
-    cal = {c: (0.0, 1.0) for c in sc.COMPONENTS}  # calibration neutre : scores = cosinus
+    cal = {c: (0.0, 1.0) for c in sc.COMPONENTS}  # neutral calibration: scores = cosine
     return Recommender(books=books, engine=engine, blocks=BLOCKS_REF, calibration=cal)
 
 
@@ -107,7 +107,7 @@ def fantasy_answers(**over):
 
 
 # ---------------------------------------------------------------------------
-# 1. Contrat des dataclasses
+# 1. Dataclass contract
 # ---------------------------------------------------------------------------
 def test_schemas_follow_contract():
     up = [f.name for f in dataclasses.fields(UserProfile)]
@@ -119,12 +119,12 @@ def test_schemas_follow_contract():
 
 
 # ---------------------------------------------------------------------------
-# 2. Profil : Likert -> phrases, poids, λ, texte à éviter
+# 2. Profile: Likert -> sentences, weights, λ, text to avoid
 # ---------------------------------------------------------------------------
 def test_likert_converted_to_sentences():
     assert "complex" in pr.likert_to_sentence("complexity", 5)
     assert "slow" in pr.likert_to_sentence("pace", 1)
-    assert pr.likert_to_sentence("darkness", 3) is None   # neutre = pas de phrase
+    assert pr.likert_to_sentence("darkness", 3) is None   # neutral = no sentence
     assert pr.likert_to_sentence("pace", None) is None
 
 
@@ -157,18 +157,18 @@ def test_build_profile_contents(reco):
 
 
 # ---------------------------------------------------------------------------
-# 3. Formule
+# 3. Formula
 # ---------------------------------------------------------------------------
 def test_block_similarity_max_then_mean():
-    # 2 phrases utilisateur, 2 labels, 2 livres, d = 2
+    # 2 user sentences, 2 labels, 2 books, d = 2
     P = np.array([[1, 0], [0, 1]], dtype=np.float32)
     L = np.array([[1, 0], [0, 1]], dtype=np.float32)
     E = l2_normalize(np.array([[1, 1], [1, 0]], dtype=np.float32))
-    mask = np.array([[True, False], [False, False]])  # livre 0 porte le label 0 ; livre 1 aucun
+    mask = np.array([[True, False], [False, False]])  # book 0 carries label 0; book 1 none
     s, best = sc.block_similarity(P, L, mask, E)
-    # livre 0 : phrase 0 -> max(label0=1, desc=0.707)=1 ; phrase 1 -> max(label0=0, desc=0.707)=0.707
+    # book 0: sentence 0 -> max(label0=1, desc=0.707)=1; sentence 1 -> max(label0=0, desc=0.707)=0.707
     assert s[0] == pytest.approx((1 + 0.70710677) / 2, abs=1e-5)
-    # livre 1 : pas de label -> description seule : (1 + 0) / 2
+    # book 1: no label -> description alone: (1 + 0) / 2
     assert s[1] == pytest.approx(0.5, abs=1e-5)
 
 
@@ -191,7 +191,7 @@ def test_match_labels_thresholds():
 
 
 # ---------------------------------------------------------------------------
-# 4. Recommandation de bout en bout
+# 4. End-to-end recommendation
 # ---------------------------------------------------------------------------
 def test_scores_in_unit_interval_and_contributions_sum(reco):
     _, recs, table = reco.recommend(fantasy_answers(), top_k=3, return_table=True)
@@ -268,7 +268,7 @@ def test_recommendation_fields_and_explanation(reco):
 
 
 def test_works_without_p2_columns(books):
-    """Fallback : catalogue sans genres/themes/... (books_sample de P1) et sans blocks.json."""
+    """Fallback: catalogue without genres/themes/... (P1's books_sample) and without blocks.json."""
     bare = books.drop(columns=["genres", "themes", "styles", "atmospheres"])
     empty_blocks = {b: {} for b in BLOCKS}
     engine = LocalEngine(bare, empty_blocks, encoder=HashEncoder(), cache=False)
@@ -284,14 +284,14 @@ def test_split_sentences():
 
 
 # ---------------------------------------------------------------------------
-# Corrections de la relecture de la PR
+# Fixes from the PR review
 # ---------------------------------------------------------------------------
 def test_fiction_only_auto_when_only_fiction_genres():
     assert pr.auto_fiction_only({"genres": ["Literary Fiction", "Thriller & Suspense"]}) is True
-    assert pr.auto_fiction_only({"genres": ["Fantasy", "History"]}) is None       # mélange
-    assert pr.auto_fiction_only({"genres": ["Classics"]}) is None                 # genre ambigu
+    assert pr.auto_fiction_only({"genres": ["Fantasy", "History"]}) is None       # mix
+    assert pr.auto_fiction_only({"genres": ["Classics"]}) is None                 # ambiguous genre
     assert pr.auto_fiction_only({"genres": []}) is None
-    # une réponse explicite l'emporte toujours
+    # an explicit answer always wins
     assert pr.auto_fiction_only({"genres": ["Fantasy"], "fiction_only": False}) is False
 
 
@@ -303,7 +303,7 @@ def test_non_narrative_books_excluded_when_fiction_only():
 
 
 def test_explanation_never_cites_contradicted_labels(reco):
-    # rythme lent demandé : « Fast-paced page-turner » ne doit jamais être cité
+    # slow pace requested: "Fast-paced page-turner" must never be cited
     a = fantasy_answers(likert={"complexity": 3, "pace": 1, "darkness": 3, "popularity": 3,
                                 "w_genre": 5, "w_themes": 3, "w_style": 5, "w_atmosphere": 1})
     profile, recs = reco.recommend(a, top_k=3)
@@ -315,10 +315,10 @@ def test_explanation_never_cites_contradicted_labels(reco):
 
 
 def test_match_label_uses_displayed_rounded_score():
-    assert sc.match_label(0.7497) == "Excellent"   # affiché 0.75
-    assert sc.match_label(0.7449) == "Good"        # affiché 0.74
-    assert sc.match_label(0.5460) == "Good"        # affiché 0.55
-    assert sc.match_label(0.5440) == "Partial"     # affiché 0.54
+    assert sc.match_label(0.7497) == "Excellent"   # displayed 0.75
+    assert sc.match_label(0.7449) == "Good"        # displayed 0.74
+    assert sc.match_label(0.5460) == "Good"        # displayed 0.55
+    assert sc.match_label(0.5440) == "Partial"     # displayed 0.54
 
 
 def test_engine_fallback_is_not_silent(books, monkeypatch):

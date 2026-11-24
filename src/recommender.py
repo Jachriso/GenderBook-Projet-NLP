@@ -1,24 +1,24 @@
 """
-Point d'entrée UNIQUE du moteur de recommandation, utilisé par l'app Streamlit (P5).
+SINGLE entry point of the recommendation engine, used by the Streamlit app (P5).
 
     from src.recommender import recommend
     profile, recs = recommend(answers, top_k=3)
 
-Pipeline (PLAN_PROJET.md §3) :
-    answers ─► build_profile ─► (1) filtres durs ─► (2) retrieval top-300 par S_desc
-            ─► (3) re-ranking par la formule complète ─► (4) diversité (1 livre / auteur)
-            ─► (5) Recommendation (scores, contributions, labels, phrase, explication)
+Pipeline (PLAN_PROJET.md §3):
+    answers ─► build_profile ─► (1) hard filters ─► (2) top-300 retrieval by S_desc
+            ─► (3) re-ranking with the full formula ─► (4) diversity (1 book / author)
+            ─► (5) Recommendation (scores, contributions, labels, sentence, explanation)
 
-Tout ce qui est lourd (catalogue, modèle SBERT, embeddings, calibration) est
-chargé UNE fois par ``get_recommender()`` (singleton) : les appels suivants ne
-font que des produits matriciels (quelques dizaines de ms).
+Everything heavy (catalogue, SBERT model, embeddings, calibration) is
+loaded ONCE by ``get_recommender()`` (singleton): later calls only
+do matrix products (a few tens of ms).
 
-Fallbacks (si les autres parties ne sont pas encore livrées) :
-- pas de ``src/embeddings.py`` (P3)     -> ``fallback_engine.LocalEngine`` (SBERT à la volée + cache) ;
-- pas de ``calibration.json`` (P3)      -> calculé ici à partir de requêtes de référence ;
-- pas de ``books_enriched`` (P2)        -> ``load_books()`` prend books_clean / books_sample,
-                                            les scores de blocs se font sur la description ;
-- pas de ``blocks.json`` (P2)           -> les labels cochés sont encodés tels quels.
+Fallbacks (if the other parts are not delivered yet):
+- no ``src/embeddings.py`` (P3)         -> ``fallback_engine.LocalEngine`` (on-the-fly SBERT + cache);
+- no ``calibration.json`` (P3)          -> computed here from reference queries;
+- no ``books_enriched`` (P2)            -> ``load_books()`` takes books_clean / books_sample,
+                                            block scores are computed on the description;
+- no ``blocks.json`` (P2)               -> the ticked labels are encoded as they are.
 """
 from __future__ import annotations
 
@@ -41,32 +41,32 @@ from src.scoring import (compute_calibration, load_calibration, matched_labels_f
 
 logger = logging.getLogger(__name__)
 
-# Ordre dans lequel on relâche les filtres si aucun livre ne passe
-# (les auteurs exclus ne sont jamais relâchés : c'est une demande explicite).
+# Order in which the filters are relaxed if no book passes
+# (excluded authors are never relaxed: it is an explicit request).
 RELAX_ORDER = ("formats", "period", "fiction_only", "audience")
 
 
 def load_blocks_safe() -> dict[str, dict[str, str]]:
-    """blocks.json de P2, ou un référentiel vide si le fichier n'existe pas encore."""
+    """P2's blocks.json, or an empty taxonomy if the file does not exist yet."""
     if config.BLOCKS_JSON.exists():
         return json.loads(config.BLOCKS_JSON.read_text(encoding="utf-8"))
     return {b: {} for b in BLOCKS}
 
 
 def get_engine(books: pd.DataFrame, blocks: dict[str, dict[str, str]], encoder=None):
-    """EmbeddingEngine de P3 s'il existe et qu'il est aligné, sinon le moteur de secours."""
+    """P3's EmbeddingEngine if it exists and is aligned, otherwise the fallback engine."""
     if encoder is None:
         try:
-            from src.embeddings import EmbeddingEngine  # type: ignore  # livré par P3
+            from src.embeddings import EmbeddingEngine  # type: ignore  # delivered by P3
 
             engine = EmbeddingEngine()
             n_rows = engine.book_matrix().shape[0]
             if n_rows == len(books):
                 return engine
             reason = f"book_matrix() a {n_rows} lignes alors que le catalogue a {len(books)} livres"
-        except Exception as exc:  # module absent, modèle non téléchargé, pas de Wi-Fi…
+        except Exception as exc:  # module missing, model not downloaded, no Wi-Fi…
             reason = f"{type(exc).__name__}: {exc}"
-        # On ne bascule plus en silence : sinon une panne pendant la démo passerait inaperçue
+        # No more silent switch: otherwise a failure during the demo would go unnoticed
         msg = (f"[GenderBook] EmbeddingEngine (P3) indisponible ({reason}). "
                "Bascule sur le moteur de secours fallback_engine.LocalEngine.")
         warnings.warn(msg, RuntimeWarning, stacklevel=2)
@@ -77,33 +77,33 @@ def get_engine(books: pd.DataFrame, blocks: dict[str, dict[str, str]], encoder=N
 
 
 class Recommender:
-    """Moteur complet : garde en mémoire le catalogue, les embeddings et la calibration.
+    """Full engine: keeps the catalogue, the embeddings and the calibration in memory.
 
     Args:
-        books: catalogue ; par défaut ``load_books()`` (enrichi > propre > échantillon).
-        engine: moteur d'embeddings (contrat P3) ; par défaut ``get_engine``.
-        blocks: référentiel blocks.json.
-        calibration: {composante: (p5, p95)} ; par défaut calibration.json ou calcul.
-        encoder: "sbert" / "lsa" / objet encode() pour le moteur de secours.
+        books: catalogue; by default ``load_books()`` (enriched > clean > sample).
+        engine: embedding engine (P3 contract); by default ``get_engine``.
+        blocks: blocks.json taxonomy.
+        calibration: {component: (p5, p95)}; by default calibration.json or computed.
+        encoder: "sbert" / "lsa" / object with encode() for the fallback engine.
     """
 
     def __init__(self, books: pd.DataFrame | None = None, engine=None,
                  blocks: dict[str, dict[str, str]] | None = None,
                  calibration: dict[str, tuple[float, float]] | None = None, encoder=None):
-        # Étape 1 : catalogue indexé 0..N-1 (l'index sert de position dans les matrices)
+        # Step 1: catalogue indexed 0..N-1 (the index is the position in the matrices)
         self.books = (books if books is not None else load_books()).reset_index(drop=True)
         self.non_narrative = self.non_narrative_mask(self.books)
         self.blocks = blocks if blocks is not None else load_blocks_safe()
-        # Étape 2 : moteur d'embeddings + matrice des livres (cache disque)
+        # Step 2: embedding engine + book matrix (disk cache)
         self.engine = engine if engine is not None else get_engine(self.books, self.blocks, encoder)
         self.book_emb = self.engine.book_matrix()
-        # Étape 3 : embeddings des phrases de labels (4 blocs)
+        # Step 3: embeddings of the label sentences (4 blocks)
         self.label_mats = {b: self.engine.label_matrix(b) for b in BLOCKS}
-        # Étape 4 : calibration (fichier de P3, sinon calculée et sauvegardée)
+        # Step 4: calibration (P3's file, otherwise computed and saved)
         self.calibration = calibration or self._load_or_compute_calibration()
 
     def _load_or_compute_calibration(self) -> dict[str, tuple[float, float]]:
-        """calibration.json de P3 (si choisi) > cache P4 du même modèle > calcul (≈ 1 s)."""
+        """P3's calibration.json (if chosen) > P4 cache of the same model > computation (≈ 1 s)."""
         model = str(getattr(self.engine, "model_name", ""))
         if config.CALIBRATION_SOURCE == "p3":
             cal = load_calibration(config.CALIBRATION_JSON_P3)
@@ -114,7 +114,7 @@ class Recommender:
             return cal
         return compute_calibration(self.engine, self.books, self.blocks)
 
-    # ------------------------------------------------------------------ filtres
+    # ------------------------------------------------------------------ filters
     def _constraint_mask(self, c: dict) -> np.ndarray:
         mask = apply_constraints(
             self.books, audience=c.get("audience"), formats=c.get("formats"),
@@ -127,11 +127,11 @@ class Recommender:
 
     @staticmethod
     def non_narrative_mask(books: pd.DataFrame) -> np.ndarray:
-        """Livres classés fiction mais qui ne sont pas des récits (recueils de confessions, blagues…).
+        """Books classified as fiction that are not narratives (collections of confessions, jokes…).
 
-        data_loader classe « Humour Collections & Anthologies » en fiction : *My Secret:
-        A PostSecret Book* passait donc le filtre fiction_only. On écarte les livres dont
-        TOUTES les catégories « fiction » sont de ce type (config.NON_NARRATIVE_CATEGORY_RE).
+        data_loader classifies "Humour Collections & Anthologies" as fiction: *My Secret:
+        A PostSecret Book* therefore passed the fiction_only filter. We discard the books whose
+        "fiction" categories are ALL of this kind (config.NON_NARRATIVE_CATEGORY_RE).
         """
         if "categories" not in books.columns:
             return np.zeros(len(books), dtype=bool)
@@ -146,7 +146,7 @@ class Recommender:
         return books["categories"].apply(_only_non_narrative).to_numpy(dtype=bool)
 
     def filter_mask(self, profile: UserProfile, min_books: int) -> np.ndarray:
-        """Filtres durs ; si trop peu de livres passent, on relâche progressivement."""
+        """Hard filters; if too few books pass, they are relaxed step by step."""
         c = dict(profile.constraints)
         mask = self._constraint_mask(c)
         for key in RELAX_ORDER:
@@ -158,11 +158,11 @@ class Recommender:
                 mask = self._constraint_mask(c)
         return mask
 
-    # --------------------------------------------------------------- diversité
+    # --------------------------------------------------------------- diversity
     @staticmethod
     def diversify(table: pd.DataFrame, books: pd.DataFrame, top_k: int,
                   max_per_author: int = config.MAX_PER_AUTHOR) -> list[int]:
-        """Parcourt les candidats triés et garde au plus N livres par auteur principal."""
+        """Go through the sorted candidates and keep at most N books per main author."""
         counts: dict[str, int] = {}
         keep: list[int] = []
         for idx in table.index:
@@ -178,25 +178,25 @@ class Recommender:
     # --------------------------------------------------------------- pipeline
     def score_table(self, profile: UserProfile, retrieval_k: int = config.RETRIEVAL_TOP_K,
                     **formula_kwargs) -> pd.DataFrame:
-        """Étapes 1 à 3 : filtres, retrieval, re-ranking. Renvoie la table triée des candidats."""
-        # (1) filtres durs
+        """Steps 1 to 3: filters, retrieval, re-ranking. Returns the sorted table of candidates."""
+        # (1) hard filters
         mask = self.filter_mask(profile, min_books=1)
         allowed = np.flatnonzero(mask)
         if len(allowed) == 0:
             return pd.DataFrame()
-        # (2) retrieval : les retrieval_k livres autorisés les plus proches de q_global
+        # (2) retrieval: the retrieval_k allowed books closest to q_global
         sims = self.book_emb[allowed] @ profile.query_vecs["global"]
         k = min(retrieval_k, len(allowed))
         cand = allowed[np.argsort(-sims, kind="stable")[:k]]
-        # (3) re-ranking par la formule complète (vectorisée)
+        # (3) re-ranking with the full (vectorised) formula
         table = score_books(profile, self.book_emb[cand], self.books.loc[cand],
                             self.label_mats, self.calibration, **formula_kwargs)
-        # tri stable : à score égal, on garde l'ordre du retrieval => déterministe
+        # stable sort: for equal scores the retrieval order is kept => deterministic
         return table.sort_values("final", ascending=False, kind="stable")
 
     def build_recommendation(self, rank: int, idx: int, row: pd.Series,
                              profile: UserProfile) -> Recommendation:
-        """Étape 5 : assemble l'objet Recommendation d'un livre."""
+        """Step 5: build the Recommendation object of a book."""
         book = self.books.loc[idx]
         best_sent, best_score = self.engine.best_sentence(profile.query_vecs["global"],
                                                           book.get("description") or book["embed_text"])
@@ -226,14 +226,14 @@ class Recommender:
 
     def recommend(self, answers: dict, top_k: int = 3, return_table: bool = False,
                   **formula_kwargs):
-        """Recommande top_k livres. ``return_table=True`` renvoie aussi la table des candidats."""
+        """Recommend top_k books. ``return_table=True`` also returns the table of candidates."""
         profile = build_profile(answers, self.engine, self.books, self.blocks)
         table = self.score_table(profile, **formula_kwargs)
         if table.empty:
             return (profile, [], table) if return_table else (profile, [])
-        # (4) diversité
+        # (4) diversity
         chosen = self.diversify(table, self.books, top_k)
-        # (5) objets Recommendation
+        # (5) Recommendation objects
         recs = [self.build_recommendation(r, idx, table.loc[idx], profile)
                 for r, idx in enumerate(chosen, start=1)]
         return (profile, recs, table) if return_table else (profile, recs)
@@ -241,13 +241,13 @@ class Recommender:
 
 @lru_cache(maxsize=1)
 def get_recommender() -> Recommender:
-    """Singleton : le catalogue et le modèle ne sont chargés qu'une fois par processus.
+    """Singleton: the catalogue and the model are only loaded once per process.
 
-    Dans Streamlit, P5 peut l'envelopper dans ``st.cache_resource``.
+    In Streamlit, P5 can wrap it in ``st.cache_resource``.
     """
     return Recommender()
 
 
 def recommend(answers: dict, top_k: int = 3) -> tuple[UserProfile, list[Recommendation]]:
-    """Contrat de l'app : réponses du questionnaire -> (profil, top_k recommandations)."""
+    """App contract: questionnaire answers -> (profile, top_k recommendations)."""
     return get_recommender().recommend(answers, top_k=top_k)

@@ -1,17 +1,17 @@
 """
-Préparation des données Book Depository (personne 1).
+Book Depository data preparation (person 1).
 
-Ce module contient :
-  * le téléchargement et le chargement des CSV bruts Kaggle ;
-  * les fonctions de nettoyage (texte, titres, listes d'IDs) ;
-  * la classification des catégories (fiction / non-fiction narrative / exclue) ;
-  * la déduction du public visé (Children / Young Adult / Adult) ;
-  * le pipeline complet `build_catalogue()` qui produit books_clean.parquet ;
-  * des utilitaires pour la suite du projet : load_books(), get_books_by_author(),
+This module contains:
+  * downloading and loading the raw Kaggle CSVs;
+  * cleaning functions (text, titles, ID lists);
+  * category classification (fiction / narrative non-fiction / excluded);
+  * inference of the target audience (Children / Young Adult / Adult);
+  * the full `build_catalogue()` pipeline that produces books_clean.parquet;
+  * utilities for the rest of the project: load_books(), get_books_by_author(),
     apply_constraints().
 
-Le notebook notebooks/01_data_preparation.ipynb appelle ces fonctions étape
-par étape et commente chaque résultat.
+The notebook notebooks/01_data_preparation.ipynb calls these functions step
+by step and comments on each result.
 """
 from __future__ import annotations
 
@@ -28,18 +28,18 @@ import pandas as pd
 from src import config
 
 # ===========================================================================
-# 1. Téléchargement et chargement des fichiers bruts
+# 1. Downloading and loading the raw files
 # ===========================================================================
 
 def download_raw_dataset(dest: Path = config.DATA_RAW) -> Path:
-    """Télécharge le dataset Kaggle dans `dest` (si absent) via kagglehub.
+    """Download the Kaggle dataset into `dest` (if missing) with kagglehub.
 
-    Le dataset est public : kagglehub le télécharge sans clé API.
+    The dataset is public: kagglehub downloads it without an API key.
     """
     dest.mkdir(parents=True, exist_ok=True)
     if (dest / "dataset.csv").exists():
         return dest
-    import kagglehub  # import local : uniquement nécessaire au premier lancement
+    import kagglehub  # local import: only needed on the first run
 
     kagglehub.dataset_download(config.KAGGLE_DATASET, output_dir=str(dest))
     return dest
@@ -47,34 +47,34 @@ def download_raw_dataset(dest: Path = config.DATA_RAW) -> Path:
 
 def load_raw_books(path: Path = config.RAW_DATASET,
                    usecols: Iterable[str] = config.RAW_USECOLS) -> pd.DataFrame:
-    """Charge dataset.csv en ne gardant que les colonnes utiles.
+    """Load dataset.csv, keeping only the useful columns.
 
-    On lit tout en `str` pour éviter les inférences de type coûteuses ou
-    erronées (ISBN convertis en float, etc.) ; les conversions numériques sont
-    faites explicitement ensuite.
+    Everything is read as `str` to avoid costly or wrong type inference
+    (ISBNs converted to float, etc.); numeric conversions are done
+    explicitly afterwards.
     """
     return pd.read_csv(path, usecols=list(usecols), dtype=str)
 
 
 def load_lookup(path: Path, key: str, value: str) -> dict[int, str]:
-    """Charge une table de correspondance (authors/categories/formats) en dict id -> nom."""
+    """Load a lookup table (authors/categories/formats) as an id -> name dict."""
     table = pd.read_csv(path, dtype=str).dropna(subset=[key])
     table[value] = table[value].fillna("").str.strip()
     return dict(zip(table[key].astype(int), table[value]))
 
 
 # ===========================================================================
-# 2. Fonctions de nettoyage unitaires
+# 2. Unit cleaning functions
 # ===========================================================================
 
 _ID_RE = re.compile(r"\d+")
 
 
 def parse_id_list(raw: str | float) -> list[int]:
-    """Convertit une chaîne du type "[214, 220, 237]" en liste d'entiers.
+    """Convert a string such as "[214, 220, 237]" into a list of integers.
 
-    On utilise une regex plutôt que `eval`/`ast.literal_eval` : c'est plus
-    rapide sur un million de lignes et ça n'exécute jamais de code.
+    A regex is used rather than `eval`/`ast.literal_eval`: it is faster
+    on a million rows and never executes code.
     """
     if not isinstance(raw, str):
         return []
@@ -88,29 +88,29 @@ _MULTI_SPACE_RE = re.compile(r"\s+")
 
 
 def clean_description(text: str | float) -> str:
-    """Nettoyage MINIMAL d'une description.
+    """MINIMAL cleaning of a description.
 
-    On garde le texte naturel (stopwords, ponctuation, majuscules) car les
-    modèles contextuels type SBERT exploitent tout le contexte de la phrase.
-    Le preprocessing « lourd » (lemmatisation, stopwords) est réservé aux
-    baselines TF-IDF / GloVe (personne 3).
+    The natural text is kept (stopwords, punctuation, capitals) because
+    contextual models such as SBERT use the whole context of the sentence.
+    "Heavy" preprocessing (lemmatisation, stopwords) is reserved for the
+    TF-IDF / GloVe baselines (person 3).
     """
     if not isinstance(text, str):
         return ""
     text = html.unescape(text)                       # &amp; -> &, &#39; -> '
-    text = unicodedata.normalize("NFKC", text)       # unifie les caractères unicode
-    text = _TAG_RE.sub(" ", text)                    # retire les balises HTML résiduelles
-    text = _URL_RE.sub(" ", text)                    # retire les URLs (bruit pour l'embedding)
-    text = text.replace(" ", " ")               # espaces insécables
-    text = _MULTI_SPACE_RE.sub(" ", text)            # espaces / retours à la ligne multiples
-    text = _SPACE_BEFORE_PUNCT_RE.sub(r"\1", text)   # "mot ." -> "mot."
+    text = unicodedata.normalize("NFKC", text)       # unify unicode characters
+    text = _TAG_RE.sub(" ", text)                    # remove leftover HTML tags
+    text = _URL_RE.sub(" ", text)                    # remove URLs (noise for the embedding)
+    text = text.replace(" ", " ")               # non-breaking spaces
+    text = _MULTI_SPACE_RE.sub(" ", text)            # multiple spaces / line breaks
+    text = _SPACE_BEFORE_PUNCT_RE.sub(r"\1", text)   # "word ." -> "word."
     return text.strip()
 
 
-# Phrases types des réimpressions / produits sans contenu narratif.
-# Détectées dans l'EDA : des dizaines de milliers de livres partagent ces textes.
-# Appliquées PHRASE PAR PHRASE (voir strip_boilerplate) : une phrase qui contient
-# un de ces motifs est retirée, le reste de la description est conservé.
+# Stock sentences of reprints / products without narrative content.
+# Found during the EDA: tens of thousands of books share these texts.
+# Applied SENTENCE BY SENTENCE (see strip_boilerplate): a sentence containing
+# one of these patterns is removed, the rest of the description is kept.
 BOILERPLATE_PATTERNS = [
     r"facsimile reprint",
     r"scarce antiquarian book",
@@ -136,7 +136,7 @@ _BOILERPLATE_RE = re.compile("|".join(BOILERPLATE_PATTERNS), flags=re.IGNORECASE
 
 
 def is_boilerplate(text: str) -> bool:
-    """True si la description CONTIENT un texte générique (statistiques de l'EDA)."""
+    """True if the description CONTAINS generic text (EDA statistics)."""
     return bool(_BOILERPLATE_RE.search(text or ""))
 
 
@@ -144,13 +144,13 @@ _SENTENCE_SPLIT_RE = re.compile(r"(?<=[.!?])\s+(?=[\"“A-Z0-9])")
 
 
 def strip_boilerplate(text: str) -> str:
-    """Retire les PHRASES génériques (réimpressions, « public domain »…) et garde le reste.
+    """Remove generic SENTENCES (reprints, "public domain"...) and keep the rest.
 
-    On travaille phrase par phrase plutôt que de jeter toute la description :
-    "The original book has been in the public domain in the US since 1956." est
-    retirée, mais le résumé du *Magicien d'Oz* qui l'entoure est conservé.
-    Un livre dont la description n'était QUE du texte générique tombe ensuite
-    sous le seuil de 300 caractères et est écarté.
+    We work sentence by sentence rather than throwing away the whole description:
+    "The original book has been in the public domain in the US since 1956." is
+    removed, but the blurb of *The Wizard of Oz* around it is kept.
+    A book whose description was ONLY generic text then falls below the
+    300-character threshold and is discarded.
     """
     if not text or not _BOILERPLATE_RE.search(text):
         return text
@@ -158,13 +158,13 @@ def strip_boilerplate(text: str) -> str:
     return " ".join(kept).strip()
 
 
-# --- Texte marketing ---------------------------------------------------------
-# La logique (citations de presse, bandeaux « BESTSELLER », attributions) est
-# dans src/marketing.py ; on la ré-exporte ici pour compatibilité.
+# --- Marketing text ------------------------------------------------------------
+# The logic (press quotes, "BESTSELLER" banners, attributions) lives in
+# src/marketing.py; it is re-exported here for compatibility.
 from src.marketing import MarketingStripper, norm_words, strip_marketing  # noqa: E402,F401
 
 
-# --- Éditions spéciales, coffrets, auteurs -----------------------------------
+# --- Special editions, box sets, authors ----------------------------------------
 EDITION_WORDS_RE = re.compile(
     r"edition|illustrated|deluxe|anniversary|movie tie-in|tie-in|slipcase|"
     r"collector|large print|unabridged|annotated|abridged|special|volume \d|"
@@ -178,12 +178,12 @@ BOX_SET_RE = re.compile(
 )
 
 
-# Produits dérivés / compagnons : ce ne sont pas des expériences de lecture
-# (livres pop-up, « making of » de films, guides officiels, livres d'art,
-# livres de stickers ou journaux à remplir). Liste volontairement PRÉCISE :
-# des motifs larges ("guide to", "the art of", "companion") supprimeraient
-# The Art of War, The Hitchhiker's Guide to the Galaxy ou des romans
-# « compagnons » comme Lying Out Loud: A Companion to the Duff.
+# Spin-off / companion products: these are not reading experiences
+# (pop-up books, film "making of" books, official guides, art books,
+# sticker books or fill-in journals). The list is deliberately PRECISE:
+# broad patterns ("guide to", "the art of", "companion") would remove
+# The Art of War, The Hitchhiker's Guide to the Galaxy or "companion"
+# novels such as Lying Out Loud: A Companion to the Duff.
 COMPANION_RE = re.compile(
     r"pop-?up\b|page to screen|film wizardry|making the movie|behind the scenes of|"
     r"official (?:movie )?(?:guide|companion|handbook|colou?ring)|"
@@ -195,7 +195,7 @@ COMPANION_RE = re.compile(
     r"a journey through a history of magic",
     flags=re.IGNORECASE,
 )
-# Auteurs « corporate » (studios, éditeurs) : signe d'un produit dérivé
+# "Corporate" authors (studios, publishers): sign of a spin-off product
 CORPORATE_AUTHOR_RE = re.compile(
     r"^(?:warner bros\.?|scholastic(?: inc\.?)?|insight editions|running press|lucasfilm(?: ltd)?|"
     r"disney(?: book group)?|dreamworks|pixar|nickelodeon|cartoon network|bbc|national geographic|"
@@ -205,21 +205,21 @@ CORPORATE_AUTHOR_RE = re.compile(
 
 
 def is_companion_product(title: str, authors: list[str]) -> bool:
-    """True pour un produit dérivé (pop-up, guide officiel, making of...)."""
+    """True for a spin-off product (pop-up, official guide, making of...)."""
     return bool(COMPANION_RE.search(title)) or any(CORPORATE_AUTHOR_RE.match(a) for a in authors)
 
 
 def author_key(name: str) -> str:
-    """Clé d'auteur robuste : "J.K. Rowling", "J. K. Rowling", "J K Rowling" -> "jkrowling"."""
+    """Robust author key: "J.K. Rowling", "J. K. Rowling", "J K Rowling" -> "jkrowling"."""
     n = unicodedata.normalize("NFKD", str(name)).encode("ascii", "ignore").decode().lower()
     return re.sub(r"[^a-z]", "", n)
 
 
 def display_title(title: str) -> str:
-    """Titre d'affichage débarrassé des mentions d'édition.
+    """Display title stripped of edition mentions.
 
-    "Dune : Deluxe Edition" -> "Dune" ; "The Crucible : (penguin Orange Collection)" -> "The Crucible".
-    Si tout le titre serait supprimé, on garde l'original.
+    "Dune : Deluxe Edition" -> "Dune"; "The Crucible : (penguin Orange Collection)" -> "The Crucible".
+    If the whole title would be removed, the original is kept.
     """
     t = re.sub(r"[\(\[][^\)\]]*[\)\]]",
                lambda m: " " if EDITION_WORDS_RE.search(m.group(0)) else m.group(0), title)
@@ -238,56 +238,56 @@ _NON_ALNUM_RE = re.compile(r"[^a-z0-9 ]+")
 
 
 def normalize_title(title: str) -> str:
-    """Clé de titre pour détecter les éditions multiples d'une même œuvre.
+    """Title key used to detect multiple editions of the same work.
 
-    "Pride & Prejudice (Penguin Classics)" et "Pride and Prejudice" donnent
-    la même clé "pride and prejudice" ; "Cat's Eye" et "Cats Eye" -> "cats eye".
+    "Pride & Prejudice (Penguin Classics)" and "Pride and Prejudice" give
+    the same key "pride and prejudice"; "Cat's Eye" and "Cats Eye" -> "cats eye".
     """
     if not isinstance(title, str):
         return ""
     t = unicodedata.normalize("NFKD", title).encode("ascii", "ignore").decode()
-    t = _TITLE_BRACKETS_RE.sub(" ", t)          # retire "(Penguin Classics)", "[Illustrated]"...
-    t = _TITLE_SUFFIX_RE.sub("", t)            # retire ": A Novel", ": A Memoir"...
+    t = _TITLE_BRACKETS_RE.sub(" ", t)          # remove "(Penguin Classics)", "[Illustrated]"...
+    t = _TITLE_SUFFIX_RE.sub("", t)            # remove ": A Novel", ": A Memoir"...
     t = t.lower().replace("&", " and ")
-    # apostrophes SUPPRIMÉES : "Cat's Eye" = "Cats Eye".
-    # Les tirets deviennent des espaces ("Water-Babies" -> "water babies") pour que
-    # la comparaison mot à mot de la règle (b) fonctionne ; la règle (a) compare
-    # les titres SANS espaces, donc "Wall-paper" = "Wallpaper" reste couvert.
+    # apostrophes are DELETED: "Cat's Eye" = "Cats Eye".
+    # Hyphens become spaces ("Water-Babies" -> "water babies") so that the
+    # word-by-word comparison of rule (b) works; rule (a) compares titles
+    # WITHOUT spaces, so "Wall-paper" = "Wallpaper" is still covered.
     t = re.sub(r"['’`]", "", t)
     t = _NON_ALNUM_RE.sub(" ", t)
     return _MULTI_SPACE_RE.sub(" ", t).strip()
 
 
 def clean_title(title: str) -> str:
-    """Titre d'affichage : seulement les espaces et entités HTML."""
+    """Display title: only spaces and HTML entities are fixed."""
     if not isinstance(title, str):
         return ""
     return _MULTI_SPACE_RE.sub(" ", html.unescape(title)).strip()
 
 
 def truncate_at_sentence(text: str, max_chars: int) -> str:
-    """Tronque proprement un texte à la dernière fin de phrase avant max_chars."""
+    """Cleanly truncate a text at the last sentence end before max_chars."""
     if len(text) <= max_chars:
         return text
     cut = text[:max_chars]
     last_end = max(cut.rfind(". "), cut.rfind("! "), cut.rfind("? "))
-    # si aucune fin de phrase dans la 2e moitié, on coupe au dernier espace
+    # if there is no sentence end in the second half, cut at the last space
     if last_end > max_chars // 2:
         return cut[: last_end + 1]
     return cut[: cut.rfind(" ")].rstrip(",;:") + "…"
 
 
 # ===========================================================================
-# 3. Classification des catégories Book Depository
+# 3. Classification of the Book Depository categories
 # ===========================================================================
-# Le dataset contient ~2 900 catégories (nomenclature BIC des libraires).
-# Pour un système de recommandation « préférences littéraires », on garde :
-#   * la FICTION (romans, BD/manga, poésie, théâtre, jeunesse...) ;
-#   * la NON-FICTION NARRATIVE lue par plaisir (biographies, histoire,
-#     true crime, vulgarisation, philosophie, développement personnel...).
-# On exclut les ouvrages pratiques, scolaires, techniques ou professionnels
-# (cuisine, informatique, manuels, droit, médecine, dictionnaires...), dont la
-# description ne décrit pas une « expérience de lecture ».
+# The dataset has ~2,900 categories (BIC booksellers' nomenclature).
+# For a "literary preferences" recommender, we keep:
+#   * FICTION (novels, comics/manga, poetry, drama, children's books...);
+#   * NARRATIVE NON-FICTION read for pleasure (biographies, history,
+#     true crime, popular science, philosophy, self-help...).
+# We exclude practical, school, technical or professional books
+# (cookery, computing, textbooks, law, medicine, dictionaries...), whose
+# description does not describe a "reading experience".
 
 FICTION_RE = re.compile(
     r"fiction|novel|romance|thriller|crime|myster|horror|fantasy|sci[\s-]?fi|"
@@ -298,7 +298,7 @@ FICTION_RE = re.compile(
     r"dystopi|picture books|teenage|young adult|chick lit|superhero",
     flags=re.IGNORECASE,
 )
-# Catégories qui matchent FICTION_RE mais sont de la non-fiction ou de l'étude
+# Categories that match FICTION_RE but are non-fiction or study material
 FICTION_FALSE_POSITIVE_RE = re.compile(
     r"true crime|true stories|criminolog|crime & |studies|study|criticism|"
     r"writing|history of|theory|guides?\b|reference|business|forensic|advice|"
@@ -340,12 +340,12 @@ EXCLUDE_RE = re.compile(
 
 
 def classify_category(name: str) -> str:
-    """Classe un nom de catégorie : 'fiction', 'nonfiction', 'excluded' ou 'neutral'.
+    """Classify a category name: 'fiction', 'nonfiction', 'excluded' or 'neutral'.
 
-    L'ordre des tests compte : l'exclusion est testée en premier pour que
-    "Teaching Resources & Education" ne passe jamais en non-fiction, puis la
-    fiction (en écartant ses faux positifs comme "True Crime"), puis la
-    non-fiction narrative.
+    The order of the tests matters: exclusion is tested first so that
+    "Teaching Resources & Education" never becomes non-fiction, then
+    fiction (ruling out its false positives such as "True Crime"), then
+    narrative non-fiction.
     """
     if not name:
         return "neutral"
@@ -361,10 +361,10 @@ def classify_category(name: str) -> str:
 
 
 # ===========================================================================
-# 4. Public visé (Children / Young Adult / Adult)
+# 4. Target audience (Children / Young Adult / Adult)
 # ===========================================================================
-# for-ages n'est renseigné que pour ~7 % des livres : on le complète par les
-# catégories ("Children's Fiction", "Romance Books for Teenagers"...).
+# for-ages is only filled in for ~7% of the books: it is complemented by the
+# categories ("Children's Fiction", "Romance Books for Teenagers"...).
 
 CHILDREN_CAT_RE = re.compile(
     r"children|for kids|kids’|kids'|picture books|baby books|early learning|"
@@ -376,7 +376,7 @@ _AGES_RE = re.compile(r"(\d+)")
 
 
 def parse_for_ages(raw: str | float) -> tuple[int | None, int | None]:
-    """'9-12' -> (9, 12) ; '12+' -> (12, None) ; NaN -> (None, None)."""
+    """'9-12' -> (9, 12); '12+' -> (12, None); NaN -> (None, None)."""
     if not isinstance(raw, str):
         return None, None
     nums = [int(x) for x in _AGES_RE.findall(raw)]
@@ -386,7 +386,7 @@ def parse_for_ages(raw: str | float) -> tuple[int | None, int | None]:
 
 
 def infer_audience(for_ages: str | float, category_names: list[str]) -> str:
-    """Déduit le public visé. Priorité à for-ages (info éditeur), puis aux catégories."""
+    """Infer the target audience. for-ages (publisher info) first, then the categories."""
     min_age, _ = parse_for_ages(for_ages)
     if min_age is not None:
         if min_age < 9:
@@ -404,11 +404,11 @@ def infer_audience(for_ages: str | float, category_names: list[str]) -> str:
 
 
 # ===========================================================================
-# 5. Pipeline complet
+# 5. Full pipeline
 # ===========================================================================
 
 def _log(report: list[dict], step: str, df: pd.DataFrame, comment: str) -> None:
-    """Ajoute une ligne au rapport de filtrage (étape -> nombre de lignes)."""
+    """Add a row to the filtering report (step -> number of rows)."""
     report.append({"step": step, "rows": len(df), "comment": comment})
     print(f"{step:<45} {len(df):>10,}  {comment}")
 
@@ -419,10 +419,10 @@ def build_catalogue(raw: pd.DataFrame | None = None,
                     max_per_author: int = config.MAX_BOOKS_PER_AUTHOR,
                     detect_language: bool = True,
                     ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    """Construit le catalogue propre à partir du CSV brut.
+    """Build the clean catalogue from the raw CSV.
 
-    Retourne (catalogue, rapport_de_filtrage, statistiques_des_catégories).
-    Chaque étape est loguée pour pouvoir justifier les choix dans le rapport.
+    Returns (catalogue, filtering_report, category_statistics).
+    Every step is logged so that the choices can be justified in the report.
     """
     report: list[dict] = []
     if raw is None:
@@ -430,27 +430,27 @@ def build_catalogue(raw: pd.DataFrame | None = None,
     df = raw.copy()
     _log(report, "0. Raw dataset", df, "all rows of dataset.csv")
 
-    # --- 5.1 Langue, titre et description présents -------------------------
+    # --- 5.1 Language, title and description present -----------------------
     df = df[df["lang"] == config.KEEP_LANG]
     _log(report, "1. lang == 'en'", df, "English SBERT model + English UI")
     df = df[df["title"].notna() & df["description"].notna()]
     _log(report, "2. title & description not null", df, "nothing to embed otherwise")
 
-    # --- 5.2 Format physique : livres papier uniquement --------------------
+    # --- 5.2 Physical format: paper books only ------------------------------
     formats = load_lookup(config.RAW_FORMATS, "format_id", "format_name")
     df["format"] = pd.to_numeric(df["format"], errors="coerce").map(formats)
     df = df[df["format"].isin(config.KEEP_FORMATS)]
     _log(report, "3. format in Paperback/Hardback", df, "drop audio CDs, calendars, toys...")
 
-    # --- 5.3 Notes Goodreads (filtre numérique bon marché, fait AVANT les
-    #         nettoyages de texte coûteux) ------------------------------------
+    # --- 5.3 Goodreads ratings (cheap numeric filter, done BEFORE the
+    #         costly text cleaning) ---------------------------------------------
     df["rating_count"] = pd.to_numeric(df["rating-count"], errors="coerce")
     df["rating_avg"] = pd.to_numeric(df["rating-avg"], errors="coerce")
     df = df[df["rating_count"] >= min_rating_count]
     _log(report, f"4. rating_count >= {min_rating_count}", df,
          "known books with reliable ratings")
 
-    # --- 5.4 Qualité de la description --------------------------------------
+    # --- 5.4 Description quality ----------------------------------------------
     df = df[df["description"].str.len() >= config.MIN_DESC_CHARS]
     _log(report, f"5. raw description >= {config.MIN_DESC_CHARS} chars", df,
          "short blurbs carry too little meaning")
@@ -461,37 +461,37 @@ def build_catalogue(raw: pd.DataFrame | None = None,
     _log(report, "6. not only boilerplate", df,
          f"generic sentences removed in {n_with_boilerplate:,} texts; "
          "drop texts that were only boilerplate")
-    # Texte utilisé pour le NLP : sans citations de presse ni bandeaux commerciaux.
-    # Le « stripper » connaît les noms d'auteurs et les titres du dataset pour
-    # savoir où s'arrête une attribution (voir src/marketing.py).
+    # Text used for NLP: without press quotes or commercial banners.
+    # The "stripper" knows the author names and titles of the dataset so it
+    # can tell where an attribution ends (see src/marketing.py).
     stripper = build_marketing_stripper(raw)
     df["description"] = df["description"].map(stripper)
     df = df[df["description"].str.len() >= config.MIN_DESC_CHARS]
     _log(report, f"7. >= {config.MIN_DESC_CHARS} chars without press quotes", df,
          "enough content once marketing is removed")
 
-    # --- 5.5 Catégories : noms + domaine -----------------------------------
+    # --- 5.5 Categories: names + domain ---------------------------------------
     cat_names = load_lookup(config.RAW_CATEGORIES, "category_id", "category_name")
     df["category_ids"] = df["categories"].map(parse_id_list)
     df["category_names"] = df["category_ids"].map(
         lambda ids: list(dict.fromkeys(cat_names.get(i, "") for i in ids if cat_names.get(i)))
     )
-    # Classification une seule fois par nom de catégorie (≈ 2 900 noms)
+    # Classify each category name only once (≈ 2,900 names)
     domain_of = {name: classify_category(name) for name in set(cat_names.values())}
     domains = df["category_names"].map(lambda names: [domain_of[n] for n in names])
     df["n_fiction"] = domains.map(lambda d: d.count("fiction"))
     df["n_nonfiction"] = domains.map(lambda d: d.count("nonfiction"))
     df["n_excluded"] = domains.map(lambda d: d.count("excluded"))
     reader = df["n_fiction"] + df["n_nonfiction"]
-    # On garde un livre s'il a au moins une catégorie « lecture loisir » et
-    # au moins autant de catégories loisir que de catégories exclues.
+    # A book is kept if it has at least one "leisure reading" category and
+    # at least as many leisure categories as excluded ones.
     df = df[(reader >= 1) & (reader >= df["n_excluded"])]
     _log(report, "8. leisure-reading categories", df,
          "fiction + narrative non-fiction, no textbooks/cookery/IT...")
     df["is_fiction"] = df["n_fiction"] >= df["n_nonfiction"]
     df["domain"] = np.where(df["is_fiction"], "Fiction", "Non-fiction")
 
-    # --- 5.6 Auteurs : orthographe canonique ---------------------------------
+    # --- 5.6 Authors: canonical spelling ----------------------------------------
     author_names = load_lookup(config.RAW_AUTHORS, "author_id", "author_name")
     df["author_ids"] = df["authors"].map(parse_id_list)
     df["authors_list"] = df["author_ids"].map(
@@ -499,20 +499,20 @@ def build_catalogue(raw: pd.DataFrame | None = None,
     )
     df = df[df["authors_list"].map(len) > 0]
     _log(report, "9. at least one named author", df, "needed for display & dedup")
-    # Le dataset a un ID (et une orthographe) différent pour "J.K. Rowling",
-    # "J. K. Rowling" et "J K Rowling". On unifie : clé normalisée -> orthographe
-    # canonique (la plus fréquente), pour que "tous les livres de J.K. Rowling"
-    # soient bien retrouvés (auteur favori, auteurs exclus du questionnaire).
+    # The dataset has a different ID (and spelling) for "J.K. Rowling",
+    # "J. K. Rowling" and "J K Rowling". We unify them: normalised key -> canonical
+    # spelling (the most frequent one), so that "all the books by J.K. Rowling"
+    # are found (favourite author, excluded authors of the questionnaire).
     canonical = canonical_author_names(df["authors_list"])
     df["authors_list"] = df["authors_list"].map(lambda lst: canonicalize_authors(lst, canonical))
     df["author_keys"] = df["authors_list"].map(lambda lst: [author_key(a) for a in lst])
-    # Auteur principal = l'auteur de la liste le plus fréquent dans le corpus.
-    # Les illustrateurs / traducteurs / éditeurs scientifiques sont parfois
-    # listés en premier ("Jim Kay, J.K. Rowling") mais apparaissent moins souvent.
+    # Main author = the author of the list who is most frequent in the corpus.
+    # Illustrators / translators / scholarly editors are sometimes listed
+    # first ("Jim Kay, J.K. Rowling") but appear less often.
     freq = pd.Series([k for ks in df["author_keys"] for k in ks]).value_counts()
     df["main_author_key"] = df["author_keys"].map(lambda ks: max(ks, key=lambda k: freq.get(k, 0)))
 
-    # --- 5.7 Coffrets, lots et produits dérivés ------------------------------
+    # --- 5.7 Box sets, bundles and spin-off products ----------------------------
     df["title"] = df["title"].map(clean_title)
     df = df[~df["title"].map(lambda t: bool(BOX_SET_RE.search(t)))]
     _log(report, "10. drop box sets / bundles", df, "a box set is not a single reading experience")
@@ -520,26 +520,26 @@ def build_catalogue(raw: pd.DataFrame | None = None,
                        index=df.index)]
     _log(report, "11. drop companion products", df, "pop-up books, film tie-in guides, art books...")
 
-    # --- 5.8 Dédoublonnage des éditions (union-find) ------------------------
+    # --- 5.8 Deduplication of editions (union-find) -----------------------------
     df = dedup_editions(df)
     _log(report, "12. merge editions of the same work", df,
          "same title+author, or same Goodreads ratings + similar title/author")
-    # Descriptions identiques restantes = éditions groupées, textes génériques
+    # Remaining identical descriptions = grouped editions, generic texts
     dup_counts = df["description"].map(df["description"].value_counts())
     df = df[dup_counts == 1]
     _log(report, "13. drop shared descriptions", df, "generic publisher texts")
 
-    # --- 5.9 Diversité : plafond de livres par auteur -----------------------
+    # --- 5.9 Diversity: cap on books per author ---------------------------------
     df = df.sort_values("rating_count", ascending=False)
     df["author_rank"] = df.groupby("main_author_key").cumcount()
     df = df[df["author_rank"] < max_per_author]
     _log(report, f"14. max {max_per_author} books per author", df,
          "avoid catalogue saturation by prolific authors / manga series")
 
-    # --- 5.9 Vérification de la langue de la description -------------------
-    # lang décrit le livre, mais certaines descriptions sont dans une autre
-    # langue. On ne teste que les meilleurs candidats (coût ~5 ms/texte).
-    # df est déjà trié par rating_count décroissant : on garde une marge de 15 %
+    # --- 5.9 Checking the language of the description ---------------------------
+    # lang describes the book, but some descriptions are in another
+    # language. Only the best candidates are tested (cost ~5 ms/text).
+    # df is already sorted by decreasing rating_count: we keep a 15% margin
     pool = df.head(int(target_size * 1.15)).copy()
     _log(report, f"15. top {len(pool):,} candidates by rating_count", pool,
          "well-known books: richer descriptions, recognisable in the demo")
@@ -549,7 +549,7 @@ def build_catalogue(raw: pd.DataFrame | None = None,
         _log(report, "16. description really in English", pool,
              "langdetect (seed fixed)")
 
-    # --- 5.10 Sélection finale ------------------------------------------------
+    # --- 5.10 Final selection ----------------------------------------------------
     cat_df = pool.head(target_size).copy()
     _log(report, f"17. final catalogue (top {target_size:,})", cat_df,
          "target size reached")
@@ -562,17 +562,17 @@ def build_catalogue(raw: pd.DataFrame | None = None,
 
 _TITLE_STOPWORDS = {
     "the", "a", "an", "and", "of", "or", "to", "in", "on", "s", "for", "with",
-    # mots génériques de séries / éditions : ne prouvent pas que deux titres sont la même œuvre
+    # generic series / edition words: they do not prove that two titles are the same work
     "volume", "vol", "book", "books", "novel", "part", "series", "edition", "collection",
 }
 
 
 def build_marketing_stripper(raw: pd.DataFrame) -> MarketingStripper:
-    """Construit le MarketingStripper avec les connaissances du dataset.
+    """Build the MarketingStripper with knowledge from the dataset.
 
-    * noms d'auteurs (authors.csv) : pour reconnaître "--Stephen King" ;
-    * titres (dataset.csv, titre complet ET partie avant ':') : pour savoir où
-      s'arrête "author of The Statistical Probability of Love at First Sight".
+    * author names (authors.csv): to recognise "--Stephen King";
+    * titles (dataset.csv, full title AND part before ':'): to know where
+      "author of The Statistical Probability of Love at First Sight" ends.
     """
     authors = pd.read_csv(config.RAW_AUTHORS, dtype=str)["author_name"].dropna()
     titles = raw["title"].dropna()
@@ -581,10 +581,10 @@ def build_marketing_stripper(raw: pd.DataFrame) -> MarketingStripper:
 
 
 def canonical_author_names(author_lists: Iterable[list[str]]) -> dict[str, str]:
-    """Clé normalisée -> orthographe canonique (la plus fréquente, puis la plus longue).
+    """Normalised key -> canonical spelling (the most frequent, then the longest).
 
-    {"jkrowling": "J.K. Rowling"} si "J.K. Rowling" est l'orthographe la plus
-    fréquente parmi "J.K. Rowling" / "J. K. Rowling" / "J K Rowling".
+    {"jkrowling": "J.K. Rowling"} if "J.K. Rowling" is the most frequent
+    spelling among "J.K. Rowling" / "J. K. Rowling" / "J K Rowling".
     """
     counts = pd.Series([a for lst in author_lists for a in lst]).value_counts()
     best: dict[str, tuple[int, int, str]] = {}
@@ -599,7 +599,7 @@ def canonical_author_names(author_lists: Iterable[list[str]]) -> dict[str, str]:
 
 
 def canonicalize_authors(authors: list[str], canonical: dict[str, str]) -> list[str]:
-    """Remplace chaque auteur par son orthographe canonique, sans doublons, ordre conservé."""
+    """Replace each author with its canonical spelling, without duplicates, order kept."""
     out: list[str] = []
     for a in authors:
         name = canonical.get(author_key(a), a)
@@ -609,29 +609,29 @@ def canonicalize_authors(authors: list[str], canonical: dict[str, str]) -> list[
 
 
 def _title_tokens(key: str) -> set[str]:
-    """Mots significatifs d'un titre normalisé (sans mots vides ni numéros)."""
+    """Meaningful words of a normalised title (no stopwords or numbers)."""
     return {w for w in key.split() if w not in _TITLE_STOPWORDS and not w.isdigit()}
 
 
 def dedup_editions(df: pd.DataFrame, rel_tol: float = 0.02, avg_tol: float = 0.05,
                    min_count_fuzzy: int = 1000, title_jaccard: float = 0.5,
                    return_groups: bool = False) -> pd.DataFrame:
-    """Fusionne les éditions d'une même œuvre et garde un seul représentant.
+    """Merge the editions of the same work and keep a single representative.
 
-    Deux lignes sont considérées comme la même œuvre si :
-      (a) même titre normalisé (comparé sans espaces) ET au moins un auteur en commun
-          (clés normalisées) ;
-      (b) OU notes Goodreads quasi identiques (nombre de notes à ±2 %, moyenne à
-          ±0.05, pour les œuvres ≥ 1 000 notes : Goodreads agrège les notes par
-          œuvre, et le dataset a été scrapé à des dates différentes) ET titres
-          proches (Jaccard des mots ≥ 0.5 ou un titre inclus dans l'autre).
-          NB : une 1re version acceptait aussi « même auteur » sans titre proche ;
-          l'inspection a montré des fusions abusives (romans différents d'un même
-          auteur prolifique), d'où cette règle plus stricte.
-          Ex. "Harry Potter and the Philosopher's Stone - Gryffindor Edition"
-          et "Harry Potter and the Sorcerer's Stone".
-    Les liens sont regroupés par union-find (transitivité), puis on garde dans
-    chaque groupe l'édition « standard » (sans mot d'édition spéciale) la plus notée.
+    Two rows are considered the same work if:
+      (a) same normalised title (compared without spaces) AND at least one shared
+          author (normalised keys);
+      (b) OR nearly identical Goodreads ratings (number of ratings within ±2%, average
+          within ±0.05, for works with ≥ 1,000 ratings: Goodreads aggregates ratings per
+          work, and the dataset was scraped on different dates) AND similar titles
+          (word Jaccard ≥ 0.5 or one title contained in the other).
+          NB: a first version also accepted "same author" without a similar title;
+          inspection showed wrong merges (different novels by the same prolific
+          author), hence this stricter rule.
+          E.g. "Harry Potter and the Philosopher's Stone - Gryffindor Edition"
+          and "Harry Potter and the Sorcerer's Stone".
+    The links are grouped with union-find (transitivity), then in each group we
+    keep the most rated "standard" edition (without a special-edition word).
     """
     df = df.reset_index(drop=True)
     n = len(df)
@@ -648,12 +648,12 @@ def dedup_editions(df: pd.DataFrame, rel_tol: float = 0.02, avg_tol: float = 0.0
         if ri != rj:
             parent[max(ri, rj)] = min(ri, rj)
 
-    # clé de titre calculée sur le titre SANS mentions d'édition ("Dune : Deluxe Edition" -> "dune")
+    # title key computed on the title WITHOUT edition mentions ("Dune : Deluxe Edition" -> "dune")
     title_keys = df["title"].map(lambda t: normalize_title(display_title(t))).tolist()
-    author_sets = [set(k) for k in df["author_keys"]]  # utilisé par les règles (a) et (b)
+    author_sets = [set(k) for k in df["author_keys"]]  # used by rules (a) and (b)
 
-    # (a) même titre normalisé + un auteur commun. Le titre est comparé SANS
-    #     espaces : "Daddy-Long-Legs" = "Daddy Long Legs", "The Wasteland" = "The Waste Land"
+    # (a) same normalised title + a shared author. The title is compared WITHOUT
+    #     spaces: "Daddy-Long-Legs" = "Daddy Long Legs", "The Wasteland" = "The Waste Land"
     first_seen: dict[tuple[str, str], int] = {}
     for i, (tk, keys) in enumerate(zip(title_keys, author_sets)):
         tk = tk.replace(" ", "")
@@ -662,7 +662,7 @@ def dedup_editions(df: pd.DataFrame, rel_tol: float = 0.02, avg_tol: float = 0.0
             if j != i:
                 union(i, j)
 
-    # (b) mêmes notes Goodreads (fenêtre glissante sur les lignes triées par nb de notes)
+    # (b) same Goodreads ratings (sliding window over rows sorted by number of ratings)
     counts = df["rating_count"].to_numpy()
     avgs = df["rating_avg"].fillna(-1).to_numpy()
     tokens = [_title_tokens(t) for t in title_keys]
@@ -676,16 +676,16 @@ def dedup_editions(df: pd.DataFrame, rel_tol: float = 0.02, avg_tol: float = 0.0
             ti, tj = tokens[i], tokens[j]
             inter = len(ti & tj)
             jac = inter / max(1, len(ti | tj))
-            # un titre inclus dans l'autre : le plus court doit avoir ≥ 3 mots
-            # significatifs, ou 2 mots ET un auteur en commun. Sinon "Out" serait
-            # inclus dans "Knocked Out by my Nunga-Nungas", ou "Civil War" (Lucain)
-            # dans "Spider-Man: Miles Morales: Civil War II" ; mais "Little Women"
-            # reste fusionné avec "Little Women: Or Meg, Jo, Beth and Amy".
+            # one title contained in the other: the shorter one must have ≥ 3 meaningful
+            # words, or 2 words AND a shared author. Otherwise "Out" would be
+            # contained in "Knocked Out by my Nunga-Nungas", or "Civil War" (Lucan)
+            # in "Spider-Man: Miles Morales: Civil War II"; but "Little Women"
+            # is still merged with "Little Women: Or Meg, Jo, Beth and Amy".
             shortest = min(len(ti), len(tj))
             same_author = bool(author_sets[i] & author_sets[j])
             overlap = inter / shortest if shortest >= 3 or (shortest == 2 and same_author) else 0.0
-            # Le titre proche est OBLIGATOIRE : un auteur commun ne suffit pas
-            # (deux romans de Lee Child peuvent avoir ±2 % de notes d'écart).
+            # The similar title is MANDATORY: a shared author is not enough
+            # (two Lee Child novels can have ratings within ±2% of each other).
             if jac >= title_jaccard or overlap >= 0.8:
                 union(i, j)
 
@@ -694,21 +694,21 @@ def dedup_editions(df: pd.DataFrame, rel_tol: float = 0.02, avg_tol: float = 0.0
     if "main_author_key" in df.columns:
         df = _harmonize_main_author(df)
     df["desc_len"] = df["description"].str.len()
-    # Représentant : édition standard d'abord, puis la plus notée, puis la plus longue description
+    # Representative: standard edition first, then the most rated, then the longest description
     df = df.sort_values(["is_special_edition", "rating_count", "desc_len"],
                         ascending=[True, False, False])
     df["n_editions"] = df.groupby("work_id")["work_id"].transform("size")
-    if return_groups:  # toutes les lignes avec leur work_id (pour inspecter les fusions)
+    if return_groups:  # all rows with their work_id (to inspect the merges)
         return df
     return df.drop_duplicates("work_id", keep="first")
 
 
 def _harmonize_main_author(df: pd.DataFrame) -> pd.DataFrame:
-    """Auteur principal d'une œuvre = l'auteur principal le plus fréquent parmi ses éditions.
+    """Main author of a work = the most frequent main author among its editions.
 
-    Corrige les fautes de saisie d'une édition isolée : l'édition la plus notée de
-    Pride and Prejudice est créditée à "Jane Austin", mais la grande majorité de
-    ses 31 éditions le sont à "Jane Austen".
+    Fixes typos in an isolated edition: the most rated edition of
+    Pride and Prejudice is credited to "Jane Austin", but the vast majority of
+    its 31 editions are credited to "Jane Austen".
     """
     mode = df.groupby("work_id")["main_author_key"].agg(lambda s: s.value_counts().index[0])
     name_of: dict[str, str] = {}
@@ -720,9 +720,9 @@ def _harmonize_main_author(df: pd.DataFrame) -> pd.DataFrame:
     for idx in df.index[wrong]:
         old_k, good_k = df.at[idx, "main_author_key"], new_key[idx]
         lst, keys = list(df.at[idx, "authors_list"]), list(df.at[idx, "author_keys"])
-        if good_k in keys:            # le bon auteur est déjà listé (ex. illustrateur en tête)
+        if good_k in keys:            # the right author is already listed (e.g. illustrator first)
             pass
-        elif old_k in keys:           # faute de saisie : on remplace l'auteur fautif
+        elif old_k in keys:           # typo: replace the misspelt author
             i = keys.index(old_k)
             lst[i], keys[i] = name_of[good_k], good_k
         df.at[idx, "authors_list"], df.at[idx, "author_keys"] = lst, keys
@@ -731,7 +731,7 @@ def _harmonize_main_author(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def detect_languages(texts: pd.Series) -> list[str]:
-    """Détecte la langue de chaque texte avec langdetect (graine fixée = déterministe)."""
+    """Detect the language of each text with langdetect (fixed seed = deterministic)."""
     from langdetect import DetectorFactory, LangDetectException, detect
 
     DetectorFactory.seed = config.RANDOM_SEED
@@ -744,7 +744,7 @@ def detect_languages(texts: pd.Series) -> list[str]:
     return out
 
 
-# Ordre et noms des colonnes du contrat (PLAN_PROJET.md §4.1)
+# Order and names of the contract columns (PLAN_PROJET.md §4.1)
 CLEAN_COLUMNS = [
     "book_id", "title", "authors", "authors_str", "main_author", "categories",
     "description", "description_raw", "pub_year", "rating_avg", "rating_count",
@@ -754,20 +754,20 @@ CLEAN_COLUMNS = [
 
 
 def finalize_columns(df: pd.DataFrame) -> pd.DataFrame:
-    """Crée les colonnes dérivées et renomme selon le contrat d'équipe."""
+    """Create the derived columns and rename them according to the team contract."""
     out = pd.DataFrame(index=df.index)
     out["book_id"] = df["id"].astype(str)
-    out["title"] = df["title"].map(display_title)      # sans "Deluxe Edition", "(Penguin Classics)"...
+    out["title"] = df["title"].map(display_title)      # without "Deluxe Edition", "(Penguin Classics)"...
     out["authors"] = df["authors_list"]
     out["authors_str"] = df["authors_list"].map(", ".join)
     out["main_author"] = [
         lst[keys.index(k)] for lst, keys, k in zip(df["authors_list"], df["author_keys"], df["main_author_key"])
     ]
     out["categories"] = df["category_names"]
-    out["description"] = df["description"]              # nettoyée, sans citations de presse
-    out["description_raw"] = df["description_raw"]      # nettoyage minimal (traçabilité)
+    out["description"] = df["description"]              # cleaned, without press quotes
+    out["description_raw"] = df["description_raw"]      # minimal cleaning (traceability)
     year = pd.to_datetime(df["publication-date"], errors="coerce").dt.year
-    # dates aberrantes (ex. 2099 = date « à paraître » factice) -> manquantes
+    # aberrant dates (e.g. 2099 = dummy "forthcoming" date) -> missing
     out["pub_year"] = year.where(year.between(1450, 2026)).astype("Int64")
     out["rating_avg"] = df["rating_avg"].astype(float)
     out["rating_count"] = df["rating_count"].astype(int)
@@ -780,13 +780,13 @@ def finalize_columns(df: pd.DataFrame) -> pd.DataFrame:
     out["image_url"] = df["image-url"]
     out["url"] = df["url"]
     out["isbn13"] = df["isbn13"]
-    out["n_editions"] = df["n_editions"].astype(int)    # nb d'éditions fusionnées
-    # Popularité ∈ [0,1] : note moyenne × log(nb de notes) normalisé.
-    # Le log évite qu'Harry Potter (7 M de notes) écrase tout le reste.
+    out["n_editions"] = df["n_editions"].astype(int)    # number of merged editions
+    # Popularity ∈ [0,1]: average rating × normalised log(number of ratings).
+    # The log prevents Harry Potter (7 M ratings) from crushing everything else.
     log_count = np.log1p(out["rating_count"])
     out["popularity"] = (out["rating_avg"].fillna(0) / 5.0) * (log_count / log_count.max())
     out["n_words"] = out["description"].str.split().map(len)
-    # Texte encodé par SBERT : le titre apporte du contexte (« Dracula »...)
+    # Text encoded by SBERT: the title adds context ("Dracula"...)
     out["embed_text"] = [
         truncate_at_sentence(f"{t}. {d}", config.EMBED_TEXT_MAX_CHARS)
         for t, d in zip(out["title"], out["description"])
@@ -795,7 +795,7 @@ def finalize_columns(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def category_stats(catalogue: pd.DataFrame, domain_of: dict[str, str]) -> pd.DataFrame:
-    """Fréquence de chaque catégorie dans le catalogue final (utile à la personne 2)."""
+    """Frequency of each category in the final catalogue (useful for person 2)."""
     exploded = catalogue[["categories", "is_fiction"]].explode("categories").dropna()
     stats = (exploded.groupby("categories")
              .agg(n_books=("is_fiction", "size"), share_fiction=("is_fiction", "mean"))
@@ -806,21 +806,21 @@ def category_stats(catalogue: pd.DataFrame, domain_of: dict[str, str]) -> pd.Dat
     return stats
 
 
-# Colonnes ajoutées plus tard par la personne 2 (vides dans l'échantillon)
+# Columns added later by person 2 (empty in the sample)
 ENRICHMENT_COLUMNS = ["genres", "themes", "styles", "atmospheres", "keywords"]
 
 
 def make_sample(catalogue: pd.DataFrame, n: int = config.SAMPLE_SIZE,
                 seed: int = config.RANDOM_SEED) -> pd.DataFrame:
-    """Échantillon stratifié (domaine × public) avec le schéma complet du contrat.
+    """Stratified sample (domain × audience) with the full contract schema.
 
-    Les colonnes d'enrichissement de la personne 2 sont présentes mais vides,
-    pour que tout le monde code dès maintenant contre le schéma final.
-    `label_scores` est stocké en chaîne JSON (un dict vide n'est pas
-    sérialisable proprement en parquet).
+    Person 2's enrichment columns are present but empty, so that everyone
+    codes against the final schema right away.
+    `label_scores` is stored as a JSON string (an empty dict cannot be
+    serialised cleanly in parquet).
     """
-    # Même fraction tirée dans chaque strate (domaine × public) -> proportions conservées.
-    # (GroupBy.sample garde toutes les colonnes, contrairement à GroupBy.apply en pandas 3)
+    # Same fraction drawn in each stratum (domain × audience) -> proportions preserved.
+    # (GroupBy.sample keeps all columns, unlike GroupBy.apply in pandas 3)
     frac = min(1.0, (n + 20) / len(catalogue))
     sample = catalogue.groupby(["domain", "audience"]).sample(frac=frac, random_state=seed)
     sample = sample.sample(frac=1, random_state=seed).head(n).reset_index(drop=True)
@@ -832,19 +832,19 @@ def make_sample(catalogue: pd.DataFrame, n: int = config.SAMPLE_SIZE,
 
 def save_parquet(df: pd.DataFrame, path: Path) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
-    df.to_parquet(path, index=False, compression="zstd")  # zstd : ≈ 30 % plus compact que snappy
+    df.to_parquet(path, index=False, compression="zstd")  # zstd: ≈ 30% more compact than snappy
     return path
 
 
 # ===========================================================================
-# 6. Utilitaires pour le reste de l'équipe
+# 6. Utilities for the rest of the team
 # ===========================================================================
 
 def load_books(path: Path | None = None) -> pd.DataFrame:
-    """Charge le meilleur catalogue disponible : enrichi > propre > échantillon.
+    """Load the best available catalogue: enriched > clean > sample.
 
-    Les colonnes liste (numpy arrays après lecture parquet) sont reconverties
-    en listes Python, et label_scores (JSON) en dict.
+    List columns (numpy arrays after reading the parquet) are converted back
+    to Python lists, and label_scores (JSON) to a dict.
     """
     if path is None:
         for candidate in (config.BOOKS_ENRICHED, config.BOOKS_CLEAN, config.BOOKS_SAMPLE):
@@ -870,12 +870,12 @@ def _norm_name(name: str) -> str:
 
 
 def find_author(df: pd.DataFrame, name: str, min_score: int = 85) -> str | None:
-    """Retrouve le nom (orthographe du catalogue) d'un auteur à partir d'une saisie libre.
+    """Find the name (catalogue spelling) of an author from free-text input.
 
-    1. correspondance EXACTE sur la clé normalisée : "jk rowling", "J. K. Rowling",
-       "J.K.Rowling" -> "J.K. Rowling" ;
-    2. sinon matching flou (rapidfuzz) pour tolérer les fautes : "stephen kng" -> "Stephen King".
-    Retourne None si rien d'assez proche.
+    1. EXACT match on the normalised key: "jk rowling", "J. K. Rowling",
+       "J.K.Rowling" -> "J.K. Rowling";
+    2. otherwise fuzzy matching (rapidfuzz) to tolerate typos: "stephen kng" -> "Stephen King".
+    Returns None if nothing is close enough.
     """
     if not name or not name.strip():
         return None
@@ -893,15 +893,15 @@ def find_author(df: pd.DataFrame, name: str, min_score: int = 85) -> str | None:
 
 
 def _has_author_key(df: pd.DataFrame, keys: set[str]) -> pd.Series:
-    """Masque : le livre a au moins un auteur dont la clé normalisée est dans `keys`."""
+    """Mask: the book has at least one author whose normalised key is in `keys`."""
     return df["authors"].map(lambda lst: any(author_key(a) in keys for a in lst))
 
 
 def get_books_by_author(df: pd.DataFrame, name: str, min_score: int = 85) -> pd.DataFrame:
-    """Tous les livres du catalogue d'un auteur (saisie libre, matching flou).
+    """All the catalogue books by an author (free-text input, fuzzy matching).
 
-    La comparaison se fait sur la clé normalisée : toutes les variantes
-    d'orthographe d'un même auteur sont retrouvées.
+    The comparison uses the normalised key: all spelling variants of the
+    same author are found.
     """
     author = find_author(df, name, min_score)
     if author is None:
@@ -915,13 +915,13 @@ def apply_constraints(df: pd.DataFrame,
                       period: str | None = None,
                       excluded_authors: Iterable[str] | None = None,
                       fiction_only: bool | None = None) -> pd.Series:
-    """Masque booléen des livres qui respectent les contraintes « dures » de l'utilisateur.
+    """Boolean mask of the books that satisfy the user's "hard" constraints.
 
-    * audience : "Children" / "Young Adult" / "Adult" (ou une liste) ; None = tous
-    * formats : sous-ensemble de ("Paperback", "Hardback") ; vide/None = tous
-    * period : clé de config.PUBLICATION_PERIODS (année de PUBLICATION) ; None = toutes
-    * excluded_authors : noms (saisie libre acceptée, matching flou)
-    * fiction_only : True = fiction, False = non-fiction, None = les deux
+    * audience: "Children" / "Young Adult" / "Adult" (or a list); None = all
+    * formats: subset of ("Paperback", "Hardback"); empty/None = all
+    * period: key of config.PUBLICATION_PERIODS (PUBLICATION year); None = all
+    * excluded_authors: names (free-text input accepted, fuzzy matching)
+    * fiction_only: True = fiction, False = non-fiction, None = both
     """
     mask = pd.Series(True, index=df.index)
     if audience:

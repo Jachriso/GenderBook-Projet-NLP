@@ -1,26 +1,26 @@
 """
-embeddings.py : moteur sémantique du projet (Personne 3).
+embeddings.py: the project's semantic engine (Person 3).
 
-Rôle : transformer n'importe quel texte en VECTEUR (embedding) et mesurer la proximité
-de sens entre deux textes par similarité COSINUS. Toute l'équipe passe par ici :
-    - P2 (enrichissement)   : engine.encode(...)            (compatible avec son SbertEncoder)
+Role: turn any text into a VECTOR (embedding) and measure how close two texts are
+in meaning with COSINE similarity. The whole team goes through here:
+    - P2 (enrichment)       : engine.encode(...)            (compatible with its SbertEncoder)
     - P4 (scoring)          : engine.search, engine.label_matrix, engine.best_sentence
-    - P5 (app)              : engine chargé une fois (st.cache_resource)
-    - P6 (évaluation)       : comparaison des encodeurs
+    - P5 (app)              : engine loaded once (st.cache_resource)
+    - P6 (evaluation)       : comparison of the encoders
 
-Choix techniques (à justifier dans le rapport) :
-    * Modèle par défaut : sentence-transformers/all-MiniLM-L6-v2 (config.EMBEDDING_MODEL).
-      SBERT = BERT affiné pour que deux phrases de même sens aient des vecteurs proches
-      (entraîné sur plus d'un milliard de paires de phrases). 384 dimensions, rapide sur CPU.
-    * Vecteurs NORMALISÉS (norme L2 = 1). Conséquence : cosinus(a, b) = a · b.
-      Le score d'un livre pour une requête est donc un simple produit matrice-vecteur :
-      12 000 livres comparés en une seule opération numpy (quelques millisecondes).
-    * Cache disque : les 12 000 livres sont encodés UNE fois puis rechargés depuis un .npy.
-      Un fichier d'identifiants (book_ids.json) garantit que la ligne i du .npy correspond
-      bien au livre i du catalogue (sinon on ré-encode automatiquement).
-    * Textes longs : MiniLM ne lit que 256 tokens (le reste est ignoré sans avertissement).
-      Deux stratégies : "truncate" (par défaut) ou "chunks" (découpage en morceaux de
-      phrases complètes, encodage de chaque morceau, moyenne des vecteurs).
+Technical choices (to be justified in the report):
+    * Default model: sentence-transformers/all-MiniLM-L6-v2 (config.EMBEDDING_MODEL).
+      SBERT = BERT fine-tuned so that two sentences with the same meaning get close vectors
+      (trained on more than a billion sentence pairs). 384 dimensions, fast on CPU.
+    * NORMALISED vectors (L2 norm = 1). Consequence: cosine(a, b) = a · b.
+      The score of a book for a query is therefore a simple matrix-vector product:
+      12,000 books compared in a single numpy operation (a few milliseconds).
+    * Disk cache: the 12,000 books are encoded ONCE and then reloaded from a .npy.
+      An identifier file (book_ids.json) guarantees that row i of the .npy really
+      matches book i of the catalogue (otherwise it re-encodes automatically).
+    * Long texts: MiniLM only reads 256 tokens (the rest is silently ignored).
+      Two strategies: "truncate" (default) or "chunks" (split into chunks of
+      complete sentences, each chunk encoded, vectors averaged).
 """
 from __future__ import annotations
 
@@ -36,22 +36,22 @@ import pandas as pd
 from src import config
 from src.preprocessing import preprocess_for_transformer, split_sentences
 
-# Raccourcis de noms de modèles (pratique dans les notebooks et pour P6)
+# Model name shortcuts (handy in the notebooks and for P6)
 MODEL_ALIASES = {
-    "minilm": config.EMBEDDING_MODEL,       # 384 dim, rapide
-    "mpnet": config.EMBEDDING_MODEL_ALT,    # 768 dim, plus précis, ~5x plus lent
+    "minilm": config.EMBEDDING_MODEL,       # 384 dim, fast
+    "mpnet": config.EMBEDDING_MODEL_ALT,    # 768 dim, more accurate, ~5x slower
 }
 LONG_TEXT_MODES = ("truncate", "chunks")
 
 
 # --------------------------------------------------------------------------- #
-# Fonctions utilitaires
+# Utility functions
 # --------------------------------------------------------------------------- #
 
 def l2_normalize(mat: np.ndarray) -> np.ndarray:
-    """Ramène chaque ligne à une norme de 1 (pour que produit scalaire = cosinus).
+    """Scale each row to a norm of 1 (so that dot product = cosine).
 
-    Les lignes nulles (texte vide) restent nulles au lieu de produire une division par zéro.
+    Zero rows (empty text) stay zero instead of causing a division by zero.
     """
     mat = np.asarray(mat, dtype=np.float32)
     norms = np.linalg.norm(mat, axis=-1, keepdims=True)
@@ -59,10 +59,10 @@ def l2_normalize(mat: np.ndarray) -> np.ndarray:
 
 
 def cosine_sim(a: np.ndarray, b: np.ndarray) -> np.ndarray:
-    """Similarité cosinus entre les lignes de a (n, d) et de b (m, d) -> matrice (n, m).
+    """Cosine similarity between the rows of a (n, d) and of b (m, d) -> matrix (n, m).
 
-    cos(a, b) = (a · b) / (||a|| · ||b||). On normalise d'abord, puis un seul produit
-    matriciel. Valeurs dans [-1, 1] : 1 = même direction (même sens), 0 = sans rapport.
+    cos(a, b) = (a · b) / (||a|| · ||b||). We normalise first, then a single matrix
+    product. Values in [-1, 1]: 1 = same direction (same meaning), 0 = unrelated.
     """
     a = l2_normalize(np.atleast_2d(a))
     b = l2_normalize(np.atleast_2d(b))
@@ -70,7 +70,7 @@ def cosine_sim(a: np.ndarray, b: np.ndarray) -> np.ndarray:
 
 
 def model_slug(model_name: str) -> str:
-    """Nom de fichier sûr à partir d'un nom de modèle.
+    """Safe file name from a model name.
 
     >>> model_slug("sentence-transformers/all-MiniLM-L6-v2")
     'all-MiniLM-L6-v2'
@@ -79,26 +79,26 @@ def model_slug(model_name: str) -> str:
 
 
 def resolve_model_name(name: str) -> str:
-    """Accepte un alias ('minilm', 'mpnet') ou un nom Hugging Face complet."""
+    """Accept an alias ('minilm', 'mpnet') or a full Hugging Face name."""
     return MODEL_ALIASES.get(name.lower(), name)
 
 
 # --------------------------------------------------------------------------- #
-# Le moteur
+# The engine
 # --------------------------------------------------------------------------- #
 
 class EmbeddingEngine:
-    """Moteur sémantique : encodage SBERT, cache des livres, recherche par cosinus.
+    """Semantic engine: SBERT encoding, book cache, cosine search.
 
-    Contrat d'interface (PLAN §4.4) :
-        encode(texts)              -> np.ndarray (n, d), L2-normalisé
-        book_matrix()              -> np.ndarray (N, d), aligné sur le catalogue
+    Interface contract (PLAN §4.4):
+        encode(texts)              -> np.ndarray (n, d), L2-normalised
+        book_matrix()              -> np.ndarray (N, d), aligned with the catalogue
         label_matrix(block)        -> (labels, np.ndarray (L, d))
-        search(query_vec, k=300)   -> (indices, scores) triés par score décroissant
-        best_sentence(query_vec, text) -> (phrase, score)
+        search(query_vec, k=300)   -> (indices, scores) sorted by decreasing score
+        best_sentence(query_vec, text) -> (sentence, score)
 
-    Exemple :
-        engine = EmbeddingEngine()                       # rien n'est chargé à ce stade
+    Example:
+        engine = EmbeddingEngine()                       # nothing is loaded at this stage
         q = engine.encode(["a boy discovers he is a wizard"])[0]
         idx, scores = engine.search(q, k=3)
         engine.books.iloc[idx][["title", "authors_str"]]
@@ -116,16 +116,16 @@ class EmbeddingEngine:
     ) -> None:
         """
         Args:
-            model_name: nom Hugging Face ou alias ('minilm', 'mpnet').
-            books: catalogue à indexer. None -> data_loader.load_books() au premier besoin
-                   (books_enriched si disponible, sinon books_clean, sinon l'échantillon).
-            long_text: "truncate" (le modèle coupe à max_seq_length) ou "chunks".
-            device: "cuda", "cpu" ou None (= GPU s'il existe, sinon CPU).
-            batch_size: nombre de textes encodés en parallèle (64 convient au CPU ;
-                        monter à 128-256 sur GPU).
-            cache_dir: dossier des .npy (data/embeddings/).
-            model: modèle déjà chargé (sert aux tests avec un faux modèle, ou à partager
-                   un modèle entre deux moteurs).
+            model_name: Hugging Face name or alias ('minilm', 'mpnet').
+            books: catalogue to index. None -> data_loader.load_books() when first needed
+                   (books_enriched if available, otherwise books_clean, otherwise the sample).
+            long_text: "truncate" (the model cuts at max_seq_length) or "chunks".
+            device: "cuda", "cpu" or None (= GPU if there is one, otherwise CPU).
+            batch_size: number of texts encoded in parallel (64 suits a CPU;
+                        raise to 128-256 on a GPU).
+            cache_dir: folder of the .npy files (data/embeddings/).
+            model: already loaded model (used by the tests with a fake model, or to share
+                   one model between two engines).
         """
         if long_text not in LONG_TEXT_MODES:
             raise ValueError(f"long_text doit valoir {LONG_TEXT_MODES}, reçu {long_text!r}")
@@ -134,22 +134,22 @@ class EmbeddingEngine:
         self.device = device
         self.batch_size = batch_size
         self.cache_dir = Path(cache_dir)
-        self._model = model            # chargé paresseusement (voir propriété `model`)
+        self._model = model            # lazily loaded (see the `model` property)
         self._books = books
         self._book_matrix: np.ndarray | None = None
         self._labels: dict[str, tuple[list[str], np.ndarray]] = {}
 
     # ------------------------------------------------------------------ #
-    # Chargement paresseux du modèle et du catalogue
+    # Lazy loading of the model and the catalogue
     # ------------------------------------------------------------------ #
     @property
     def model(self):
-        """Le modèle SBERT n'est chargé qu'au PREMIER encodage (~2 s, ~90 Mo pour MiniLM).
+        """The SBERT model is only loaded at the FIRST encoding (~2 s, ~90 MB for MiniLM).
 
-        Importer ce module ou créer le moteur reste donc instantané (utile pour l'app).
+        Importing this module or creating the engine is therefore instantaneous (useful for the app).
         """
         if self._model is None:
-            from sentence_transformers import SentenceTransformer  # import lourd : seulement ici
+            from sentence_transformers import SentenceTransformer  # heavy import: only here
             device = self.device
             if device is None:
                 import torch
@@ -159,17 +159,17 @@ class EmbeddingEngine:
 
     @property
     def max_tokens(self) -> int:
-        """Nombre maximal de tokens lus par le modèle (256 pour MiniLM, 384 pour MPNet)."""
+        """Maximum number of tokens read by the model (256 for MiniLM, 384 for MPNet)."""
         return int(self.model.max_seq_length)
 
     @property
     def dim(self) -> int:
-        """Dimension des vecteurs (384 pour MiniLM, 768 pour MPNet)."""
+        """Dimension of the vectors (384 for MiniLM, 768 for MPNet)."""
         return int(self.encode(["dimension probe"]).shape[1])
 
     @property
     def books(self) -> pd.DataFrame:
-        """Catalogue indexé (chargé au premier accès via data_loader de P1)."""
+        """Indexed catalogue (loaded on first access through P1's data_loader)."""
         if self._books is None:
             from src.data_loader import load_books
             self._books = load_books()
@@ -180,7 +180,7 @@ class EmbeddingEngine:
         return self.books["book_id"].astype(str).tolist()
 
     # ------------------------------------------------------------------ #
-    # 1. Encodage
+    # 1. Encoding
     # ------------------------------------------------------------------ #
     def encode(
         self,
@@ -188,16 +188,16 @@ class EmbeddingEngine:
         batch_size: int | None = None,
         show_progress: bool = False,
     ) -> np.ndarray:
-        """Encode une liste de textes -> matrice (n, d) float32, chaque ligne de norme 1.
+        """Encode a list of texts -> float32 matrix (n, d), each row of norm 1.
 
-        Étapes :
-            1. nettoyage minimal (preprocess_for_transformer : on garde le contexte) ;
-            2. encodage SBERT (troncature) ou par morceaux (mode "chunks") ;
-            3. normalisation L2 (produit scalaire = cosinus).
+        Steps:
+            1. minimal cleaning (preprocess_for_transformer: the context is kept);
+            2. SBERT encoding (truncation) or by chunks ("chunks" mode);
+            3. L2 normalisation (dot product = cosine).
 
-        Signature compatible avec SbertEncoder de P2 (batch_size, show_progress).
+        Signature compatible with P2's SbertEncoder (batch_size, show_progress).
         """
-        if isinstance(texts, str):          # tolérance : un seul texte -> liste d'un élément
+        if isinstance(texts, str):          # tolerance: a single text -> list of one element
             texts = [texts]
         cleaned = [preprocess_for_transformer(t) for t in texts]
         if len(cleaned) == 0:
@@ -207,34 +207,36 @@ class EmbeddingEngine:
         return self._encode_raw(cleaned, batch_size, show_progress)
 
     def _encode_raw(self, texts: list[str], batch_size: int | None, show_progress: bool) -> np.ndarray:
-        """Appel direct au modèle (le modèle tronque lui-même à max_seq_length tokens)."""
+        """Direct call to the model (the model itself truncates at max_seq_length tokens)."""
         emb = self.model.encode(
             list(texts),
             batch_size=batch_size or self.batch_size,
             show_progress_bar=show_progress,
             convert_to_numpy=True,
-            normalize_embeddings=True,   # norme 1 -> cosinus = produit scalaire
+            normalize_embeddings=True,   # norm 1 -> cosine = dot product
         )
         return np.asarray(emb, dtype=np.float32)
 
     # ------------------------------------------------------------------ #
-    # 2. Textes longs : comptage de tokens et découpage en morceaux
+    # 2. Long texts: token counting and chunking
     # ------------------------------------------------------------------ #
     def count_tokens(self, texts: Iterable[str]) -> np.ndarray:
-        """Nombre de tokens (WordPiece) de chaque texte, SANS les tokens spéciaux [CLS]/[SEP].
+        """Number of (WordPiece) tokens of each text, WITHOUT the special tokens [CLS]/[SEP].
 
-        Sert à mesurer combien de résumés dépassent la limite du modèle (notebook 03).
+        Used to measure how many blurbs exceed the model's limit (notebook 03).
         """
         texts = [preprocess_for_transformer(t) for t in texts]
-        ids = self.model.tokenizer(texts, add_special_tokens=False)["input_ids"]
+        # verbose=False: we COUNT the tokens, we do not send them to the model; no need for
+        # transformers to warn "sequence length is longer than the maximum" for every long text.
+        ids = self.model.tokenizer(texts, add_special_tokens=False, verbose=False)["input_ids"]
         return np.array([len(x) for x in ids], dtype=int)
 
     def chunk_text(self, text: str, max_tokens: int | None = None) -> list[str]:
-        """Découpe un texte en morceaux de PHRASES COMPLÈTES tenant dans la limite du modèle.
+        """Split a text into chunks of COMPLETE SENTENCES that fit within the model's limit.
 
-        On remplit chaque morceau phrase par phrase tant que le total reste <= max_tokens
-        (limite du modèle moins 2 places pour [CLS] et [SEP]). Une phrase plus longue que
-        la limite forme un morceau à elle seule (et sera tronquée par le modèle).
+        Each chunk is filled sentence by sentence as long as the total stays <= max_tokens
+        (the model's limit minus 2 slots for [CLS] and [SEP]). A sentence longer than
+        the limit forms a chunk on its own (and will be truncated by the model).
         """
         limit = (max_tokens or self.max_tokens) - 2
         sentences = split_sentences(text) or [text]
@@ -243,7 +245,7 @@ class EmbeddingEngine:
         current: list[str] = []
         current_len = 0
         for sent, n_tok in zip(sentences, lengths):
-            if current and current_len + n_tok > limit:   # le morceau est plein : on le ferme
+            if current and current_len + n_tok > limit:   # the chunk is full: close it
                 chunks.append(" ".join(current))
                 current, current_len = [], 0
             current.append(sent)
@@ -253,13 +255,13 @@ class EmbeddingEngine:
         return chunks
 
     def _encode_chunked(self, texts: list[str], batch_size: int | None, show_progress: bool) -> np.ndarray:
-        """Mode "chunks" : vecteur du texte = moyenne (renormalisée) des vecteurs de ses morceaux.
+        """"chunks" mode: vector of the text = (renormalised) average of the vectors of its chunks.
 
-        Tous les morceaux de tous les textes sont encodés en UN seul appel (plus rapide),
-        puis regroupés par texte d'origine grâce à `owner`.
+        All the chunks of all the texts are encoded in ONE single call (faster),
+        then grouped by original text thanks to `owner`.
         """
         all_chunks: list[str] = []
-        owner: list[int] = []                       # owner[k] = indice du texte du morceau k
+        owner: list[int] = []                       # owner[k] = index of the text of chunk k
         for i, text in enumerate(texts):
             parts = self.chunk_text(text) if text else [""]
             all_chunks.extend(parts)
@@ -267,14 +269,14 @@ class EmbeddingEngine:
         chunk_emb = self._encode_raw(all_chunks, batch_size, show_progress)
         owner_arr = np.asarray(owner)
         out = np.zeros((len(texts), chunk_emb.shape[1]), dtype=np.float32)
-        np.add.at(out, owner_arr, chunk_emb)       # somme des morceaux de chaque texte
-        return l2_normalize(out)                   # moyenne puis norme 1 (même direction)
+        np.add.at(out, owner_arr, chunk_emb)       # sum of the chunks of each text
+        return l2_normalize(out)                   # average then norm 1 (same direction)
 
     # ------------------------------------------------------------------ #
-    # 3. Matrice des livres (avec cache disque)
+    # 3. Book matrix (with disk cache)
     # ------------------------------------------------------------------ #
     def _cache_paths(self) -> tuple[Path, Path, Path]:
-        """data/embeddings/{modèle}[_chunks]_books.npy + _book_ids.json + _meta.json"""
+        """data/embeddings/{model}[_chunks]_books.npy + _book_ids.json + _meta.json"""
         suffix = "" if self.long_text == "truncate" else f"_{self.long_text}"
         stem = f"{model_slug(self.model_name)}{suffix}"
         return (self.cache_dir / f"{stem}_books.npy",
@@ -282,13 +284,13 @@ class EmbeddingEngine:
                 self.cache_dir / f"{stem}_meta.json")
 
     def book_matrix(self, force: bool = False, show_progress: bool = True) -> np.ndarray:
-        """Matrice (N, d) des embeddings des livres, ligne i = livre i de `self.books`.
+        """Matrix (N, d) of the book embeddings, row i = book i of `self.books`.
 
-        1. si elle est déjà en mémoire : on la renvoie ;
-        2. sinon, si un cache disque existe ET que ses identifiants correspondent exactement
-           au catalogue courant (même livres, même ordre) : on le charge ;
-        3. sinon : on encode la colonne `embed_text` (préparée par P1) et on sauvegarde.
-        `force=True` ré-encode dans tous les cas.
+        1. if it is already in memory: it is returned;
+        2. otherwise, if a disk cache exists AND its identifiers exactly match the
+           current catalogue (same books, same order): it is loaded;
+        3. otherwise: the `embed_text` column (prepared by P1) is encoded and saved.
+        `force=True` re-encodes in all cases.
         """
         if self._book_matrix is not None and not force:
             return self._book_matrix
@@ -296,20 +298,20 @@ class EmbeddingEngine:
         npy_path, ids_path, meta_path = self._cache_paths()
         ids = self.book_ids
 
-        # Étape 2 : cache valide ?
+        # Step 2: valid cache?
         if not force and npy_path.exists() and ids_path.exists():
             cached_ids = json.loads(ids_path.read_text(encoding="utf-8"))
             if cached_ids == ids:
                 self._book_matrix = np.load(npy_path)
                 return self._book_matrix
 
-        # Étape 3 : encodage complet du catalogue
+        # Step 3: full encoding of the catalogue
         texts = self.books["embed_text"].fillna("").astype(str).tolist()
         start = time.perf_counter()
         matrix = self.encode(texts, show_progress=show_progress)
         elapsed = time.perf_counter() - start
 
-        # Sauvegarde : matrice + identifiants (alignement) + métadonnées (traçabilité)
+        # Save: matrix + identifiers (alignment) + metadata (traceability)
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         np.save(npy_path, matrix)
         ids_path.write_text(json.dumps(ids), encoding="utf-8")
@@ -325,15 +327,15 @@ class EmbeddingEngine:
         return matrix
 
     # ------------------------------------------------------------------ #
-    # 4. Matrices des labels (blocs Genre / Themes / Style / Atmosphere)
+    # 4. Label matrices (Genre / Themes / Style / Atmosphere blocks)
     # ------------------------------------------------------------------ #
     def label_matrix(self, block: str) -> tuple[list[str], np.ndarray]:
-        """(labels, matrice (L, d)) des phrases descriptives d'un bloc de blocks.json.
+        """(labels, matrix (L, d)) of the descriptive sentences of a block of blocks.json.
 
-        On RÉUTILISE enrichment.encode_blocks (P2) pour obtenir exactement les mêmes vecteurs
-        que ceux qui ont servi à enrichir le catalogue. En particulier, pour Themes (v2),
-        chaque thème = moyenne renormalisée de 4 phrases (blocks.json + theme_variants.json).
-        Les 4 blocs sont encodés au premier appel puis gardés en mémoire (~66 labels : instantané).
+        We REUSE enrichment.encode_blocks (P2) to get exactly the same vectors as those
+        used to enrich the catalogue. In particular, for Themes (v2), each theme =
+        renormalised average of 4 sentences (blocks.json + theme_variants.json).
+        The 4 blocks are encoded on the first call and then kept in memory (~66 labels: instantaneous).
         """
         if block not in config.BLOCKS:
             raise KeyError(f"Bloc inconnu {block!r}. Blocs disponibles : {config.BLOCKS}")
@@ -345,7 +347,7 @@ class EmbeddingEngine:
         return self._labels[block]
 
     # ------------------------------------------------------------------ #
-    # 5. Recherche des livres les plus proches
+    # 5. Search for the closest books
     # ------------------------------------------------------------------ #
     def search(
         self,
@@ -353,38 +355,38 @@ class EmbeddingEngine:
         k: int = config.RETRIEVAL_TOP_K,
         mask: np.ndarray | None = None,
     ) -> tuple[np.ndarray, np.ndarray]:
-        """Les k livres les plus proches d'une requête -> (indices, scores), du meilleur au moins bon.
+        """The k books closest to a query -> (indices, scores), from best to worst.
 
         Args:
-            query_vec: vecteur (d,) de la requête, issu de encode() (donc normalisé).
-            k: nombre de résultats (300 par défaut = étape 1 « retrieval » de P4).
-            mask: tableau booléen (N,) optionnel ; False = livre exclu (filtres durs).
+            query_vec: (d,) vector of the query, from encode() (hence normalised).
+            k: number of results (300 by default = P4's step 1 "retrieval").
+            mask: optional boolean array (N,); False = book excluded (hard filters).
 
-        Calcul : scores = M @ q (cosinus de chaque livre, car tout est normalisé), puis
-        np.argpartition pour isoler les k meilleurs en O(N) sans trier les 12 000 scores.
-        Pour 12 000 livres, une requête prend environ 1 ms : un index FAISS n'est pas nécessaire.
+        Computation: scores = M @ q (cosine of each book, since everything is normalised), then
+        np.argpartition isolates the k best in O(N) without sorting the 12,000 scores.
+        For 12,000 books a query takes about 1 ms: a FAISS index is not needed.
         """
         matrix = self.book_matrix()
         q = l2_normalize(np.asarray(query_vec, dtype=np.float32).reshape(-1))
-        scores = matrix @ q                                   # (N,) cosinus
+        scores = matrix @ q                                   # (N,) cosine
         if mask is not None:
             scores = np.where(np.asarray(mask, dtype=bool), scores, -np.inf)
             k = min(k, int(np.asarray(mask, dtype=bool).sum()))
         k = max(0, min(k, scores.shape[0]))
         if k == 0:
             return np.array([], dtype=int), np.array([], dtype=np.float32)
-        top = np.argpartition(-scores, k - 1)[:k]             # les k meilleurs, non triés
-        top = top[np.argsort(-scores[top])]                   # tri des k seulement
+        top = np.argpartition(-scores, k - 1)[:k]             # the k best, unsorted
+        top = top[np.argsort(-scores[top])]                   # sort only the k
         return top, scores[top].astype(np.float32)
 
     # ------------------------------------------------------------------ #
-    # 6. Explicabilité : phrase du résumé la plus proche de la requête
+    # 6. Explainability: sentence of the blurb closest to the query
     # ------------------------------------------------------------------ #
     def best_sentence(self, query_vec: np.ndarray, text: str) -> tuple[str, float]:
-        """Phrase d'un résumé la plus proche (cosinus) de la requête, et son score.
+        """Sentence of a blurb closest (cosine) to the query, and its score.
 
-        Utilisée par P4/P5 pour montrer d'OÙ vient la recommandation :
-        « Recommandé notamment pour ce passage : <phrase> (similarité 0.62) ».
+        Used by P4/P5 to show WHERE the recommendation comes from:
+        "Recommended in particular for this passage: <sentence> (similarity 0.62)".
         """
         sentences = split_sentences(text)
         if not sentences:
@@ -395,7 +397,7 @@ class EmbeddingEngine:
         best = int(np.argmax(sims))
         return sentences[best], float(sims[best])
 
-    def __repr__(self) -> str:  # affichage lisible dans les notebooks
+    def __repr__(self) -> str:  # readable display in the notebooks
         loaded = "chargé" if self._model is not None else "non chargé"
         n = None if self._book_matrix is None else self._book_matrix.shape[0]
         return (f"EmbeddingEngine(model={self.model_name!r}, long_text={self.long_text!r}, "

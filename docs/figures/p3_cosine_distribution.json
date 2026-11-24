@@ -1,0 +1,19 @@
+{
+  "n_books": 12000,
+  "n_queries": 14,
+  "top_k": 300,
+  "catalogue": {
+    "p5": -0.0235,
+    "p50": 0.1127,
+    "p95": 0.2708,
+    "max": 0.5778
+  },
+  "candidates": {
+    "p5": 0.2662,
+    "p50": 0.3283,
+    "p95": 0.4096,
+    "min": 0.2427
+  },
+  "share_candidates_above_catalogue_p95": 1.0,
+  "model": "sentence-transformers/all-MiniLM-L6-v2"
+}

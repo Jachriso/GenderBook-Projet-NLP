@@ -1,4 +1,4 @@
-"""Tests unitaires de src/data_loader.py (lancer : python -m pytest tests -q)."""
+"""Unit tests of src/data_loader.py (run: python -m pytest tests -q)."""
 import pandas as pd
 import pytest
 
@@ -6,7 +6,7 @@ from src import config
 from src import data_loader as dl
 
 
-# --- Nettoyage du texte -------------------------------------------------------
+# --- Text cleaning -------------------------------------------------------
 
 def test_parse_id_list():
     assert dl.parse_id_list("[214, 220, 237]") == [214, 220, 237]
@@ -36,7 +36,7 @@ def test_strip_marketing_keeps_story_content():
     assert dl.strip_marketing(text) == text
 
 
-# --- Titres, auteurs, éditions -----------------------------------------------
+# --- Titles, authors, editions -----------------------------------------------
 
 @pytest.mark.parametrize("raw, expected", [
     ("Dune : Deluxe Edition", "Dune"),
@@ -73,11 +73,11 @@ def test_dedup_merges_editions_of_same_work():
     ])
     out = dl.dedup_editions(df)
     assert len(out) == 1
-    assert "Edition" not in out.iloc[0]["title"]          # on garde l'édition standard
+    assert "Edition" not in out.iloc[0]["title"]          # the standard edition is kept
 
 
 def test_dedup_keeps_different_books_of_same_author():
-    # Même auteur, notes à ±1 % : ce sont pourtant deux romans différents
+    # Same author, ratings within ±1%: yet these are two different novels
     df = _editions_frame([
         ("Make Me", ["Lee Child"], 61532, 3.99),
         ("Personal", ["Lee Child"], 61516, 3.97),
@@ -85,7 +85,7 @@ def test_dedup_keeps_different_books_of_same_author():
     assert len(dl.dedup_editions(df)) == 2
 
 
-# --- Catégories et public -------------------------------------------------------
+# --- Categories and audience -------------------------------------------------------
 
 @pytest.mark.parametrize("name, expected", [
     ("Contemporary Fiction", "fiction"),
@@ -118,7 +118,7 @@ def test_truncate_at_sentence():
     assert len(out) <= 100 and out.endswith(".")
 
 
-# --- Catalogue produit (si déjà généré) -----------------------------------------
+# --- Produced catalogue (if already generated) -----------------------------------------
 
 catalogue_missing = not config.BOOKS_CLEAN.exists()
 
@@ -154,15 +154,15 @@ def test_utilities():
 
 
 # =============================================================================
-# Tests ajoutés suite à la revue de la PR #1
+# Tests added after the review of PR #1
 # =============================================================================
 
-# --- 🔴 Variantes d'orthographe des auteurs ----------------------------------
+# --- 🔴 Author spelling variants ----------------------------------
 
 def test_canonical_author_names_unifies_variants():
     lists = [["J.K. Rowling"], ["J.K. Rowling"], ["J. K. Rowling"], ["Jim Kay", "J K Rowling"]]
     canonical = dl.canonical_author_names(lists)
-    assert canonical["jkrowling"] == "J.K. Rowling"          # orthographe la plus fréquente
+    assert canonical["jkrowling"] == "J.K. Rowling"          # most frequent spelling
     assert dl.canonicalize_authors(["Jim Kay", "J K Rowling"], canonical) == ["Jim Kay", "J.K. Rowling"]
 
 
@@ -185,10 +185,10 @@ def test_excluded_author_removes_all_spellings():
     assert books.loc[mask, "title"].tolist() == ["Other"]
 
 
-# --- 🟠 strip_marketing ne doit pas couper le contenu -------------------------
+# --- 🟠 strip_marketing must not cut content -------------------------
 
 def test_publication_attribution_stops_before_story():
-    # "--People" est un magazine : "Meghan" est déjà le début de l'intrigue
+    # "--People" is a magazine: "Meghan" is already the start of the plot
     text = '"A premium delivery." --People Meghan doesn\'t know Agatha, but Agatha knows Meghan.'
     assert dl.strip_marketing(text) == "Meghan doesn't know Agatha, but Agatha knows Meghan."
 
@@ -208,10 +208,10 @@ def test_in_story_quote_is_kept():
 
 
 def test_sales_sentence_is_kept_when_removal_would_cut_a_phrase():
-    # retirer "The #1 New York Times bestselling" laisserait "debut novel that introduced..."
+    # removing "The #1 New York Times bestselling" would leave "debut novel that introduced..."
     text = "The #1 New York Times bestselling debut novel that introduced Khaled Hosseini to millions."
     assert dl.strip_marketing(text) == text
-    # mais un bandeau autonome est retiré
+    # but a standalone banner is removed
     assert dl.strip_marketing("#1 NEW YORK TIMES BESTSELLER - A pair of sisters meet.") == "A pair of sisters meet."
 
 
@@ -221,7 +221,7 @@ def test_praise_section_is_removed():
     assert dl.strip_marketing(text) == "Two boys grow up in Kabul."
 
 
-# --- Mineur : boilerplate phrase par phrase --------------------------------------
+# --- Minor: sentence-by-sentence boilerplate --------------------------------------
 
 def test_strip_boilerplate_keeps_real_content():
     text = ("Dorothy is swept away to the magical land of Oz. The original book has been in the public "
@@ -231,7 +231,7 @@ def test_strip_boilerplate_keeps_real_content():
     assert out.startswith("Dorothy") and out.endswith("lion.")
 
 
-# --- Mineur : doublons dus à la ponctuation ----------------------------------------
+# --- Minor: duplicates caused by punctuation ----------------------------------------
 
 def test_normalize_title_punctuation():
     assert dl.normalize_title("Cat's Eye") == dl.normalize_title("Cats Eye")
@@ -249,7 +249,7 @@ def test_dedup_merges_punctuation_and_space_variants(a, b):
 
 
 def test_dedup_does_not_merge_short_title_into_unrelated_book():
-    # mêmes notes par coïncidence, "Civil War" inclus dans un titre plus long, auteurs différents
+    # same ratings by coincidence, "Civil War" contained in a longer title, different authors
     df = _editions_frame([
         ("Civil War", ["Lucan"], 3000, 3.9),
         ("Spider-Man: Miles Morales Vol. 2: Civil War II", ["Brian Michael Bendis"], 3010, 3.9),
@@ -257,7 +257,7 @@ def test_dedup_does_not_merge_short_title_into_unrelated_book():
     assert len(dl.dedup_editions(df)) == 2
 
 
-# --- Mineur : produits dérivés --------------------------------------------------
+# --- Minor: spin-off products --------------------------------------------------
 
 @pytest.mark.parametrize("title, authors, expected", [
     ("Harry Potter : A Pop-Up Book", ["Andrew Williamson"], True),
@@ -275,17 +275,17 @@ def test_companion_products(title, authors, expected):
 @pytest.mark.skipif(catalogue_missing, reason="catalogue absent")
 def test_catalogue_review_fixes():
     df = dl.load_books(config.BOOKS_CLEAN)
-    # une seule orthographe par auteur
+    # a single spelling per author
     ex = df[["authors"]].explode("authors").dropna()
     assert (ex.groupby(ex["authors"].map(dl.author_key))["authors"].nunique() == 1).all()
-    # tous les Harry Potter de Rowling sont retrouvés, et tous exclus
+    # all of Rowling's Harry Potter books are found, and all excluded
     rowling = dl.get_books_by_author(df, "jk rowling")
     assert rowling["title"].str.startswith("Harry Potter and the").sum() == 7
     mask = dl.apply_constraints(df, excluded_authors=["J. K. Rowling"])
     assert not df.loc[mask, "title"].str.startswith("Harry Potter and the").any()
-    # pas de doublon titre + auteur (ponctuation et espaces ignorés)
+    # no title + author duplicate (punctuation and spaces ignored)
     key = df["title"].map(lambda t: dl.normalize_title(dl.display_title(t)).replace(" ", "")) \
         + "|" + df["main_author"].map(dl.author_key)
     assert not key.duplicated().any()
-    # pas de produit dérivé
+    # no spin-off product
     assert not df["title"].str.contains("Pop-Up|Page to Screen|Film Wizardry", case=False).any()

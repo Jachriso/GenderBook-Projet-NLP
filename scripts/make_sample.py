@@ -1,11 +1,11 @@
 """
-Fabrique data/processed/books_enriched_sample.parquet comme SOUS-ENSEMBLE EXACT de books_enriched.parquet.
+Build data/processed/books_enriched_sample.parquet as an EXACT SUBSET of books_enriched.parquet.
 
-Pourquoi : l'ancien échantillon était ré-enrichi sur 500 livres isolés ; la normalisation par label dépend du catalogue
-entier, donc ses labels différaient de ceux du fichier complet (seulement 32-38 % identiques). Ici on ne recalcule rien :
-on extrait les 500 livres de books_sample.parquet (P1) du fichier complet, puis on vérifie l'égalité.
+Why: the old sample was re-enriched on 500 isolated books; the per-label normalisation depends on the whole
+catalogue, so its labels differed from those of the full file (only 32-38% identical). Here nothing is recomputed:
+the 500 books of books_sample.parquet (P1) are extracted from the full file, then equality is checked.
 
-    python scripts/make_sample.py          # à lancer APRES python -m scripts.run_enrichment
+    python scripts/make_sample.py          # run AFTER python -m scripts.run_enrichment
 """
 import sys
 from pathlib import Path
@@ -27,7 +27,7 @@ def main() -> None:
     out = PROC / "books_enriched_sample.parquet"
     en.save_enriched(sub, out)
 
-    # vérification : relecture du fichier écrit et comparaison cellule par cellule avec le fichier complet
+    # check: re-read the written file and compare it cell by cell with the full file
     chk = pd.read_parquet(out)
     ref = full.assign(book_id=full["book_id"].astype(str)).set_index("book_id").loc[chk["book_id"].astype(str)]
     norm = lambda v: v if isinstance(v, str) else [str(x) for x in v]

@@ -1,29 +1,29 @@
 """
-enrichment.py : enrichissement sémantique du catalogue (Personne 2).
+enrichment.py: semantic enrichment of the catalogue (Person 2).
 
-Le dataset Book Depository ne contient NI thèmes, NI style, NI mots-clés, et ses
-1 078 catégories sont bruitées. Ce module DÉRIVE ces informations par analyse
-sémantique et produit ``books_enriched.parquet`` (colonnes du contrat PLAN §4.1) :
+The Book Depository dataset contains NEITHER themes, NOR style, NOR keywords, and its
+1,078 categories are noisy. This module DERIVES this information through semantic
+analysis and produces ``books_enriched.parquet`` (contract columns, PLAN §4.1):
 
-    genres        : list[str]  (top 3, bloc Genre)
-    themes        : list[str]  (top 3, bloc Themes)
-    styles        : list[str]  (top 2, bloc Style)
-    atmospheres   : list[str]  (1 ambiance + 1 époque SEULEMENT si elle est nette, bloc Atmosphere)
-    keywords      : list[str]  (top 5, méthode type KeyBERT)
-    label_scores  : str JSON   {bloc: {label: cosinus}}  (load_books() le reconvertit en dict)
+    genres        : list[str]  (top 3, Genre block)
+    themes        : list[str]  (top 3, Themes block)
+    styles        : list[str]  (top 2, Style block)
+    atmospheres   : list[str]  (1 mood + 1 period ONLY if it is clear-cut, Atmosphere block)
+    keywords      : list[str]  (top 5, KeyBERT-like method)
+    label_scores  : JSON str   {block: {label: cosine}}  (load_books() converts it back to a dict)
 
-Pipeline :
-    1. blocks.json (taxonomie, 1 phrase descriptive par label)  -> load_blocks()
-    2. catégories Book Depository -> genres (règles + embeddings) -> build_category_map()
-    3. genres des livres                                          -> assign_genres()
-    4. zero-shot par embeddings (Themes / Style / Atmosphere)     -> assign_labels()
-       Themes v2 : chaque thème = moyenne de 4 phrases (theme_variants.json), intégrée ICI,
-       donc `run_enrichment` reproduit toujours la v2 (plus de patch a posteriori).
-    5. mots-clés (groupes nominaux + TF-IDF + rerank embeddings + MMR) -> extract_keywords()
+Pipeline:
+    1. blocks.json (taxonomy, 1 descriptive sentence per label)   -> load_blocks()
+    2. Book Depository categories -> genres (rules + embeddings) -> build_category_map()
+    3. genres of the books                                        -> assign_genres()
+    4. zero-shot with embeddings (Themes / Style / Atmosphere)    -> assign_labels()
+       Themes v2: each theme = average of 4 sentences (theme_variants.json), built in HERE,
+       so `run_enrichment` always reproduces v2 (no more after-the-fact patch).
+    5. keywords (noun phrases + TF-IDF + embedding rerank + MMR) -> extract_keywords()
     6. export                                                     -> save_enriched()
 
-Tout encodeur exposant ``encode(list[str]) -> np.ndarray`` (L2-normalisé) convient :
-``SbertEncoder`` ci-dessous, ou ``EmbeddingEngine`` de P3 quand il sera prêt.
+Any encoder exposing ``encode(list[str]) -> np.ndarray`` (L2-normalised) works:
+``SbertEncoder`` below, or P3's ``EmbeddingEngine`` once it is ready.
 """
 from __future__ import annotations
 
@@ -37,7 +37,7 @@ import numpy as np
 import pandas as pd
 
 # --------------------------------------------------------------------------- #
-# Chemins et constantes
+# Paths and constants
 # --------------------------------------------------------------------------- #
 ROOT = Path(__file__).resolve().parents[1]
 BLOCKS_PATH = ROOT / "data" / "reference" / "blocks.json"
@@ -48,10 +48,10 @@ DEFAULT_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 
 BLOCK_NAMES = ["Genre", "Themes", "Style", "Atmosphere"]
 
-# Nombre de labels gardés par livre pour chaque bloc (contrat PLAN §4.1).
+# Number of labels kept per book for each block (contract PLAN §4.1).
 TOP_K = {"Genre": 3, "Themes": 3, "Style": 2, "Atmosphere": 2}
 
-# Mots sans valeur sémantique pour décrire un livre (vocabulaire d'éditeur, mots grammaticaux espagnols/français...).
+# Words without semantic value to describe a book (publisher vocabulary, Spanish/French function words...).
 EXTRA_STOP = {"edition", "editions", "introduction", "includes", "include", "including", "novel", "novels",
               "book", "books", "series", "bestselling", "best", "selling", "author", "authors", "new", "york",
               "times", "reader", "readers", "read", "story", "stories", "life", "world", "first", "years",
@@ -60,25 +60,25 @@ EXTRA_STOP = {"edition", "editions", "introduction", "includes", "include", "inc
               "los", "las", "del", "della", "und", "der", "die", "das", "les", "des", "une", "est", "por",
               "para", "con", "una", "que", "el", "la", "le", "il", "di", "da"}
 
-# Seuil z-score (par label, sur le catalogue) pour garder un label. Cf. threshold_report().
+# z-score threshold (per label, over the catalogue) to keep a label. See threshold_report().
 Z_MIN = 1.0
 
-# Atmosphere = 1 époque + 1 ambiance : on distingue les deux familles de labels.
+# Atmosphere = 1 period + 1 mood: the two families of labels are kept apart.
 ERA_LABELS = {"Ancient world", "Medieval", "18th-19th century", "20th century",
               "Contemporary", "Future"}
 
-# Époque du récit : on NE la force PAS. Elle n'est gardée que si son z-score est élevé ET nettement
-# supérieur à celui de la 2e meilleure époque. À calibrer avec scripts/calibrate_era.py.
+# Period of the story: it is NOT forced. It is only kept if its z-score is high AND clearly
+# higher than that of the 2nd best period. To be calibrated with scripts/calibrate_era.py.
 ERA_Z_MIN = 2.0
 ERA_MARGIN = 0.3
 
-# « Young Adult » et « Children's » viennent UNIQUEMENT de la colonne `audience` (P1) :
-# ni des catégories Book Depository, ni de la similarité avec la description.
+# "Young Adult" and "Children's" come ONLY from the `audience` column (P1):
+# neither from the Book Depository categories, nor from the similarity with the description.
 AUDIENCE_GENRES = {"Children's", "Young Adult"}
 AUDIENCE_TO_GENRE = {"Children": "Children's", "Young Adult": "Young Adult"}
 AUDIENCE_VOTE = 1.0
 
-# Vocabulaire d'éditeur / de mise en page : jamais un mot-clé utile.
+# Publisher / layout vocabulary: never a useful keyword.
 NOISE_WORDS = {"font", "size", "paperback", "hardcover", "hardback", "edition", "editions", "reprint",
                "foreword", "afterword", "preface", "appendix", "bibliography", "index", "page", "pages",
                "chapter", "chapters", "illustration", "illustrations", "illustrated", "ebook", "kindle",
@@ -86,16 +86,16 @@ NOISE_WORDS = {"font", "size", "paperback", "hardcover", "hardback", "edition", 
                "way", "thing", "things", "lot", "bit", "something", "everything", "nothing", "one", "two",
                "three", "man", "woman", "people", "day", "days", "place", "work", "works", "set", "sets"}
 
-# Pour le repli « genre le plus proche de la description », on respecte fiction / non-fiction.
+# For the "genre closest to the description" fallback, fiction / non-fiction is respected.
 NONFICTION_GENRES = {"Biography & Memoir", "History", "Science & Nature",
                      "Self-help & Psychology", "Philosophy & Religion",
                      "Business & Economics", "Cooking & Lifestyle"}
 NEUTRAL_GENRES = {"Poetry & Drama", "Graphic Novels & Comics", "Humour", "Children's", "Classics"}
 
-# Similarité minimale catégorie -> genre (embeddings) pour accepter l'association.
+# Minimum category -> genre similarity (embeddings) to accept the association.
 CATEGORY_MIN_SIM = 0.30
 
-# Poids du vote « genre le plus proche de la description » face aux votes des catégories (1 vote chacune).
+# Weight of the "genre closest to the description" vote against the category votes (1 vote each).
 EMB_VOTE = 1.0
 
 
@@ -104,12 +104,12 @@ class Encoder(Protocol):
 
 
 # --------------------------------------------------------------------------- #
-# 0. Encodeur minimal (en attendant EmbeddingEngine de P3)
+# 0. Minimal encoder (until P3's EmbeddingEngine is ready)
 # --------------------------------------------------------------------------- #
 class SbertEncoder:
-    """Encodeur SBERT minimal, chargement paresseux, sortie L2-normalisée.
+    """Minimal SBERT encoder, lazy loading, L2-normalised output.
 
-    Compatible avec l'interface ``encode`` de ``EmbeddingEngine`` (P3).
+    Compatible with the ``encode`` interface of ``EmbeddingEngine`` (P3).
     """
 
     def __init__(self, model_name: str = DEFAULT_MODEL, device: str | None = "cpu"):
@@ -119,7 +119,7 @@ class SbertEncoder:
 
     @property
     def model(self):
-        if self._model is None:  # on ne charge le modèle qu'au premier appel
+        if self._model is None:  # the model is only loaded on the first call
             from sentence_transformers import SentenceTransformer
             self._model = SentenceTransformer(self.model_name, device=self.device)
         return self._model
@@ -134,14 +134,14 @@ class SbertEncoder:
 
 def encode_cached(encoder: Encoder, texts: list[str], ids: list[str], cache_name: str,
                   batch_size: int = 64) -> np.ndarray:
-    """Encode ``texts`` en utilisant un cache disque (.npy + .json d'ids pour l'alignement)."""
+    """Encode ``texts`` using a disk cache (.npy + .json of ids for alignment)."""
     EMB_DIR.mkdir(parents=True, exist_ok=True)
     npy, ids_json = EMB_DIR / f"{cache_name}.npy", EMB_DIR / f"{cache_name}_ids.json"
     if npy.exists() and ids_json.exists() and json.loads(ids_json.read_text()) == list(ids):
         return np.load(npy)
     try:
         emb = encoder.encode(texts, batch_size=batch_size, show_progress=True)  # type: ignore[call-arg]
-    except TypeError:  # encodeur sans ces arguments (ex. EmbeddingEngine)
+    except TypeError:  # encoder without these arguments (e.g. EmbeddingEngine)
         emb = encoder.encode(texts)
     np.save(npy, emb)
     ids_json.write_text(json.dumps(list(ids)))
@@ -149,10 +149,10 @@ def encode_cached(encoder: Encoder, texts: list[str], ids: list[str], cache_name
 
 
 # --------------------------------------------------------------------------- #
-# 1. Référentiel
+# 1. Reference taxonomy
 # --------------------------------------------------------------------------- #
 def load_blocks(path: Path | str = BLOCKS_PATH) -> dict[str, dict[str, str]]:
-    """Charge et valide blocks.json : {bloc: {label: phrase descriptive}}."""
+    """Load and validate blocks.json: {block: {label: descriptive sentence}}."""
     blocks = json.loads(Path(path).read_text(encoding="utf-8"))
     missing = [b for b in BLOCK_NAMES if b not in blocks]
     if missing:
@@ -165,7 +165,7 @@ def load_blocks(path: Path | str = BLOCKS_PATH) -> dict[str, dict[str, str]]:
 
 
 def load_theme_variants(path: Path | str = THEME_VARIANTS_PATH, themes: Iterable[str] | None = None) -> dict:
-    """Charge theme_variants.json : {thème: [3 phrases]}. Vérifie qu'il couvre exactement les thèmes de blocks.json."""
+    """Load theme_variants.json: {theme: [3 sentences]}. Checks that it covers exactly the themes of blocks.json."""
     variants = json.loads(Path(path).read_text(encoding="utf-8"))
     if themes is not None and set(variants) != set(themes):
         raise ValueError(f"theme_variants.json incohérent avec blocks.json : {sorted(set(variants) ^ set(themes))}")
@@ -173,13 +173,13 @@ def load_theme_variants(path: Path | str = THEME_VARIANTS_PATH, themes: Iterable
 
 
 def encode_blocks(encoder: Encoder, blocks: dict[str, dict[str, str]], theme_variants="default"):
-    """Encode la PHRASE descriptive de chaque label (pas le mot seul).
+    """Encode the descriptive SENTENCE of each label (not the bare word).
 
-    Themes v2 : chaque thème est représenté par la MOYENNE (renormalisée) de l'embedding de sa phrase
-    de blocks.json et de ses variantes de theme_variants.json. ``theme_variants="default"`` charge le
-    fichier (erreur s'il manque : pas de retour silencieux à la v1) ; ``None`` désactive (v1, comparaison).
+    Themes v2: each theme is represented by the (renormalised) AVERAGE of the embedding of its sentence
+    in blocks.json and of its variants in theme_variants.json. ``theme_variants="default"`` loads the
+    file (error if it is missing: no silent fallback to v1); ``None`` disables it (v1, comparison).
 
-    Retourne {bloc: (labels, matrice (L, d))}.
+    Returns {block: (labels, matrix (L, d))}.
     """
     if isinstance(theme_variants, str) and theme_variants == "default":
         theme_variants = load_theme_variants(themes=blocks["Themes"])
@@ -199,11 +199,11 @@ def encode_blocks(encoder: Encoder, blocks: dict[str, dict[str, str]], theme_var
 
 
 # --------------------------------------------------------------------------- #
-# 2. Catégories Book Depository -> Genres
+# 2. Book Depository categories -> Genres
 # --------------------------------------------------------------------------- #
-# (regex, genre, regex d'exclusion). Un nom de catégorie peut déclencher PLUSIEURS règles
-# (ex. « Crime, Thriller & Mystery »). Ces règles couvrent les cas évidents ;
-# le reste est traité par similarité d'embeddings.
+# (regex, genre, exclusion regex). A category name can trigger SEVERAL rules
+# (e.g. "Crime, Thriller & Mystery"). These rules cover the obvious cases;
+# the rest is handled by embedding similarity.
 CATEGORY_RULES: list[tuple[str, str, str | None]] = [
     (r"fantasy|wizard|sword (and|&) sorcery|epic fantasy", "Fantasy", None),
     (r"sci[ -]?fi\b|science fiction|dystopi|space opera|cyberpunk", "Science Fiction", None),
@@ -234,7 +234,7 @@ _COMPILED_RULES = [(re.compile(p, re.I), g, re.compile(x, re.I) if x else None)
 
 
 def rule_genres(category_name: str) -> list[str]:
-    """Genres déclenchés par les règles mots-clés pour un nom de catégorie."""
+    """Genres triggered by the keyword rules for a category name."""
     found: list[str] = []
     for pat, genre, excl in _COMPILED_RULES:
         if pat.search(category_name) and not (excl and excl.search(category_name)):
@@ -244,7 +244,7 @@ def rule_genres(category_name: str) -> list[str]:
 
 
 def category_counts(df: pd.DataFrame) -> Counter:
-    """Fréquence de chaque catégorie dans le catalogue (colonne ``categories`` = liste de noms)."""
+    """Frequency of each category in the catalogue (``categories`` column = list of names)."""
     c: Counter = Counter()
     for cats in df["categories"]:
         c.update(list(cats) if cats is not None else [])
@@ -253,14 +253,14 @@ def category_counts(df: pd.DataFrame) -> Counter:
 
 def build_category_map(counts: Counter, encoder: Encoder, blocks: dict, existing: pd.DataFrame | None = None,
                        min_sim: float = CATEGORY_MIN_SIM) -> pd.DataFrame:
-    """Table de correspondance catégorie -> genre(s).
+    """Mapping table category -> genre(s).
 
-    Colonnes : category, n_books, rule_genres, emb_genre, emb_sim, genre_auto, genre_manual, genres_final.
-    - ``genre_auto``   : règles si elles se déclenchent, sinon genre le plus proche par embeddings
-                         (si cosinus >= min_sim, sinon vide : catégories génériques « Fiction », « Books »...).
-    - ``genre_manual`` : colonne À REMPLIR à la main (relecture des 100 premières catégories) ;
-                         séparateur « | ». Elle est conservée si le fichier est régénéré (``existing``).
-    - ``genres_final`` : genre_manual s'il existe, sinon genre_auto.
+    Columns: category, n_books, rule_genres, emb_genre, emb_sim, genre_auto, genre_manual, genres_final.
+    - ``genre_auto``   : rules if they trigger, otherwise the closest genre by embeddings
+                         (if cosine >= min_sim, otherwise empty: generic categories "Fiction", "Books"...).
+    - ``genre_manual`` : column TO BE FILLED by hand (review of the first 100 categories);
+                         separator "|". It is kept if the file is regenerated (``existing``).
+    - ``genres_final`` : genre_manual if it exists, otherwise genre_auto.
     """
     cats = [c for c, _ in counts.most_common()]
     genre_labels = list(blocks["Genre"])
@@ -283,7 +283,7 @@ def build_category_map(counts: Counter, encoder: Encoder, blocks: dict, existing
                      "emb_genre": emb_g, "emb_sim": round(emb_s, 3),
                      "genre_auto": "|".join(auto), "genre_manual": ""})
     out = pd.DataFrame(rows)
-    if existing is not None and "genre_manual" in existing:  # on garde le travail manuel déjà fait
+    if existing is not None and "genre_manual" in existing:  # the manual work already done is kept
         manual = existing.set_index("category")["genre_manual"].fillna("")
         out["genre_manual"] = out["category"].map(manual).fillna("")
     out["genres_final"] = np.where(out["genre_manual"].astype(str).str.strip() != "",
@@ -300,19 +300,19 @@ def load_category_map(path: Path | str = CATEGORY_MAP_PATH) -> pd.DataFrame:
 
 def assign_genres(df: pd.DataFrame, book_emb: np.ndarray, genre_labels: list[str], genre_emb: np.ndarray,
                   cat_map: pd.DataFrame, top_k: int = TOP_K["Genre"]) -> tuple[list[list[str]], dict]:
-    """Genres de chaque livre.
+    """Genres of each book.
 
-    1. Union des genres de ses catégories (la table de correspondance de build_category_map).
-    2. + « Children's » / « Young Adult » UNIQUEMENT d'après la colonne ``audience`` de P1
-       (jamais via les catégories ni les embeddings : ils les donnaient à des livres adultes).
-    3. Classement : nb de catégories qui soutiennent le genre, puis cosinus description <-> genre.
-    4. Repli (aucune catégorie exploitable) : genre le plus proche de la description,
-       restreint au domaine du livre (fiction / non-fiction).
+    1. Union of the genres of its categories (the mapping table of build_category_map).
+    2. + "Children's" / "Young Adult" ONLY from P1's ``audience`` column
+       (never through categories or embeddings: they gave them to adult books).
+    3. Ranking: number of categories supporting the genre, then description <-> genre cosine.
+    4. Fallback (no usable category): genre closest to the description,
+       restricted to the book's domain (fiction / non-fiction).
     """
     cat2genres = {r.category: [g for g in str(r.genres_final).split("|") if g]
                   for r in cat_map.itertuples()}
     g_index = {g: i for i, g in enumerate(genre_labels)}
-    sims = book_emb @ genre_emb.T  # (N, G) cosinus description <-> description du genre
+    sims = book_emb @ genre_emb.T  # (N, G) cosine description <-> genre description
 
     result, n_fallback = [], 0
     for i, row in enumerate(df.itertuples(index=False)):
@@ -321,9 +321,9 @@ def assign_genres(df: pd.DataFrame, book_emb: np.ndarray, genre_labels: list[str
             votes.update(g for g in cat2genres.get(cat, []) if g not in AUDIENCE_GENRES)
         n_cat_votes = sum(votes.values())
 
-        # Genre le plus proche de la DESCRIPTION, cohérent avec le domaine fiction / non-fiction.
-        # Il vote toujours (poids EMB_VOTE) : corrige les catégories commerciales trompeuses
-        # (ex. Harry Potter classé « Sci Fi » par Book Depository).
+        # Genre closest to the DESCRIPTION, consistent with the fiction / non-fiction domain.
+        # It always votes (weight EMB_VOTE): fixes misleading commercial categories
+        # (e.g. Harry Potter classified as "Sci Fi" by Book Depository).
         is_fic = bool(getattr(row, "is_fiction", True))
         allowed = [g for g in genre_labels if g not in AUDIENCE_GENRES
                    and ((g in NEUTRAL_GENRES) or ((g in NONFICTION_GENRES) != is_fic))]
@@ -331,7 +331,7 @@ def assign_genres(df: pd.DataFrame, book_emb: np.ndarray, genre_labels: list[str
         if n_cat_votes == 0:
             n_fallback += 1
         votes[emb_best] += EMB_VOTE
-        # Public visé : seule source de « Children's » / « Young Adult » = colonne `audience` de P1.
+        # Target audience: the only source of "Children's" / "Young Adult" = P1's `audience` column.
         aud_genre = AUDIENCE_TO_GENRE.get(getattr(row, "audience", None))
         if aud_genre in g_index:
             votes[aud_genre] += AUDIENCE_VOTE
@@ -343,20 +343,20 @@ def assign_genres(df: pd.DataFrame, book_emb: np.ndarray, genre_labels: list[str
 
 
 # --------------------------------------------------------------------------- #
-# 3. Zero-shot par embeddings (Themes / Style / Atmosphere)
+# 3. Zero-shot with embeddings (Themes / Style / Atmosphere)
 # --------------------------------------------------------------------------- #
 def score_block(book_emb: np.ndarray, label_emb: np.ndarray) -> np.ndarray:
-    """Cosinus (N, L) entre description de chaque livre et phrase de chaque label (vecteurs normalisés)."""
+    """Cosine (N, L) between the description of each book and the sentence of each label (normalised vectors)."""
     return book_emb @ label_emb.T
 
 
 def zscore_columns(sims: np.ndarray) -> np.ndarray:
-    """Normalise les scores par label : centrage par label + échelle COMMUNE à tout le bloc.
+    """Normalise the scores per label: per-label centring + a scale SHARED by the whole block.
 
-    Pourquoi centrer : certains labels ont un cosinus moyen élevé pour TOUS les livres (phrases génériques).
-    Soustraire la moyenne du label revient à demander « ce livre est-il plus proche de ce label que le livre moyen ? ».
-    Pourquoi une échelle commune (et non un écart-type par label) : diviser par l'écart-type de chaque label
-    gonflait artificiellement les labels peu dispersés et produisait des labels aberrants (Gatsby -> « Freedom »).
+    Why centre: some labels have a high average cosine for ALL books (generic sentences).
+    Subtracting the label's mean amounts to asking "is this book closer to this label than the average book?".
+    Why a shared scale (and not one standard deviation per label): dividing by each label's standard deviation
+    artificially inflated the less dispersed labels and produced aberrant labels (Gatsby -> "Freedom").
     """
     centered = sims - sims.mean(0, keepdims=True)
     return centered / max(float(centered.std()), 1e-9)
@@ -365,10 +365,10 @@ def zscore_columns(sims: np.ndarray) -> np.ndarray:
 def select_labels(z: np.ndarray, labels: list[str], top_k: int, z_min: float = Z_MIN,
                   min_keep: int = 1, group_of: dict[str, str] | None = None,
                   group_max: int | None = None) -> list[list[str]]:
-    """Garde, pour chaque livre, les ``top_k`` meilleurs labels dont le z-score >= z_min.
+    """Keep, for each book, the ``top_k`` best labels whose z-score >= z_min.
 
-    - ``min_keep`` : on garde toujours au moins ce nombre de labels (jamais de livre sans label).
-    - ``group_of`` / ``group_max`` : limite le nombre de labels par famille (ex. 1 époque + 1 ambiance).
+    - ``min_keep`` : at least this number of labels is always kept (never a book without a label).
+    - ``group_of`` / ``group_max`` : limits the number of labels per family (e.g. 1 period + 1 mood).
     """
     out = []
     for row in z:
@@ -391,12 +391,12 @@ def select_labels(z: np.ndarray, labels: list[str], top_k: int, z_min: float = Z
 
 def select_atmospheres(z: np.ndarray, labels: list[str], z_min: float = Z_MIN,
                        era_z_min: float = ERA_Z_MIN, era_margin: float = ERA_MARGIN) -> list[list[str]]:
-    """Atmosphère = 1 ambiance + 1 époque SEULEMENT si elle est nette.
+    """Atmosphere = 1 mood + 1 period ONLY if it is clear-cut.
 
-    - Ambiance : la meilleure, gardée si z >= z_min (au moins une ambiance si aucune époque n'est retenue).
-    - Époque   : jamais forcée. Gardée si z >= era_z_min ET supérieure d'au moins era_margin à la
-                 2e meilleure époque (sinon le livre n'a pas d'époque, ce qui est un résultat valable).
-    Les labels sont rendus du plus au moins proche.
+    - Mood   : the best one, kept if z >= z_min (at least one mood if no period is kept).
+    - Period : never forced. Kept if z >= era_z_min AND higher by at least era_margin than the
+               2nd best period (otherwise the book has no period, which is a valid result).
+    Labels are returned from closest to least close.
     """
     era_idx = [j for j, l in enumerate(labels) if l in ERA_LABELS]
     mood_idx = [j for j, l in enumerate(labels) if l not in ERA_LABELS]
@@ -416,7 +416,7 @@ def select_atmospheres(z: np.ndarray, labels: list[str], z_min: float = Z_MIN,
 
 def assign_labels(book_emb: np.ndarray, labels: list[str], label_emb: np.ndarray, block: str,
                   z_min: float = Z_MIN, top_k: int | None = None, era_z_min: float = ERA_Z_MIN):
-    """Zero-shot par embeddings pour un bloc. Retourne (labels par livre, matrice de cosinus brute)."""
+    """Zero-shot with embeddings for one block. Returns (labels per book, raw cosine matrix)."""
     sims = score_block(book_emb, label_emb)
     z = zscore_columns(sims)
     if block == "Atmosphere":
@@ -426,7 +426,7 @@ def assign_labels(book_emb: np.ndarray, labels: list[str], label_emb: np.ndarray
 
 def threshold_report(sims: np.ndarray, labels: list[str], block: str,
                      thresholds: Iterable[float] = (0.0, 0.5, 1.0, 1.5, 2.0)) -> pd.DataFrame:
-    """Aide à CALIBRER le seuil z_min : nb moyen de labels / livre et % de livres sans label au seuil."""
+    """Helps CALIBRATE the z_min threshold: average number of labels / book and % of books without a label at the threshold."""
     z = zscore_columns(sims)
     rows = []
     for t in thresholds:
@@ -445,7 +445,7 @@ def assign_labels_from_z(z, labels, block, z_min):
 
 def era_coverage_report(sims: np.ndarray, labels: list[str],
                         thresholds: Iterable[float] = (1.0, 1.5, 2.0, 2.5, 3.0), margin: float = ERA_MARGIN) -> pd.DataFrame:
-    """Aide à CALIBRER ERA_Z_MIN : part des livres qui reçoivent une époque selon le seuil."""
+    """Helps CALIBRATE ERA_Z_MIN: share of books that receive a period depending on the threshold."""
     z = zscore_columns(sims)
     rows = []
     for t in thresholds:
@@ -456,7 +456,7 @@ def era_coverage_report(sims: np.ndarray, labels: list[str],
 
 
 def build_label_scores(sims_by_block: dict[str, tuple[list[str], np.ndarray]], decimals: int = 3) -> list[str]:
-    """label_scores par livre = chaîne JSON {bloc: {label: cosinus}} (contrat : dict reconverti par load_books)."""
+    """label_scores per book = JSON string {block: {label: cosine}} (contract: dict converted back by load_books)."""
     n = next(iter(sims_by_block.values()))[1].shape[0]
     out = []
     for i in range(n):
@@ -466,7 +466,7 @@ def build_label_scores(sims_by_block: dict[str, tuple[list[str], np.ndarray]], d
 
 
 # --------------------------------------------------------------------------- #
-# 4. Mots-clés (méthode type KeyBERT)
+# 4. Keywords (KeyBERT-like method)
 # --------------------------------------------------------------------------- #
 def _words(phrase: str) -> set[str]:
     return set(phrase.split())
@@ -474,10 +474,10 @@ def _words(phrase: str) -> set[str]:
 
 def mmr_select(cand_emb: np.ndarray, doc_emb: np.ndarray, phrases: list[str], top_n: int = 5,
                diversity: float = 0.5) -> list[str]:
-    """Maximal Marginal Relevance : pertinence au document vs redondance avec les mots-clés déjà choisis.
+    """Maximal Marginal Relevance: relevance to the document vs redundancy with the keywords already chosen.
 
-    On écarte aussi un candidat inclus dans un mot-clé déjà choisi (ou l'inverse) :
-    « wizard » vs « boy wizard ».
+    A candidate contained in an already chosen keyword (or the reverse) is also discarded:
+    "wizard" vs "boy wizard".
     """
     if len(phrases) == 0:
         return []
@@ -488,7 +488,7 @@ def mmr_select(cand_emb: np.ndarray, doc_emb: np.ndarray, phrases: list[str], to
         score = (1 - diversity) * rel - diversity * red
         for j in chosen:
             score[j] = -np.inf
-        for j in range(len(phrases)):  # inclusion lexicale = redondance
+        for j in range(len(phrases)):  # lexical inclusion = redundancy
             if any(_words(phrases[j]) <= _words(phrases[k]) or _words(phrases[k]) <= _words(phrases[j])
                    for k in chosen):
                 score[j] = -np.inf
@@ -498,17 +498,17 @@ def mmr_select(cand_emb: np.ndarray, doc_emb: np.ndarray, phrases: list[str], to
     return [phrases[j] for j in chosen]
 
 
-# Catégories grammaticales qui peuvent composer un groupe nominal (adjectifs + noms). Les verbes, déterminants,
-# prépositions, adverbes, nombres... coupent le groupe : « deals issues » (verbe + nom) est donc écarté.
+# Parts of speech that can make up a noun phrase (adjectives + nouns). Verbs, determiners,
+# prepositions, adverbs, numbers... break the phrase: "deals issues" (verb + noun) is therefore discarded.
 NP_POS = {"ADJ", "NOUN", "PROPN"}
 NP_HEAD_POS = {"NOUN", "PROPN"}
 
 
 def noun_phrase_candidates(tagged: list[tuple[str, str]], stop: set[str], max_len: int = 2) -> list[str]:
-    """Candidats mots-clés d'UN texte étiqueté [(mot, POS), ...] : uniquement des groupes nominaux.
+    """Keyword candidates of ONE tagged text [(word, POS), ...]: noun phrases only.
 
-    On découpe le texte en suites maximales de mots ADJ/NOUN/PROPN sans mot vide ; chaque suite est rognée pour
-    finir par un nom (tête du groupe) puis on garde la tête seule et le bigramme « modificateur + tête ».
+    The text is split into maximal runs of ADJ/NOUN/PROPN words without stopwords; each run is trimmed to
+    end with a noun (head of the phrase), then we keep the head alone and the "modifier + head" bigram.
     """
     cands: list[str] = []
     run: list[tuple[str, str]] = []
@@ -535,7 +535,7 @@ def noun_phrase_candidates(tagged: list[tuple[str, str]], stop: set[str], max_le
 
 
 def spacy_tagger(model: str = "en_core_web_sm"):
-    """Étiqueteur grammatical spaCy : texts -> [[(mot, POS), ...], ...]. Lève ImportError/OSError si indisponible."""
+    """spaCy part-of-speech tagger: texts -> [[(word, POS), ...], ...]. Raises ImportError/OSError if unavailable."""
     import spacy
     nlp = spacy.load(model, disable=["parser", "ner", "lemmatizer"])
 
@@ -551,15 +551,15 @@ def _identity(x):
 def extract_keywords(df: pd.DataFrame, book_emb: np.ndarray, encoder: Encoder, top_n: int = 5,
                      n_candidates: int = 15, diversity: float = 0.5, ngram_range=(1, 2),
                      text_col: str = "description", pos: bool | str = "auto", tagger=None) -> list[list[str]]:
-    """Mots-clés par livre, selon le principe de KeyBERT (cosinus candidat <-> document + MMR).
+    """Keywords per book, following the KeyBERT principle (candidate <-> document cosine + MMR).
 
-    Candidats = GROUPES NOMINAUX uniquement (étiquetage grammatical spaCy), classés par TF-IDF, puis réordonnés par
-    embeddings + MMR. ``pos="auto"`` : utilise spaCy s'il est installé, sinon repli (n-grammes filtrés par liste noire,
-    plus bruité, avec un avertissement) ; ``pos=True`` : erreur si spaCy est absent ; ``pos=False`` : repli forcé.
-    ``tagger`` permet d'injecter un étiqueteur (tests).
+    Candidates = NOUN PHRASES only (spaCy part-of-speech tagging), ranked by TF-IDF, then reordered with
+    embeddings + MMR. ``pos="auto"``: uses spaCy if installed, otherwise a fallback (n-grams filtered by a blacklist,
+    noisier, with a warning); ``pos=True``: error if spaCy is missing; ``pos=False``: fallback forced.
+    ``tagger`` allows injecting a tagger (tests).
 
-    Pourquoi pas KeyBERT directement sur 12 000 livres ? KeyBERT encode TOUT le vocabulaire de la collection :
-    trop lent sur CPU. Ici on pré-filtre les ``n_candidates`` meilleurs candidats par livre avec TF-IDF.
+    Why not KeyBERT directly on 12,000 books? KeyBERT encodes the WHOLE vocabulary of the collection:
+    too slow on CPU. Here the ``n_candidates`` best candidates per book are pre-filtered with TF-IDF.
     """
     import warnings
     from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS, TfidfVectorizer
@@ -591,23 +591,23 @@ def extract_keywords(df: pd.DataFrame, book_emb: np.ndarray, encoder: Encoder, t
     authors = df["authors_str"].fillna("").astype(str) if "authors_str" in df else pd.Series([""] * len(df))
     author_words = [{w for w in re.findall(r"[a-z]{3,}", a.lower())} for a in authors]
 
-    # 1. top-n_candidates TF-IDF par livre
+    # 1. top-n_candidates TF-IDF per book
     cand_ids: list[np.ndarray] = []
     for i in range(X.shape[0]):
         start, end = X.indptr[i], X.indptr[i + 1]
         idx, val = X.indices[start:end], X.data[start:end]
         top = idx[np.argsort(-val)]
-        # on retire les candidats qui reprennent le nom d'un auteur du livre (« scott fitzgerald »)
+        # candidates that repeat the name of one of the book's authors are removed ("scott fitzgerald")
         if author_words[i]:
             top = np.array([j for j in top if not (set(vocab[j].split()) & author_words[i])], dtype=int)
         cand_ids.append(top[:n_candidates])
 
-    # 2. encodage de l'union dédupliquée des candidats
+    # 2. encoding of the deduplicated union of the candidates
     union = np.unique(np.concatenate(cand_ids)) if cand_ids else np.array([], dtype=int)
     pos_of = {int(j): k for k, j in enumerate(union)}
     union_emb = np.asarray(encoder.encode(vocab[union].tolist())) if len(union) else np.zeros((0, 1))
 
-    # 3. rerank embeddings + MMR
+    # 3. embedding rerank + MMR
     out = []
     for i, ids in enumerate(cand_ids):
         if len(ids) == 0:
@@ -619,7 +619,7 @@ def extract_keywords(df: pd.DataFrame, book_emb: np.ndarray, encoder: Encoder, t
 
 
 def extract_keywords_keybert_lib(texts: list[str], model_name: str = DEFAULT_MODEL, top_n: int = 5):
-    """Version avec la bibliothèque KeyBERT (à utiliser sur un ÉCHANTILLON pour comparer, ex. 200 livres)."""
+    """Version using the KeyBERT library (to be used on a SAMPLE for comparison, e.g. 200 books)."""
     from keybert import KeyBERT
     kw = KeyBERT(model=model_name)
     res = kw.extract_keywords(texts, keyphrase_ngram_range=(1, 2), stop_words="english",
@@ -628,7 +628,7 @@ def extract_keywords_keybert_lib(texts: list[str], model_name: str = DEFAULT_MOD
 
 
 # --------------------------------------------------------------------------- #
-# 5. Pipeline complet + export
+# 5. Full pipeline + export
 # --------------------------------------------------------------------------- #
 CONTRACT_NEW_COLS = ["genres", "themes", "styles", "atmospheres", "keywords", "label_scores"]
 
@@ -637,10 +637,10 @@ def enrich_catalogue(df: pd.DataFrame, encoder: Encoder, blocks: dict | None = N
                      cat_map: pd.DataFrame | None = None, book_emb: np.ndarray | None = None,
                      z_min: float = Z_MIN, with_keywords: bool = True, verbose: bool = True,
                      theme_variants="default", era_z_min: float = ERA_Z_MIN, keyword_pos: bool | str = "auto"):
-    """Enrichit ``df`` (books_clean ou books_sample). Retourne (df enrichi, rapport dict).
+    """Enrich ``df`` (books_clean or books_sample). Returns (enriched df, report dict).
 
-    Version FINALE en un seul appel : thèmes v2 (``theme_variants``), époque non forcée (``era_z_min``),
-    mots-clés en groupes nominaux (``keyword_pos``). Les colonnes de P2 déjà présentes sont écrasées.
+    FINAL version in a single call: v2 themes (``theme_variants``), period not forced (``era_z_min``),
+    noun-phrase keywords (``keyword_pos``). P2 columns already present are overwritten.
     """
     blocks = blocks or load_blocks()
     df = df.drop(columns=[c for c in CONTRACT_NEW_COLS if c in df.columns]).reset_index(drop=True)
@@ -686,10 +686,10 @@ def enrich_catalogue(df: pd.DataFrame, encoder: Encoder, blocks: dict | None = N
 
 
 def subset_enriched(enriched: pd.DataFrame, book_ids: Iterable) -> pd.DataFrame:
-    """Sous-ensemble EXACT de l'enrichissement complet (mêmes labels, mêmes scores), dans l'ordre de ``book_ids``.
+    """EXACT subset of the full enrichment (same labels, same scores), in the order of ``book_ids``.
 
-    C'est ainsi que se fabrique books_enriched_sample.parquet : jamais en ré-enrichissant 500 livres isolés
-    (la normalisation par label dépend du catalogue entier, les labels différaient donc de ceux du fichier complet).
+    This is how books_enriched_sample.parquet is built: never by re-enriching 500 isolated books
+    (the per-label normalisation depends on the whole catalogue, so the labels differed from those of the full file).
     """
     ids = [str(b) for b in book_ids]
     keyed = enriched.assign(book_id=enriched["book_id"].astype(str)).set_index("book_id", drop=False)
@@ -700,7 +700,7 @@ def subset_enriched(enriched: pd.DataFrame, book_ids: Iterable) -> pd.DataFrame:
 
 
 def save_enriched(df: pd.DataFrame, path: Path | str) -> None:
-    """Écrit le parquet en normalisant les types (listes Python, label_scores en chaîne JSON)."""
+    """Write the parquet, normalising the types (Python lists, label_scores as a JSON string)."""
     df = df.copy()
     for c in ["authors", "categories", "genres", "themes", "styles", "atmospheres", "keywords"]:
         if c in df.columns:
@@ -712,15 +712,15 @@ def save_enriched(df: pd.DataFrame, path: Path | str) -> None:
 
 
 # --------------------------------------------------------------------------- #
-# 6. Validation sur les livres annotés à la main
+# 6. Validation on the hand-annotated books
 # --------------------------------------------------------------------------- #
 def make_annotation_sheet(df: pd.DataFrame, n: int = 60, seed: int = 42, n_nonfiction: int = 15,
                           exclude_ids: Iterable = ()) -> pd.DataFrame:
-    """Feuille d'annotation (SANS les prédictions, pour ne pas biaiser l'annotateur).
+    """Annotation sheet (WITHOUT the predictions, so as not to bias the annotator).
 
-    ``exclude_ids`` : livres à écarter (ex. les 60 déjà annotés et utilisés pour le réglage), pour obtenir
-    un jeu de TEST jamais vu. Remplir gold_genres (1-3 labels) et gold_themes (2-3 labels) avec les labels
-    de blocks.json, séparés par « | ».
+    ``exclude_ids``: books to leave out (e.g. the 60 already annotated and used for tuning), to get
+    a never-seen TEST set. Fill in gold_genres (1-3 labels) and gold_themes (2-3 labels) with the labels
+    of blocks.json, separated by "|".
     """
     excl = {str(x) for x in exclude_ids}
     df = df[~df["book_id"].astype(str).isin(excl)]
@@ -734,7 +734,7 @@ def make_annotation_sheet(df: pd.DataFrame, n: int = 60, seed: int = 42, n_nonfi
 
 
 def evaluate_against_gold(enriched: pd.DataFrame, gold_path: Path | str) -> dict:
-    """Compare les labels prédits à l'annotation manuelle (colonnes gold_genres / gold_themes)."""
+    """Compare the predicted labels with the manual annotation (gold_genres / gold_themes columns)."""
     gold = pd.read_csv(gold_path, keep_default_na=False, dtype={"book_id": str})
     gold = gold[(gold["gold_genres"].str.strip() != "") | (gold["gold_themes"].str.strip() != "")]
     enriched = enriched.assign(book_id=enriched["book_id"].astype(str))
