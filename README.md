@@ -4,11 +4,44 @@ Book recommendation system based on the **semantic analysis** of the reader's pr
 
 ## Installation
 
+Python 3.11+ (tested with 3.12). From the root of the repo:
+
 ```bash
-python3 -m venv .venv          # Python 3.11+ (tested with 3.12)
+# macOS / Linux
+python3 -m venv .venv
 source .venv/bin/activate
+
+# Windows (PowerShell)
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+
+# then, on every system
 pip install -r requirements.txt
+python -m spacy download en_core_web_sm   # spaCy's English model, downloaded separately
 ```
+
+> Windows: if activation is refused ("running scripts is disabled"), run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once. If spaCy fails with "an application control policy has blocked this file", Windows Smart App Control is blocking it: use WSL (Ubuntu) instead.
+
+## Run the tests
+
+The `en_core_web_sm` model above is required (P3's encoder tests use it):
+
+```bash
+python -m pytest tests -q        # every test should pass
+```
+
+## Run the application (The Bibliophile's Quest)
+
+```bash
+python -m scripts.prepare_app       # once: downloads the SBERT model, encodes the 12,000 books, checks the demo personas
+streamlit run app/streamlit_app.py  # then open http://localhost:8501
+```
+
+- The first `prepare_app` takes a few minutes (model download + encoding); afterwards everything is read from `data/embeddings/` and the app starts in seconds.
+- Demo mode for the presentation: `http://localhost:8501/?demo=1` shows a folded "Demo mode" menu in the sidebar (3 pre-filled personas, reload of a saved `answers.json`). `?demo=1&persona=Dark%20academia%20reader` opens the questionnaire already filled in.
+- Answers are saved as timestamped JSON files in `data/responses/` (not versioned).
+- Offline (no Wi-Fi during the demo): once the model is downloaded, set `HF_HUB_OFFLINE=1` (PowerShell: `$env:HF_HUB_OFFLINE = "1"`) so that the model is not checked on Hugging Face.
+- Notebook `notebooks/05_app_and_visualization.ipynb` documents the app and its visualisations: select the `.venv` kernel, then Restart + Run All.
 
 ## Data (person 1: done ✅)
 
@@ -63,17 +96,8 @@ mask = apply_constraints(books, audience="Young Adult", formats=["Paperback"],
 data/          raw/ (not versioned) · processed/ · reference/ · embeddings/
 notebooks/     01_data_preparation.ipynb (P1) … 06_evaluation.ipynb
 src/           config.py · data_loader.py + marketing.py (P1) · enrichment.py · embeddings.py · scoring.py · …
-scripts/       build_dataset.py
+scripts/       build_dataset.py · prepare_app.py (app warm-up) · capture_screens.py (app screenshots) · …
 tests/         unit tests (python -m pytest tests -q)
 docs/          figures/ · report/ (sections of the PDF report) · slides/
-app/           Streamlit application
+app/           Streamlit application: streamlit_app.py (pages) · questions.py (questionnaire) · assets/ (logo)
 ```
-
-## Progress
-
-- [x] **P1: Data**: catalogue, EDA, utilities, 52 tests, report section (`docs/report/01_dataset.md`), slides (`docs/slides/01_dataset_slides.md`)
-- [ ] P2: Block taxonomy and enrichment (`books_enriched.parquet`)
-- [ ] P3: Semantic engine (embeddings)
-- [ ] P4: Scoring and recommendation
-- [ ] P5: Streamlit application and visualisations
-- [ ] P6: Evaluation, report, slides
