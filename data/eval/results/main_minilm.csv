@@ -1,0 +1,11 @@
+,persona,genre_precision@3,theme_overlap@3,hit@3,first_relevant_rank,reciprocal_rank,constraints_ok,loved_book_in_top3,n_candidates,seconds,top3,top_ids
+0,E01_children_fantasy,1.0,0.6666666666666666,0.0,,0.0,True,False,300,0.231,The Blue Fairy Book | The Witches | The Little Prince,"['9780486214375', '9780142410110', '9781840227864']"
+1,E02_nordic_noir,1.0,1.0,0.0,14.0,0.07142857142857142,True,False,300,0.069,Night Sin | The Man From Beijing | The One from the Other : A Bernie Gunther Nov,"['9780553564518', '9780099555353', '9780143112297']"
+2,E03_historical_romance,1.0,1.0,0.0,,0.0,True,False,300,0.053,"Twentieth Wife, the | Mine Till Midnight | Beauty","['9780743428187', '9780312949808', '9780385419406']"
+3,E04_ya_dystopia,1.0,1.0,0.0,41.0,0.024390243902439025,True,False,300,0.05,Rebellion | Unsouled | Alive : Book One of the Generations Trilogy,"['9780316503037', '9781442423701', '9780553393125']"
+4,E05_psychological_literary,1.0,1.0,0.0,10.0,0.1,True,False,300,0.047,False Memory | The Room | The Bad Place,"['9780345533296', '9780141195674', '9780425245194']"
+5,E06_cozy_mystery,0.6666666666666666,1.0,0.0,17.0,0.058823529411764705,True,False,300,0.044,"A Study In Scarlet Women | Cold Comfort Farm | Farewell, My Lovely","['9780425281406', '9781607960218', '9780394758275']"
+6,E07_memoir,1.0,1.0,0.0,31.0,0.03225806451612903,True,False,300,0.046,Life Among the Savages | The Writing Life | All You Can Ever Know : A Memoir,"['9780143128045', '9780060919887', '9781948226370']"
+7,E08_horror_no_king,1.0,1.0,0.0,34.0,0.029411764705882353,True,False,300,0.089,Petals on the Wind | The Amityville Horror | The Supernatural Enhancements,"['9780671729479', '9781416507697', '9780804168731']"
+8,E09_victorian_classics,1.0,1.0,1.0,3.0,0.3333333333333333,True,False,300,0.045,Howards End | Cold Comfort Farm | North and South,"['9780553212082', '9781607960218', '9780393979084']"
+9,E10_feel_good,1.0,1.0,0.0,,0.0,True,False,300,0.047,This Book Will Save Your Life | The Letter : Absolutely heartbreaking World W | Sweet,"['9781862079335', '9781472229953', '9780985661892']"

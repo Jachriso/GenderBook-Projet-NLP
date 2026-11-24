@@ -1,36 +1,87 @@
 # GenderBook: semantic book recommendation (ECE ING5 NLP project)
 
-Book recommendation system based on the **semantic analysis** of the reader's preferences expressed in natural language. It is theme 3 of the assignment *Semantic Analysis and Intelligent Contextual Recommendation Systems*. The full plan and the split of tasks are in [PLAN_PROJET.md](PLAN_PROJET.md).
+GenderBook recommends books from preferences written in **natural language**. A reader describes the book they would like to read, a book they loved and the atmosphere they are looking for; the system compares the **meaning** of these answers with the blurbs of 12,000 books (SBERT embeddings, cosine similarity), scores each book with an explainable formula, and returns a **top 3** with a score, the criteria behind it and a template-based explanation.
 
-## Installation
+It is theme 3 of the assignment *Semantic Analysis and Intelligent Contextual Recommendation Systems* (*Book Recommendation Based on Literary Preferences*), ECE ING5 Data & AI, 2026-27.
 
-Python 3.11+ (tested with 3.12). From the root of the repo:
+**Deliverables**
+
+| Deliverable required by the assignment | Where |
+|---|---|
+| Source code (Python modules and scripts) | `src/`, `scripts/`, `app/` (comments at every step) |
+| Documentation inline in notebooks | `notebooks/01` to `06`, one per part, executed and commented |
+| Documentation as a PDF (design choices, algorithms, libraries) | [`docs/GenderBook_report.pdf`](docs/GenderBook_report.pdf), built from the sections in [`docs/report/`](docs/report/) |
+| Working web questionnaire and demo | `streamlit run app/streamlit_app.py` (section 2) |
+
+```
+questionnaire ──► answers.json ──► build_profile() ──► filters ──► retrieval (top 300)
+                                   texts + Likert          ──► re-ranking (blurb + coverage of 4 blocks
+                                   → SBERT vectors              + popularity − "to avoid") ──► top 3 + explanations
+```
+
+## 1. Installation
+
+Python **3.11 or 3.12** is required (some dependencies, e.g. `gensim`, do not build on newer versions yet).
 
 ```bash
 # macOS / Linux
-python3 -m venv .venv
+python3.11 -m venv .venv
 source .venv/bin/activate
 
 # Windows (PowerShell)
-python -m venv .venv
+py -3.11 -m venv .venv
 .venv\Scripts\Activate.ps1
 
 # then, on every system
 pip install -r requirements.txt
-python -m spacy download en_core_web_sm   # spaCy's English model, downloaded separately
+python -m spacy download en_core_web_sm   # spaCy's English model, needed by the TF-IDF / GloVe preprocessing
+python -m pytest tests -q                 # all tests should pass
 ```
 
 > Windows: if activation is refused ("running scripts is disabled"), run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once. If spaCy fails with "an application control policy has blocked this file", Windows Smart App Control is blocking it: use WSL (Ubuntu) instead.
 
-## Run the tests
+The first time a model is used, `sentence-transformers` downloads it (≈ 90 MB for MiniLM) and the catalogue is encoded once (≈ 7 min on CPU), then cached in `data/embeddings/`.
 
-The `en_core_web_sm` model above is required (P3's encoder tests use it):
+## 2. Quick start
 
-```bash
-python -m pytest tests -q        # every test should pass
+### Get recommendations in Python
+
+```python
+from src.recommender import recommend
+
+answers = {
+    "free_text": {
+        "ideal_book": "A slow-building supernatural terror in an old house where something evil watches a family.",
+        "loved_book": "A writer looking after an empty mountain hotel in winter slowly goes mad.",
+        "atmosphere": "Creepy, claustrophobic and unsettling.",
+        "avoid": "No zombies, no splatter.",
+    },
+    "genres": ["Horror"], "themes": ["Madness & the mind"], "period": "No preference",
+    "audience": "Adult", "formats": [], "favorite_author": "Stephen King",
+    "guided": {"focus": "Characters", "standalone_only": False, "exclude_favorite_author": True},
+    "likert": {"complexity": 3, "pace": 2, "darkness": 5, "popularity": 2,
+               "w_genre": 5, "w_themes": 3, "w_style": 2, "w_atmosphere": 5},
+}
+profile, recs = recommend(answers, top_k=3)
+for r in recs:
+    print(r.rank, r.title, r.final_score, r.match_label)
+    print(r.explanation)
 ```
 
-## Run the application
+**`answers.json` format** (what the questionnaire produces and `recommend()` expects):
+
+| Key | Content | Question type |
+|---|---|---|
+| `free_text` | `ideal_book` (required), `loved_book`, `atmosphere`, `avoid` | open questions |
+| `genres`, `themes` | labels of `data/reference/blocks.json` | checkboxes |
+| `period` | story period (Atmosphere label) or `"No preference"` | multiple choice |
+| `audience`, `formats` | `Adult` / `Young Adult` / `Children` / `Any`; `Paperback`, `Hardback` | multiple choice |
+| `favorite_author`, `guided` | favourite author; `focus` (characters / plot / both), `exclude_favorite_author`, `standalone_only` | guided questions |
+| `likert` | `complexity`, `pace`, `darkness`, `popularity` and the importance of each block `w_genre`, `w_themes`, `w_style`, `w_atmosphere` (1 to 5) | Likert scales |
+
+Ready-made examples are in `data/eval/personas.json` and `data/reference/personas_p4.json`; the Python contract (`UserProfile`, `Recommendation`) is in `src/schemas.py`.
+
+### Run the web application
 
 ```bash
 python -m scripts.prepare_app       # once: downloads the SBERT model, encodes the 12,000 books, checks the demo personas
@@ -41,63 +92,128 @@ streamlit run app/streamlit_app.py  # then open http://localhost:8501
 - Demo mode for the presentation: `http://localhost:8501/?demo=1` shows a folded "Demo mode" menu in the sidebar (3 pre-filled personas, reload of a saved `answers.json`). `?demo=1&persona=Dark%20academia%20reader` opens the questionnaire already filled in.
 - Answers are saved as timestamped JSON files in `data/responses/` (not versioned).
 - Offline (no Wi-Fi during the demo): once the model is downloaded, set `HF_HUB_OFFLINE=1` (PowerShell: `$env:HF_HUB_OFFLINE = "1"`) so that the model is not checked on Hugging Face.
-- Notebook `notebooks/05_app_and_visualization.ipynb` documents the app and its visualisations: select the `.venv` kernel, then Restart + Run All.
 
-## Data (person 1: done ✅)
+## 3. Reproduce the whole pipeline
 
-The clean catalogue is **already versioned** in the repo. There is no need to download the raw dataset to work:
+Every intermediate file is versioned, so **nothing needs to be regenerated** to use the system. To rebuild everything from the raw data, run the steps in this order from the repo root:
 
-| File | Content |
-|---|---|
-| `data/processed/books_clean.parquet` | **final catalogue: 12,000 books** (one row per work) |
-| `data/processed/books_sample.parquet` | 500 stratified books, **full final schema** (P2 columns present but empty) |
-| `data/reference/category_stats.csv` | frequency of the catalogue's 1,078 Book Depository categories (for P2's categories → genres mapping) |
-| `data/reference/filtering_report.csv` | number of books after each filtering step |
+| Step | Command | Output | Owner |
+|---|---|---|---|
+| 1. Catalogue | `python -m scripts.build_dataset` (downloads the Kaggle dataset, ≈ 1.1 GB, ≈ 2 min) | `data/processed/books_clean.parquet` (12,000 books) | P1 |
+| 2. Enrichment | `python -m scripts.run_enrichment` | `data/processed/books_enriched.parquet` (genres, themes, styles, atmospheres, keywords) | P2 |
+| 3. Embeddings | `python -X utf8 -m scripts.p3_build_embeddings` (add `--model mpnet` for MPNet) | `data/embeddings/` cache | P3 |
+| 4. Semantic map | `python -X utf8 -m scripts.p3_semantic_map` | `data/embeddings/umap_2d.npy`, figures | P3 |
+| 5. Encoder demo | `python -X utf8 -m scripts.p3_compare_encoders` | TF-IDF vs GloVe vs SBERT on 500 books | P3 |
 
-To regenerate everything from the raw Kaggle dataset (automatic download, ≈ 1.1 GB in `data/raw/`, ≈ 2 min):
+The notebooks document each step with comments and explanations and can be run in the same order:
+
+| Notebook | Content | Report section |
+|---|---|---|
+| `notebooks/01_data_preparation.ipynb` | dataset origin, cleaning, EDA | 2 |
+| `notebooks/02_reference_enrichment.ipynb` | block taxonomy, zero-shot labels, keywords, validation | 3 |
+| `notebooks/03_semantic_engine.ipynb` | preprocessing, TF-IDF / GloVe / SBERT, cosine, model choice | 4 |
+| `notebooks/04_scoring_recommendation.ipynb` | user profile, scoring formula, calibration, explanations | 5 |
+| `notebooks/05_app_and_visualization.ipynb` | questionnaire, results page and visualisations | 6 |
+| `notebooks/06_evaluation.ipynb` | end-to-end evaluation on 10 test personas | 7 |
+
+## 4. Evaluation
+
+The evaluation of the complete system is in `notebooks/06_evaluation.ipynb` (metric code in `src/evaluation.py`). Run it from Jupyter or VS Code with the `.venv` kernel, or from the command line:
 
 ```bash
-python -m scripts.build_dataset
+jupyter nbconvert --to notebook --execute --inplace notebooks/06_evaluation.ipynb
 ```
 
-### Usage in the code
+- Test personas: `data/eval/personas.json` (expected books fixed by hand before running the system).
+- Results: `data/eval/results/*.csv`; figures: `docs/figures/06_*.png`.
+- Blind relevance judgments of every recommended book (pooling): `data/eval/judgments.csv` (final labels: judge A for E01–E04, judge B for E05–E10) and `data/eval/judgments_ai.csv` (judge B, all personas). All judgments were made by team members; the two judges are compared in section 8 of the notebook.
+- MPNet (`RUN_MPNET` in the first cell) needs the MPNet embeddings of the catalogue: encoding them takes ≈ 80 min on CPU (≈ 10 min on a GPU, e.g. Google Colab) with `python -X utf8 -m scripts.p3_build_embeddings --model mpnet`, or copy the three `all-mpnet-base-v2_*` cache files from a teammate into `data/embeddings/` (they are not versioned).
+- Main results (report section 7): with MiniLM, genre-precision@3 0.97 and theme-overlap@3 0.97 on the 10 test personas; the top 3 is twice as stable under rephrasing as with the lexical baseline (Jaccard 0.63 vs 0.28); judged precision@3 0.50 (TF-IDF + LSA and MPNet 0.60, GloVe 0.40).
+
+## 5. Tests
+
+```bash
+python -m pytest tests -q
+```
+
+Unit tests cover data cleaning, enrichment, preprocessing, the embedding engine, encoders, scoring, the questionnaire, the visualisations and the evaluation metrics. They use small fake models and run in a few seconds without downloading anything.
+
+## 6. Repository structure
+
+```
+data/
+  raw/                 Kaggle dataset (not versioned, downloaded by build_dataset)
+  processed/           books_clean.parquet (P1) · books_enriched.parquet (P2) · samples
+  reference/           blocks.json (taxonomy) · gold annotations · tuning personas · reports
+  embeddings/          embedding caches (not versioned) · umap_2d.npy (versioned)
+  eval/                evaluation personas, judgments and results (P6)
+notebooks/             01 … 06, one per part, commented step by step
+src/
+  config.py            paths and constants shared by all modules
+  data_loader.py, marketing.py                         P1: catalogue, cleaning, filters
+  enrichment.py                                        P2: genres, themes, styles, keywords
+  preprocessing.py, embeddings.py, encoders.py, semantic_map.py   P3: semantic engine
+  schemas.py, profile.py, scoring.py, recommender.py, explain.py, fallback_engine.py   P4
+  viz.py                                               P5: Plotly figures of the app
+  evaluation.py                                        P6: end-to-end evaluation
+scripts/               command-line versions of the pipeline steps · prepare_app.py (app warm-up) · capture_screens.py · build_report.py (PDF)
+tests/                 unit tests
+docs/
+  GenderBook_report.pdf  the documentation (PDF), built from docs/report/
+  report/              sections of the report (00 introduction … 12 appendix), in Markdown
+  figures/             figures used in the report
+app/                   Streamlit application (P5): streamlit_app.py (pages) · questions.py (questionnaire) · assets/ (logo)
+```
+
+## 7. Data
+
+The catalogue comes from the public **Book Depository Dataset** (Kaggle, `sp1thas/book-depository-dataset`, 1.1 million editions), reduced to 12,000 well-known works with an informative English blurb. Origin, cleaning and limitations are described in report section 2.
+
+| Main column | Description |
+|---|---|
+| `book_id`, `title`, `authors`, `main_author` | identifier (ISBN-13), display title, authors (one spelling per author) |
+| `description`, `embed_text` | cleaned blurb (no press quotes or banners) / text encoded by SBERT (`title. description`, ≈ 1,500 characters) |
+| `genres`, `themes`, `styles`, `atmospheres`, `keywords` | labels derived by semantic analysis (P2) |
+| `audience`, `domain`, `format`, `pub_year` | filters: Children / Young Adult / Adult, Fiction / Non-fiction, Paperback / Hardback, year of the **edition** |
+| `rating_avg`, `rating_count`, `popularity` | Goodreads ratings and a popularity score in [0, 1] |
 
 ```python
 from src.data_loader import load_books, get_books_by_author, apply_constraints
 
 books = load_books()                       # enriched > clean > sample (the best available)
-get_books_by_author(books, "jk rowling")   # all spellings -> the 7 Harry Potter books + The Cuckoo's Calling
-get_books_by_author(books, "stephen kng")  # fuzzy matching -> Stephen King's books
-mask = apply_constraints(books, audience="Young Adult", formats=["Paperback"],
-                         excluded_authors=["Suzanne Collins"], fiction_only=True)
+get_books_by_author(books, "stephen kng")  # fuzzy matching on author names
+mask = apply_constraints(books, audience="Young Adult", formats=["Paperback"], fiction_only=True)
 ```
 
-### Columns of `books_clean.parquet`
+## 8. Main libraries
 
-| Column | Description |
+| Library | Used for |
 |---|---|
-| `book_id` | identifier (ISBN-13 of the edition kept) |
-| `title` | display title, without edition mentions ("Deluxe Edition"…) |
-| `authors` / `authors_str` / `main_author` | list of authors (**a single spelling per author**) / string / main author (excluding illustrator, translator) |
-| `categories` | Book Depository categories (list of names) |
-| `description` | **text for NLP**: cleaned, without generic text, press quotes, commercial banners or "Praise for…" sections |
-| `description_raw` | description with minimal cleaning only (traceability) |
-| `embed_text` | **text to encode** = `title. description`, cleanly truncated at ≈ 1,500 characters |
-| `pub_year` | publication year of the **edition** (not the period of the story!) |
-| `rating_avg`, `rating_count` | Goodreads ratings |
-| `popularity` | score ∈ [0,1] = (rating/5) × log(1+number of ratings)/log(1+max) |
-| `audience` | `Children` / `Young Adult` / `Adult` (for-ages + categories) |
-| `domain`, `is_fiction` | `Fiction` / `Non-fiction` |
-| `format`, `for_ages`, `bestsellers_rank`, `image_url`, `url`, `isbn13`, `n_editions`, `n_words` | metadata |
+| `sentence-transformers` (+ PyTorch) | SBERT contextual embeddings: `all-MiniLM-L6-v2` (default), `all-mpnet-base-v2` (comparison) |
+| `scikit-learn` | TF-IDF baseline, truncated SVD (LSA), silhouette score |
+| `gensim` | GloVe word embeddings (`glove-wiki-gigaword-100`) |
+| `spaCy` (`en_core_web_sm`) | tokenisation, lemmatisation, part-of-speech tags (baselines, keywords, sentence splitting) |
+| `pandas`, `pyarrow`, `numpy` | data preparation, parquet storage, vectorised cosine scoring |
+| `rapidfuzz`, `langdetect`, `kagglehub` | fuzzy author matching, language check, dataset download |
+| `umap-learn` | 2D semantic map of the catalogue |
+| `streamlit`, `plotly` | web questionnaire, results page and interactive charts |
+| `pytest`, `jupyter` | unit tests, documented notebooks |
 
-## Repo structure
+Why each one was chosen is explained in the report (sections 4 and 6, and appendix B).
 
+### Rebuild the PDF report
+
+```bash
+python -m scripts.build_report      # docs/report/*.md -> docs/GenderBook_report.pdf (needs pandoc and Google Chrome)
 ```
-data/          raw/ (not versioned) · processed/ · reference/ · embeddings/
-notebooks/     01_data_preparation.ipynb (P1) … 06_evaluation.ipynb
-src/           config.py · data_loader.py + marketing.py (P1) · enrichment.py · embeddings.py · scoring.py · …
-scripts/       build_dataset.py · prepare_app.py (app warm-up) · capture_screens.py (app screenshots) · …
-tests/         unit tests (python -m pytest tests -q)
-docs/          figures/ · report/ (sections of the PDF report) · slides/
-app/           Streamlit application: streamlit_app.py (pages) · questions.py (questionnaire) · assets/ (logo)
-```
+
+## 9. Team
+
+| Member | Role | Responsibility |
+|---|---|---|
+| DUTERTRE Maxime | P1: Data engineering | dataset cleaning, catalogue, EDA |
+| BENLEMQADEM Hajar | P2: Taxonomy and enrichment | block taxonomy, genres, themes, styles, keywords, validation |
+| NOMO NGAH Marie | P3: Semantic engine | preprocessing, embeddings, encoder comparison, semantic map |
+| FAUTRAD Annabelle | P4: Scoring and recommendation | user profile, scoring formula, calibration, explanations |
+| PARRILLA Jade | P5: Application and visualisations | Streamlit questionnaire, results page, charts |
+| EBOBISSE Suzy | P6: Evaluation and integration | code reviews and merges, evaluation, README, report, slides |

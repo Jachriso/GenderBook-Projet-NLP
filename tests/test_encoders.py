@@ -149,7 +149,7 @@ def test_tfidf_lsa_requires_fit_and_corpus():
 
 
 def test_every_dense_encoder_returns_ndarray(books):
-    # PLAN contract: get_encoder(name).encode(texts) -> dense np.ndarray (except "tfidf", sparse)
+    # Team contract: get_encoder(name).encode(texts) -> dense np.ndarray (except "tfidf", sparse)
     from src.encoders import DENSE_ENCODER_NAMES
     texts = books["embed_text"].tolist()
     fakes = _fake_kwargs()

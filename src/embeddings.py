@@ -90,7 +90,7 @@ def resolve_model_name(name: str) -> str:
 class EmbeddingEngine:
     """Semantic engine: SBERT encoding, book cache, cosine search.
 
-    Interface contract (PLAN §4.4):
+    Interface contract shared by the team:
         encode(texts)              -> np.ndarray (n, d), L2-normalised
         book_matrix()              -> np.ndarray (N, d), aligned with the catalogue
         label_matrix(block)        -> (labels, np.ndarray (L, d))

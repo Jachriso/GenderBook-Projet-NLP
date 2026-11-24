@@ -1,7 +1,7 @@
 """
 Data structures shared between the recommendation engine (P4) and the app (P5).
 
-This file is the Python CONTRACT of section 4.4 of PLAN_PROJET.md:
+This file is the Python CONTRACT between the recommendation engine and the app:
 - ``UserProfile``     : what the system understood about the reader (output of profile.build_profile)
 - ``Recommendation``  : a recommended book with its score, its criteria and its explanation
 

@@ -1,0 +1,11 @@
+,persona,genre_precision@3,theme_overlap@3,hit@3,first_relevant_rank,reciprocal_rank,constraints_ok,loved_book_in_top3,n_candidates,seconds,top3,top_ids
+0,E01_children_fantasy,1.0,1.0,0.0,9.0,0.1111111111111111,True,False,300,0.216,The Wishing Spell | The Adventures of Beekle : The Unimaginary Fr | The Book of Lost Things,"['9780316201575', '9780316199988', '9781442429345']"
+1,E02_nordic_noir,1.0,0.5,0.0,75.0,0.013333333333333334,True,False,300,0.209,The Darkness : A Thriller | A Cold Day in Paradise | Midwinter Sacrifice,"['9781250231239', '9781250012685', '9781444721522']"
+2,E03_historical_romance,1.0,1.0,0.0,,0.0,True,False,300,0.203,"Beauty | Duke of Manhattan | Twentieth Wife, the","['9780385419406', '9781910747469', '9780743428187']"
+3,E04_ya_dystopia,1.0,0.6666666666666666,0.0,65.0,0.015384615384615385,True,False,300,0.208,Unsouled | Prized | Enclave,"['9781442423701', '9781250010315', '9780312551377']"
+4,E05_psychological_literary,1.0,1.0,0.0,32.0,0.03125,True,False,300,0.192,False Memory | The Room | Anthem,"['9780345533296', '9780141195674', '9780486492773']"
+5,E06_cozy_mystery,0.6666666666666666,1.0,0.0,95.0,0.010526315789473684,True,False,300,0.18,Telling Tales | The Little Stranger | Don't Look Back,"['9781250122773', '9781844086061', '9780156031363']"
+6,E07_memoir,1.0,0.5,0.0,13.0,0.07692307692307693,True,False,300,0.187,A Tale of Love and Darkness | I'm Down : A Memoir | The Beautiful Struggle : A Memoir,"['9780156032520', '9780312379094', '9780385527460']"
+7,E08_horror_no_king,1.0,1.0,1.0,1.0,1.0,True,False,300,0.227,Ghost Story | Hell House | The Amityville Horror,"['9780575084643', '9780312868857', '9781416507697']"
+8,E09_victorian_classics,1.0,1.0,0.0,29.0,0.034482758620689655,True,True,300,0.192,"Howards End | Clarissa, or the History of A Young Lady | Middlemarch : A Study of Provincial Life","['9780553212082', '9780140432152', '9780679405672']"
+9,E10_feel_good,1.0,1.0,0.0,102.0,0.00980392156862745,True,True,300,0.196,This Book Will Save Your Life | A Man Called Ove | The Gift,"['9781862079335', '9781476738017', '9780440221319']"

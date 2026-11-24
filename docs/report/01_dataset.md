@@ -48,6 +48,8 @@ The assignment requires a **contextual** analysis of the reader's preferences, n
 
 In the EDA, most of the rows discarded at the "description" stage are removed by the **length threshold** (≈ 295,000 raw descriptions under 300 characters), not by the generic-text detection (≈ 42,000). The two filters are logged separately.
 
+![Figure 2.1: number of books left after each filtering step (log scale)](../figures/01_filtering_funnel.png){width=85%}
+
 **Text cleaning.** The cleaning is deliberately **minimal**: decoding HTML entities, removing tags and URLs, Unicode (NFKC) and whitespace normalisation. We do not lowercase, remove stopwords or lemmatise, because contextual models use the full sentence (negations, punctuation, function words). This classic preprocessing is reserved for the TF-IDF and GloVe baselines. The text with minimal cleaning only is kept in `description_raw` for traceability.
 
 **Generic text, sentence by sentence.** The generic patterns ("facsimile reprint", "public domain", "print on demand"…) are applied **sentence by sentence**: the sentence concerned is removed and the rest is kept. The sentence "*The original book has been in the public domain since 1956*" disappears, but the blurb of *The Wizard of Oz* around it is kept. A book whose description was only generic text falls below the 300-character threshold and is discarded.
@@ -102,6 +104,8 @@ $$\text{Pop}(j) = \frac{\text{rating\_avg}_j}{5}\cdot\frac{\log(1+\text{rating\_
 The logarithm prevents a handful of best-sellers with several million ratings from crushing the rest of the catalogue.
 
 **Quality checked by 52 unit tests** (`tests/test_data_loader.py`). They cover in particular the cases flagged in review: author variants, press quotes, punctuation duplicates, spin-off products.
+
+![Figure 2.2: length of the encoded text in tokens, measured with the model's tokenizer](../figures/01_description_tokens.png){width=100%}
 
 ## 2.6 Limitations
 

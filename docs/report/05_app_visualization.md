@@ -8,4 +8,10 @@ The application, *GenderBook*, is built with **Streamlit** (`app/streamlit_app.p
 
 **Visualisations.** The figures come from pure Plotly functions in `src/viz.py`, with one colour per block. The **profile radar** shows, block by block, the labels closest to the answers: the user can check that the request was understood. The **"you vs the books" radar** overlays the importance given to each block and each book's score on it: it is the visual reading of the coverage score. The **stacked bars** break the final score down into contributions (synopsis, blocks, popularity, "avoid" penalty) that add up to the score. The **semantic map** shows the 12,000 books in 2D (UMAP on the SBERT embeddings, computed by P3): genres form coherent regions, the user is placed at the similarity-weighted average position of their fifteen closest books and the top 3 is highlighted. Finally, the **heatmap** crosses the user's sentences with the book's labels and its closest sentence: a dark cell links two different phrasings of the same idea, which illustrates the difference with keyword matching.
 
+![Figure 6.1: profile radar (what the system understood of the reader, block by block)](../figures/05_radar_profile.png){width=90%}
+
+![Figure 6.2: breakdown of the final score of the top 3 into contributions](../figures/05_score_breakdown.png){width=90%}
+
+![Figure 6.3: semantic map, with the user and the top 3 placed among the 12,000 books](../figures/05_similarity_map.png){width=90%}
+
 **Robustness.** Heavy resources are loaded once (`st.cache_resource`) and can be pre-computed (`scripts/prepare_app.py`). If no book passes the filters, the app offers to relax them; if the engine cannot load, it shows the error instead of crashing. Three pre-filled personas, in a demo menu opened with `?demo=1`, secure the demonstration.

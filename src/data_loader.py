@@ -744,7 +744,7 @@ def detect_languages(texts: pd.Series) -> list[str]:
     return out
 
 
-# Order and names of the contract columns (PLAN_PROJET.md §4.1)
+# Order and names of the contract columns (team data contract, see README, section 7)
 CLEAN_COLUMNS = [
     "book_id", "title", "authors", "authors_str", "main_author", "categories",
     "description", "description_raw", "pub_year", "rating_avg", "rating_count",

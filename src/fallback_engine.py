@@ -1,7 +1,7 @@
 """
 FALLBACK embedding engine for P4, until ``src/embeddings.py`` (P3) is available.
 
-It follows exactly the ``EmbeddingEngine`` contract of PLAN_PROJET.md §4.4:
+It follows exactly the ``EmbeddingEngine`` contract (src/embeddings.py):
     encode(texts) -> L2-normalised np.ndarray
     book_matrix() -> (N, d) aligned with the books DataFrame
     label_matrix(block) -> (labels, matrix)

@@ -8,7 +8,7 @@ catalogue, so they can be reused as they are in:
     - notebooks 04 / 05 / 06;
     - the report and the slides (PNG export with save_figure, through kaleido).
 
-Figures (PLAN §11.5):
+Figures:
     radar_profile(block_affinities)          reader profile: affinity for each label, per block
     radar_compare(weights, books_scores)     "you vs this/these book(s)" on the 4 blocks
     score_breakdown(recommendations)         breakdown of the final score (stacked bars)

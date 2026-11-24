@@ -1,0 +1,11 @@
+,persona,mean_jaccard,identical_top3,n_paraphrases
+0,E01_children_fantasy,0.8333333333333334,2,3
+1,E02_nordic_noir,0.5,0,3
+2,E03_historical_romance,1.0,3,3
+3,E04_ya_dystopia,0.5,0,3
+4,E05_psychological_literary,0.5666666666666667,1,3
+5,E06_cozy_mystery,0.3,0,3
+6,E07_memoir,0.39999999999999997,0,3
+7,E08_horror_no_king,0.8333333333333334,2,3
+8,E09_victorian_classics,0.8333333333333334,2,3
+9,E10_feel_good,0.5666666666666667,1,3

@@ -1,0 +1,7 @@
+variant,genre_precision@3,theme_overlap@3,hit@3,MRR,constraints_ok,loved_book_returned,median_seconds
+Blurb only (S_desc),0.8,0.967,0.1,0.123,10/10,0/10,0.043
+Coverage only,1.0,0.917,0.2,0.151,10/10,0/10,0.041
+Without calibration,1.0,0.917,0.2,0.139,10/10,1/10,0.042
+Without 'to avoid' penalty,0.967,0.967,0.0,0.055,10/10,0/10,0.042
+Without popularity,0.967,0.917,0.1,0.059,10/10,0/10,0.042
+Full formula,0.967,0.967,0.1,0.065,10/10,0/10,0.046
