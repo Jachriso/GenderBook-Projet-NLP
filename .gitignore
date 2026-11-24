@@ -13,3 +13,7 @@ data/raw/
 data/embeddings/*.npy
 # Réponses utilisateurs de l'app
 data/responses/
+
+# Caches P4 (régénérés automatiquement, dépendent du modèle)
+data/embeddings/p4_*
+data/embeddings/calibration_p4.json

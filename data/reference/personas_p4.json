@@ -1,0 +1,123 @@
+{
+  "_comment": "Personas de référence (P4) au format answers.json. Servent à calibrer les scores (p5/p95 sur les candidats retrouvés) et aux démonstrations du notebook 04. P6 peut en ajouter.",
+  "dark_academia": {
+    "free_text": {
+      "ideal_book": "I enjoy psychological novels exploring identity and moral dilemmas, with complex characters who hide dark secrets.",
+      "loved_book": "I loved The Secret History because of the dark academic atmosphere and the group of students drawn into a crime.",
+      "atmosphere": "Something melancholic, rainy, set in an old university",
+      "avoid": "No romance-centered plots, no gore"
+    },
+    "genres": ["Literary Fiction", "Thriller & Suspense"],
+    "themes": ["Identity & self-discovery", "Morality & guilt", "Friendship"],
+    "period": "Contemporary", "audience": "Adult", "formats": [],
+    "favorite_author": "Donna Tartt",
+    "guided": {"focus": "Characters", "standalone_only": false, "exclude_favorite_author": true},
+    "likert": {"complexity": 4, "pace": 2, "darkness": 4, "popularity": 3,
+               "w_genre": 4, "w_themes": 5, "w_style": 3, "w_atmosphere": 4}
+  },
+  "young_fantasy": {
+    "free_text": {
+      "ideal_book": "An exciting fantasy adventure for teenagers with magic, dragons and a hero who discovers hidden powers.",
+      "loved_book": "I loved books where a group of friends goes on a quest in a magical world and has to save their kingdom.",
+      "atmosphere": "A whimsical, magical world full of wonder, castles and enchanted forests",
+      "avoid": "Nothing too scary or violent"
+    },
+    "genres": ["Fantasy", "Young Adult"],
+    "themes": ["Adventure & exploration", "Friendship", "Coming of age"],
+    "period": "No preference", "audience": "Young Adult", "formats": [],
+    "favorite_author": "",
+    "guided": {"focus": "Plot", "standalone_only": false, "exclude_favorite_author": false},
+    "likert": {"complexity": 2, "pace": 5, "darkness": 2, "popularity": 5,
+               "w_genre": 5, "w_themes": 3, "w_style": 2, "w_atmosphere": 4}
+  },
+  "nordic_noir": {
+    "free_text": {
+      "ideal_book": "A dark, gripping crime thriller where a detective hunts a serial killer in a cold, isolated town.",
+      "loved_book": "I loved The Girl with the Dragon Tattoo for its twisted investigation and its damaged, brilliant heroine.",
+      "atmosphere": "Bleak, snowy, tense and unsettling, with long winter nights",
+      "avoid": "No cozy romance or comedy"
+    },
+    "genres": ["Mystery & Detective", "Thriller & Suspense"],
+    "themes": ["Crime & justice", "Revenge"],
+    "period": "Contemporary", "audience": "Adult", "formats": [],
+    "favorite_author": "Stieg Larsson",
+    "guided": {"focus": "Plot", "standalone_only": false, "exclude_favorite_author": false},
+    "likert": {"complexity": 3, "pace": 5, "darkness": 5, "popularity": 3,
+               "w_genre": 4, "w_themes": 3, "w_style": 3, "w_atmosphere": 5}
+  },
+  "philosophy_essay": {
+    "free_text": {
+      "ideal_book": "A thoughtful non-fiction book about the meaning of life, how to live well and what makes us human.",
+      "loved_book": "I loved Meditations by Marcus Aurelius because it gives practical wisdom about facing hardship calmly.",
+      "atmosphere": "Calm, reflective and intellectually stimulating",
+      "avoid": "No self-help clichés or business advice"
+    },
+    "genres": ["Philosophy & Religion"],
+    "themes": ["Faith & spirituality", "Identity & self-discovery"],
+    "period": "No preference", "audience": "Adult", "formats": [],
+    "favorite_author": "",
+    "guided": {"focus": "Both", "standalone_only": false, "exclude_favorite_author": false},
+    "likert": {"complexity": 5, "pace": 1, "darkness": 3, "popularity": 2,
+               "w_genre": 5, "w_themes": 4, "w_style": 3, "w_atmosphere": 1}
+  },
+  "historical_romance": {
+    "free_text": {
+      "ideal_book": "A sweeping love story set in the past, with a strong heroine fighting against the rules of her time.",
+      "loved_book": "I loved Pride and Prejudice for the witty dialogue and the slow-burning romance between Elizabeth and Darcy.",
+      "atmosphere": "Elegant ballrooms and country estates in nineteenth-century England",
+      "avoid": "No graphic violence"
+    },
+    "genres": ["Romance", "Historical Fiction"],
+    "themes": ["Love & heartbreak", "Freedom & oppression"],
+    "period": "18-19th c.", "audience": "Adult", "formats": [],
+    "favorite_author": "Jane Austen",
+    "guided": {"focus": "Characters", "standalone_only": false, "exclude_favorite_author": true},
+    "likert": {"complexity": 3, "pace": 2, "darkness": 1, "popularity": 4,
+               "w_genre": 4, "w_themes": 4, "w_style": 2, "w_atmosphere": 5}
+  },
+  "dystopian_scifi": {
+    "free_text": {
+      "ideal_book": "A science fiction novel about a totalitarian future society where technology controls people's lives.",
+      "loved_book": "I loved 1984 because it made me think about surveillance, propaganda and freedom.",
+      "atmosphere": "Oppressive, futuristic and grey, a world after collapse",
+      "avoid": "No space opera with aliens"
+    },
+    "genres": ["Science Fiction"],
+    "themes": ["Freedom & oppression", "Technology & humanity", "Power & politics"],
+    "period": "Future", "audience": "Adult", "formats": [],
+    "favorite_author": "",
+    "guided": {"focus": "Both", "standalone_only": false, "exclude_favorite_author": false},
+    "likert": {"complexity": 4, "pace": 3, "darkness": 5, "popularity": 3,
+               "w_genre": 4, "w_themes": 5, "w_style": 2, "w_atmosphere": 4}
+  },
+  "cozy_feelgood": {
+    "free_text": {
+      "ideal_book": "A warm, funny and uplifting story about an unlikely group of people who become a family.",
+      "loved_book": "I loved A Man Called Ove because it made me laugh and cry, and the grumpy hero slowly opens his heart.",
+      "atmosphere": "Cozy, heartwarming, a small town where everyone knows each other",
+      "avoid": "No murders, no war"
+    },
+    "genres": ["Literary Fiction", "Humour"],
+    "themes": ["Friendship", "Family relationships", "Grief & loss"],
+    "period": "Contemporary", "audience": "Adult", "formats": [],
+    "favorite_author": "Fredrik Backman",
+    "guided": {"focus": "Characters", "standalone_only": false, "exclude_favorite_author": false},
+    "likert": {"complexity": 2, "pace": 3, "darkness": 1, "popularity": 4,
+               "w_genre": 2, "w_themes": 4, "w_style": 3, "w_atmosphere": 5}
+  },
+  "true_life_memoir": {
+    "free_text": {
+      "ideal_book": "A true, inspiring life story of someone who overcame poverty, illness or war against all odds.",
+      "loved_book": "I loved Educated by Tara Westover, about a girl from a survivalist family who teaches herself and goes to university.",
+      "atmosphere": "Honest, intimate and moving",
+      "avoid": "No fiction or fantasy"
+    },
+    "genres": ["Biography & Memoir"],
+    "themes": ["Survival", "Identity & self-discovery", "Family relationships"],
+    "period": "No preference", "audience": "Adult", "formats": [],
+    "favorite_author": "",
+    "guided": {"focus": "Characters", "standalone_only": false, "exclude_favorite_author": false},
+    "likert": {"complexity": 3, "pace": 3, "darkness": 3, "popularity": 4,
+               "w_genre": 5, "w_themes": 4, "w_style": 2, "w_atmosphere": 2}
+  }
+}
