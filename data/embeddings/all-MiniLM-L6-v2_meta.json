@@ -1,0 +1,8 @@
+{
+  "model": "sentence-transformers/all-MiniLM-L6-v2",
+  "long_text": "truncate",
+  "n_books": 12000,
+  "dim": 384,
+  "encode_seconds": 315.1,
+  "created": "2026-11-24 19:01:34"
+}

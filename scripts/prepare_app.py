@@ -1,13 +1,13 @@
 """
-prepare_app.py : pré-calcule tout ce dont l'application a besoin AVANT la démo (Personne 5).
+prepare_app.py: pre-computes everything the app needs BEFORE the demo (Person 5).
 
-    python -m scripts.prepare_app            # depuis la racine du repo
+    python -m scripts.prepare_app            # from the root of the repo
 
-1. télécharge le modèle SBERT (si besoin) et encode les 12 000 livres -> data/embeddings/*_books.npy
-2. calcule la projection 2D du catalogue -> data/embeddings/umap_2d.npy (+ book_ids pour l'alignement)
-3. lance une recommandation complète sur les personas de démo (vérifie que tout est branché)
+1. downloads the SBERT model (if needed) and encodes the 12,000 books -> data/embeddings/*_books.npy
+2. computes the 2D projection of the catalogue -> data/embeddings/umap_2d.npy (+ book_ids for alignment)
+3. runs a full recommendation for the demo personas (checks that everything is wired)
 
-Ainsi, le jour de la soutenance, l'app démarre en quelques secondes au lieu de plusieurs minutes.
+This way, on the day of the presentation, the app starts in a few seconds instead of several minutes.
 """
 from __future__ import annotations
 
@@ -24,30 +24,30 @@ from src import viz  # noqa: E402
 
 def main() -> None:
     t0 = time.perf_counter()
-    try:                                       # moteur final (P4) : il charge lui-même P3
+    try:                                       # final engine (P4): it loads P3 itself
         from src.recommender import get_recommender, recommend  # type: ignore
         rec = get_recommender()
         engine, books = rec.engine, rec.books
         mode, run = "P4", (lambda a: recommend(a, top_k=3))
-    except ImportError:                        # P4 pas encore intégré : EmbeddingEngine + stub
+    except ImportError:                        # P4 not integrated yet: EmbeddingEngine + stub
         from app.stub_recommender import recommend as stub
         from src.embeddings import EmbeddingEngine
         engine = EmbeddingEngine()
         books = engine.books
         mode, run = "stub", (lambda a: stub(a, top_k=3, engine=engine, books=books))
-    matrix = engine.book_matrix()                                     # étape 1
-    print(f"[1/3] embeddings des livres : {matrix.shape} ({time.perf_counter() - t0:.0f} s)")
+    matrix = engine.book_matrix()                                     # step 1
+    print(f"[1/3] book embeddings: {matrix.shape} ({time.perf_counter() - t0:.0f} s)")
 
-    t1 = time.perf_counter()                                          # étape 2
+    t1 = time.perf_counter()                                          # step 2
     coords = viz.load_or_compute_map_coords(matrix, books["book_id"].astype(str).tolist())
-    print(f"[2/3] carte 2D : {coords.shape} ({time.perf_counter() - t1:.0f} s)")
+    print(f"[2/3] 2D map: {coords.shape} ({time.perf_counter() - t1:.0f} s)")
 
-    blocks = Q.load_blocks()                                          # étape 3
+    blocks = Q.load_blocks()                                          # step 3
     for name in Q.DEMO_PERSONAS:
         answers = Q.build_answers(Q.persona_state(name, blocks), blocks)
         _, recs = run(answers)
         print(f"[3/3] ({mode}) {name}: " + " | ".join(f"{r.title} ({r.final_score:.2f})" for r in recs))
-    print(f"Prêt en {time.perf_counter() - t0:.0f} s. Lancer : streamlit run app/streamlit_app.py")
+    print(f"Ready in {time.perf_counter() - t0:.0f} s. Run: streamlit run app/streamlit_app.py")
 
 
 if __name__ == "__main__":

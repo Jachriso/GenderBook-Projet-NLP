@@ -1,11 +1,11 @@
 """
-capture_screens.py : captures d'écran automatiques de l'app pour le notebook 05 et les slides (P5).
+capture_screens.py: automatic screenshots of the app for notebook 05 and the slides (P5).
 
-Pré-requis (une fois) :  pip install playwright  &&  python -m playwright install chromium
-Usage :
-    1. dans un terminal : streamlit run app/streamlit_app.py
-    2. dans un autre    : python -m scripts.capture_screens [--url http://localhost:8501] [--persona "Dark academia reader"]
-Les images sont écrites dans docs/figures/05_screen_*.png.
+Requirements (once):  pip install playwright  &&  python -m playwright install chromium
+Usage:
+    1. in one terminal:  streamlit run app/streamlit_app.py
+    2. in another one:   python -m scripts.capture_screens [--url http://localhost:8501] [--persona "Dark academia reader"]
+The images are written to docs/figures/05_screen_*.png.
 """
 from __future__ import annotations
 
@@ -25,7 +25,7 @@ async def capture(url: str, persona: str, height: int) -> None:
     async with async_playwright() as p:
         browser = await p.chromium.launch()
         page = await browser.new_page(viewport={"width": 1440, "height": height})
-        # Le paramètre ?persona=... pré-remplit le questionnaire (voir streamlit_app.py)
+        # The ?persona=... parameter pre-fills the questionnaire (see streamlit_app.py)
         await page.goto(f"{url}/?persona={quote(persona)}", wait_until="networkidle")
         await page.wait_for_timeout(4000)
         steps = ["1_free_text", "2_genres_themes", "3_context", "4_likert", "5_guided"]
@@ -43,7 +43,7 @@ async def capture(url: str, persona: str, height: int) -> None:
             await page.wait_for_timeout(4000)
             await page.screenshot(path=str(OUT / f"05_screen_7_{tab.lower().replace(' ', '_')}.png"))
         await browser.close()
-    print(f"Captures écrites dans {OUT}")
+    print(f"Screenshots written to {OUT}")
 
 
 if __name__ == "__main__":

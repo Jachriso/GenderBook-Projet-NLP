@@ -1,4 +1,4 @@
-# Thème de l'application (lu automatiquement quand on lance streamlit depuis la racine du repo)
+# App theme (read automatically when streamlit is started from the root of the repo)
 [theme]
 base = "light"
 primaryColor = "#2F6FDE"

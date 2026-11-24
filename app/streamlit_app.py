@@ -1,26 +1,26 @@
 """
-streamlit_app.py : application web du projet (Personne 5).
+streamlit_app.py: the project's web application (Person 5).
 
-Lancement (depuis la RACINE du repo) :
+How to run it (from the ROOT of the repo):
     streamlit run app/streamlit_app.py
 
-Parcours utilisateur :
-    1. Questionnaire en 5 étapes (17 questions, les 5 types exigés par le sujet) ;
-    2. Sauvegarde des réponses en JSON horodaté (data/responses/) + téléchargement ;
-    3. Appel du moteur : src.recommender.recommend(answers, top_k=3) (P4).
-       Tant que P4 n'a pas livré, on utilise app/stub_recommender.py (même contrat) ;
-    4. Page résultats : profil lecteur, top 3 expliqué, décomposition des scores,
-       carte sémantique du catalogue, heatmap de similarité (« comment le score est obtenu »).
+User journey:
+    1. 5-step questionnaire (17 questions, the 5 question types required by the brief);
+    2. Answers saved as timestamped JSON (data/responses/) + download;
+    3. Call to the engine: src.recommender.recommend(answers, top_k=3) (P4).
+       While P4's engine is not available, app/stub_recommender.py is used (same contract);
+    4. Results page: reader profile, explained top 3, score breakdown,
+       semantic map of the catalogue, similarity heatmap ("how the score is obtained").
 
-Organisation du fichier :
-    0. imports et chemins        3. barre latérale (progression, mode démo)
-    1. ressources en cache       4. les 5 étapes du questionnaire
-    2. état et navigation        5. page résultats
+File layout:
+    0. imports and paths         3. sidebar (progress, demo mode)
+    1. cached resources          4. the 5 questionnaire steps
+    2. state and navigation      5. results page
 """
 from __future__ import annotations
 
 # --------------------------------------------------------------------------- #
-# 0. Imports : on ajoute la racine du repo au sys.path pour importer src/ et app/
+# 0. Imports: the repo root is added to sys.path so that src/ and app/ can be imported
 # --------------------------------------------------------------------------- #
 import dataclasses
 import html
@@ -40,18 +40,18 @@ import streamlit as st  # noqa: E402
 from app import questions as Q  # noqa: E402
 from src import config, viz  # noqa: E402
 
-# Compatibilité des versions de Streamlit : `use_container_width` est remplacé par
-# `width="stretch"` dans les versions récentes (>= 1.50) et supprimé à terme.
+# Streamlit version compatibility: `use_container_width` is replaced by
+# `width="stretch"` in recent versions (>= 1.50) and will eventually be removed.
 _ST_VERSION = tuple(int(x) for x in st.__version__.split(".")[:2])
 STRETCH: dict[str, Any] = {"width": "stretch"} if _ST_VERSION >= (1, 50) else {"use_container_width": True}
-# theme=None : on garde la mise en page définie dans src/viz.py (le thème Plotly de Streamlit
-# déplace les légendes et change les couleurs, ce qui casserait la charte commune aux figures).
+# theme=None: keep the layout defined in src/viz.py (Streamlit's Plotly theme moves the
+# legends and changes the colours, which would break the colour scheme shared by the figures).
 CHART: dict[str, Any] = {**STRETCH, "theme": None}
 
 st.set_page_config(page_title="GenderBook · semantic book recommender", page_icon="📚",
                    layout="wide", initial_sidebar_state="expanded")
 
-# Petite feuille de style : badges, puces de labels, citation de la phrase la plus proche
+# Small stylesheet: badges, label chips, quote of the closest sentence
 st.markdown("""
 <style>
 .gb-chip{display:inline-block;padding:2px 10px;margin:2px 6px 2px 0;border-radius:12px;
@@ -68,33 +68,33 @@ st.markdown("""
 
 
 # --------------------------------------------------------------------------- #
-# 1. Ressources lourdes, chargées UNE fois (st.cache_resource / st.cache_data)
+# 1. Heavy resources, loaded ONCE (st.cache_resource / st.cache_data)
 # --------------------------------------------------------------------------- #
 
 @st.cache_data(show_spinner=False)
 def get_blocks() -> dict[str, dict[str, str]]:
-    """Référentiel des 4 blocs (blocks.json de P2) : labels des cases à cocher + bulles d'aide."""
+    """The 4-block label set (P2's blocks.json): checkbox labels + tooltips."""
     return Q.load_blocks()
 
 
 @st.cache_resource(show_spinner=False)
 def get_books() -> pd.DataFrame:
-    """Catalogue (books_enriched.parquet) : utilisé pour retrouver l'auteur favori, les labels…"""
+    """Catalogue (books_enriched.parquet): used to look up the favourite author, the labels…"""
     from src.data_loader import load_books
     return load_books()
 
 
 @st.cache_resource(show_spinner=False)
 def get_engine_context() -> tuple[Any, pd.DataFrame | None, np.ndarray | None, str | None]:
-    """(moteur d'embeddings, catalogue aligné, matrice des livres, erreur éventuelle).
+    """(embedding engine, aligned catalogue, book matrix, error if any).
 
-    - Si P4 est intégré : on réutilise le moteur de son Recommender (singleton
-      get_recommender) : un seul modèle SBERT en mémoire, et un catalogue dont les
-      lignes sont exactement alignées sur la matrice d'embeddings.
-    - Sinon : EmbeddingEngine de P3.
-    Premier lancement : téléchargement du modèle (~90 Mo) puis encodage des 12 000 livres
-    (quelques minutes sur CPU) ; ensuite tout est relu depuis data/embeddings/.
-    En cas d'échec (pas d'Internet, module manquant…), l'app continue en mode dégradé.
+    - If P4 is integrated: reuse the engine of its Recommender (singleton
+      get_recommender): a single SBERT model in memory, and a catalogue whose rows
+      are exactly aligned with the embedding matrix.
+    - Otherwise: P3's EmbeddingEngine.
+    First launch: the model is downloaded (~90 MB), then the 12,000 books are encoded
+    (a few minutes on CPU); afterwards everything is read back from data/embeddings/.
+    If something fails (no Internet, missing module…), the app keeps running in degraded mode.
     """
     try:
         try:
@@ -106,7 +106,7 @@ def get_engine_context() -> tuple[Any, pd.DataFrame | None, np.ndarray | None, s
             books = get_books().reset_index(drop=True)
             engine = EmbeddingEngine(books=books)
         return engine, books, np.asarray(engine.book_matrix(), dtype=np.float32), None
-    except Exception as err:  # noqa: BLE001 - on veut afficher n'importe quelle erreur
+    except Exception as err:  # noqa: BLE001 - we want to show any error
         return None, None, None, f"{type(err).__name__}: {err}"
 
 
@@ -117,7 +117,7 @@ def get_engine() -> tuple[Any, str | None]:
 
 @st.cache_resource(show_spinner=False)
 def get_map_coords() -> np.ndarray | None:
-    """Coordonnées 2D du catalogue (umap_2d.npy de P3 si présent, sinon calculées et mises en cache)."""
+    """2D coordinates of the catalogue (P3's umap_2d.npy if present, otherwise computed and cached)."""
     engine, books, matrix, _ = get_engine_context()
     if engine is None:
         return None
@@ -125,9 +125,9 @@ def get_map_coords() -> np.ndarray | None:
 
 
 def get_recommend_fn() -> tuple[Callable[..., Any], str]:
-    """Le vrai moteur de P4 s'il existe, sinon le stub. Renvoie (fonction, nom du mode)."""
+    """P4's real engine if it exists, otherwise the stub. Returns (function, mode name)."""
     try:
-        from src.recommender import recommend  # type: ignore  # livré par P4
+        from src.recommender import recommend  # type: ignore  # provided by P4
         return recommend, "P4 recommender"
     except ImportError:
         from app.stub_recommender import recommend
@@ -135,10 +135,10 @@ def get_recommend_fn() -> tuple[Callable[..., Any], str]:
 
 
 def run_recommendation(answers: dict) -> dict[str, Any]:
-    """Appelle le moteur et renvoie {"profile", "recs", "mode", "warning"}.
+    """Call the engine and return {"profile", "recs", "mode", "warning"}.
 
-    Si le moteur de P4 lève une exception (intégration en cours), on bascule sur le stub
-    avec un avertissement visible plutôt que de planter pendant la démo.
+    If P4's engine raises an exception (integration in progress), fall back to the stub
+    with a visible warning rather than crashing during the demo.
     """
     fn, mode = get_recommend_fn()
     engine, _ = get_engine()
@@ -159,22 +159,22 @@ def run_recommendation(answers: dict) -> dict[str, Any]:
 
 
 # --------------------------------------------------------------------------- #
-# 2. État de session et navigation
+# 2. Session state and navigation
 # --------------------------------------------------------------------------- #
 BLOCKS = get_blocks()
 DEFAULTS = Q.default_state(BLOCKS)
-RESULTS_STEP = len(Q.STEPS)        # étapes 0..4 = questionnaire, 5 = résultats
+RESULTS_STEP = len(Q.STEPS)        # steps 0..4 = questionnaire, 5 = results
 
 for _k, _v in DEFAULTS.items():
     st.session_state.setdefault(_k, _v)
-    # Astuce Streamlit : réaffecter la valeur empêche la suppression de l'état d'un widget
-    # qui n'est pas affiché à l'étape courante (sinon les réponses seraient perdues).
+    # Streamlit trick: re-assigning the value stops Streamlit from deleting the state of a
+    # widget that is not shown on the current step (otherwise the answers would be lost).
     st.session_state[_k] = st.session_state[_k]
 st.session_state.setdefault("step", 0)
 st.session_state.setdefault("errors", [])
 
-# Lien direct vers un persona de démo : http://localhost:8501/?persona=Young%20fantasy%20fan
-# (pratique pour la soutenance et pour scripts/capture_screens.py). Appliqué une seule fois.
+# Direct link to a demo persona: http://localhost:8501/?persona=Young%20fantasy%20fan
+# (handy for the oral presentation and for scripts/capture_screens.py). Applied only once.
 _qp = st.query_params.get("persona")
 if _qp in Q.DEMO_PERSONAS and not st.session_state.get("_persona_from_url"):
     st.session_state._persona_from_url = True
@@ -204,7 +204,7 @@ def go_to(step: int) -> None:
 
 
 def submit() -> None:
-    """Valide tout le questionnaire, construit answers.json, le sauvegarde, passe aux résultats."""
+    """Validate the whole questionnaire, build answers.json, save it, go to the results."""
     errors = Q.validate_all(form_state())
     st.session_state.errors = errors
     if errors:
@@ -213,7 +213,7 @@ def submit() -> None:
     st.session_state.answers = answers
     try:
         st.session_state.answers_path = str(Q.save_answers(answers))
-    except OSError as err:  # dossier en lecture seule (ex. déploiement cloud) : pas bloquant
+    except OSError as err:  # read-only folder (e.g. cloud deployment): not blocking
         st.session_state.answers_path = f"not saved ({err})"
     st.session_state.pop("result", None)
     st.session_state.step = RESULTS_STEP
@@ -238,7 +238,7 @@ def reset_all() -> None:
 
 
 def relax_filters() -> None:
-    """Bouton « relâcher les filtres » quand aucun livre ne passe les contraintes dures."""
+    """"Relax the filters" button when no book passes the hard constraints."""
     st.session_state.q8_audience = "Any"
     st.session_state.q9_formats = list(Q.FORMATS)
     st.session_state.q17_exclude = False
@@ -246,7 +246,7 @@ def relax_filters() -> None:
 
 
 # --------------------------------------------------------------------------- #
-# 3. Barre latérale : progression, mode démo, état du moteur
+# 3. Sidebar: progress, demo mode, engine status
 # --------------------------------------------------------------------------- #
 with st.sidebar:
     st.markdown("## 📚 GenderBook")
@@ -285,7 +285,7 @@ with st.sidebar:
 
 
 # --------------------------------------------------------------------------- #
-# 4. Les 5 étapes du questionnaire
+# 4. The 5 questionnaire steps
 # --------------------------------------------------------------------------- #
 
 def show_errors() -> None:
@@ -305,7 +305,7 @@ def nav_buttons(last: bool = False) -> None:
 
 
 def likert(key: str, question: str, left: str, right: str) -> None:
-    """Échelle de Likert 1-5 avec les libellés des deux extrémités (type de question exigé)."""
+    """Likert scale 1-5 with labels at both ends (required question type)."""
     st.markdown(f"**{question}**")
     c1, c2, c3 = st.columns([1.7, 3.6, 1.7], vertical_alignment="center")
     c1.caption(f"1 · {left}")
@@ -328,7 +328,7 @@ def step_free_text() -> None:
 
 
 def checkbox_grid(labels: dict[str, str], key_fn: Callable[[str], str], n_cols: int) -> int:
-    """Cases à cocher en grille ; la phrase descriptive du label est dans la bulle d'aide."""
+    """Checkboxes in a grid; the label's descriptive sentence is shown in the tooltip."""
     cols = st.columns(n_cols)
     for i, (label, description) in enumerate(labels.items()):
         cols[i % n_cols].checkbox(label, key=key_fn(label), help=description)
@@ -402,11 +402,11 @@ def step_guided() -> None:
 
 
 # --------------------------------------------------------------------------- #
-# 5. Page résultats
+# 5. Results page
 # --------------------------------------------------------------------------- #
 
 def chips(labels: dict[str, list[tuple[str, float]]]) -> str:
-    """Puces colorées « label (score) », une couleur par bloc (même charte que les graphiques)."""
+    """Coloured "label (score)" chips, one colour per block (same colour scheme as the charts)."""
     out = []
     for block in viz.BLOCK_ORDER:
         for label, score in labels.get(block, []) or []:
@@ -418,7 +418,7 @@ def chips(labels: dict[str, list[tuple[str, float]]]) -> str:
 
 def badge(match_label: str) -> str:
     label = str(match_label)
-    if "match" not in label.lower():               # P4 : "Excellent" -> "Excellent match"
+    if "match" not in label.lower():               # P4: "Excellent" -> "Excellent match"
         label += " match"
     color = viz.MATCH_COLORS.get(label.split()[0], "#8A8F98")
     return f'<span class="gb-badge" style="background:{color}">{html.escape(label)}</span>'
@@ -431,7 +431,7 @@ def cover(url: str) -> str:
 
 
 def highlighted_synopsis(text: str, sentence: str) -> str:
-    """Résumé avec la phrase la plus proche de la demande surlignée (<mark>)."""
+    """Synopsis with the sentence closest to the request highlighted (<mark>)."""
     safe = html.escape(text or "")
     if sentence:
         s = html.escape(sentence)
@@ -441,7 +441,7 @@ def highlighted_synopsis(text: str, sentence: str) -> str:
 
 
 def score_table(rec: Any, weights: dict[str, float]) -> pd.DataFrame:
-    """Tableau « How was this score computed? » : score de chaque composante, poids, contribution."""
+    """"How was this score computed?" table: score, weight and contribution of each component."""
     bs = viz.normalize_scores(rec.block_scores)
     contrib = viz.normalize_scores(rec.contributions)
     w = viz.normalize_scores(weights)
@@ -522,21 +522,21 @@ def render_recommendation(rec: Any, profile: Any, book_row: pd.Series | None) ->
 
 
 def heatmap_data(engine: Any, profile: Any, answers: dict, rec: Any, book_row: pd.Series):
-    """Lignes = textes de l'utilisateur, colonnes = labels du livre (+ phrase la plus proche).
+    """Rows = the user's texts, columns = the book's labels (+ closest sentence).
 
-    Les labels sont représentés par les MÊMES vecteurs que ceux du moteur (label_matrix de P3,
-    qui réutilise les phrases de blocks.json) : la heatmap montre exactement ce que compare le système.
+    Labels are represented by the SAME vectors as in the engine (P3's label_matrix, which
+    reuses the sentences of blocks.json): the heatmap shows exactly what the system compares.
     """
     ft = answers.get("free_text", {})
     rows: list[tuple[str, str]] = [(f"Q{i}: {ft[k]}", ft[k]) for i, k in
                                    ((1, "ideal_book"), (2, "loved_book"), (3, "atmosphere")) if ft.get(k)]
     phrases = getattr(profile, "block_phrases", None) or {}
-    for b in viz.BLOCK_ORDER:                      # phrases de préférence par bloc (profil de P4)
+    for b in viz.BLOCK_ORDER:                      # preference sentences per block (P4's profile)
         items = list(phrases.get(b) or [])
-        if not items:                              # sinon : texte du bloc (phrases jointes par « | » ou « ; »)
+        if not items:                              # otherwise: the block's text (sentences joined by " | " or ";")
             txt = (profile.query_texts or {}).get(b) or ""
             items = [t.strip() for t in txt.replace(" | ", ";").split(";") if t.strip()]
-        for t in items[:3]:                        # 3 phrases max par bloc : heatmap lisible
+        for t in items[:3]:                        # at most 3 sentences per block: readable heatmap
             rows.append((f"{b}: {t}", t))
     cols_lbl: list[str] = []
     col_vecs: list[np.ndarray] = []
@@ -557,7 +557,7 @@ def heatmap_data(engine: Any, profile: Any, answers: dict, rec: Any, book_row: p
 
 
 def results_to_json(result: dict) -> str:
-    """Export JSON des résultats (sans les vecteurs numpy) pour le téléchargement / P6."""
+    """JSON export of the results (without the numpy vectors) for download / P6."""
     def clean(obj: Any) -> Any:
         if dataclasses.is_dataclass(obj):
             obj = dataclasses.asdict(obj)
@@ -582,7 +582,7 @@ def page_results() -> None:
         st.button("Go to the questionnaire", on_click=go_to, args=(0,))
         return
 
-    # Calcul (une seule fois par jeu de réponses)
+    # Computation (only once per set of answers)
     key = json.dumps(answers, sort_keys=True)
     if st.session_state.get("result", {}).get("key") != key:
         with st.spinner("Loading the semantic engine and scoring 12,000 books… "
@@ -693,7 +693,7 @@ def page_results() -> None:
 
 
 # --------------------------------------------------------------------------- #
-# Routage
+# Routing
 # --------------------------------------------------------------------------- #
 PAGES = [step_free_text, step_genres_themes, step_context, step_likert, step_guided]
 if st.session_state.step >= RESULTS_STEP:

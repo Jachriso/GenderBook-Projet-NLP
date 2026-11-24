@@ -1,7 +1,7 @@
-"""Tests de src/viz.py (P5) : les figures se construisent et contiennent les bonnes traces.
+"""Tests for src/viz.py (P5): the figures are built and contain the right traces.
 
-Aucune dépendance au modèle SBERT : on passe des données factices.
-Lancer : python -m pytest tests/test_viz.py -q
+No dependency on the SBERT model: dummy data is used.
+Run: python -m pytest tests/test_viz.py -q
 """
 import numpy as np
 import plotly.graph_objects as go
@@ -33,15 +33,15 @@ def test_radar_profile_one_polar_per_block():
     assert isinstance(fig, go.Figure)
     assert len(fig.data) == 4
     for trace in fig.data:
-        assert len(trace.r) == 6                     # 5 labels + fermeture du polygone
+        assert len(trace.r) == 6                     # 5 labels + closing point of the polygon
         assert max(trace.r) <= 1 and min(trace.r) >= 0
 
 
 def test_radar_compare_user_plus_books():
     w = {"Genre": 5, "Themes": 3, "Style": 1, "Atmosphere": 4}
     fig = viz.radar_compare(w, {"A": BLOCK_SCORES, "B": BLOCK_SCORES})
-    assert len(fig.data) == 3                        # utilisateur + 2 livres
-    assert fig.data[0].r[1] == pytest.approx(1.0)    # Genre = 5/5 côté utilisateur
+    assert len(fig.data) == 3                        # user + 2 books
+    assert fig.data[0].r[1] == pytest.approx(1.0)    # Genre = 5/5 on the user side
 
 
 def test_score_breakdown_segments_sum_to_contributions():
@@ -50,7 +50,7 @@ def test_score_breakdown_segments_sum_to_contributions():
     assert {t.name for t in bars} == set(CONTRIB)
     total = sum(t.x[0] for t in bars)
     assert total == pytest.approx(sum(CONTRIB.values()))
-    assert fig.layout.barmode == "relative"          # la pénalité négative part à gauche
+    assert fig.layout.barmode == "relative"          # the negative penalty goes to the left
 
 
 def test_similarity_map_highlights_and_user():
@@ -84,4 +84,4 @@ def test_map_coords_pca_and_cache(tmp_path):
     c1 = viz.load_or_compute_map_coords(m, ids, path=tmp_path / "umap_2d.npy", method="pca")
     assert c1.shape == (50, 2)
     c2 = viz.load_or_compute_map_coords(m * 0, ids, path=tmp_path / "umap_2d.npy", method="pca")
-    np.testing.assert_allclose(c1, c2)               # relu depuis le cache (pas recalculé)
+    np.testing.assert_allclose(c1, c2)               # read back from the cache (not recomputed)

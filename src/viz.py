@@ -1,27 +1,27 @@
 """
-viz.py : visualisations du projet (Personne 5).
+viz.py: project visualisations (Person 5).
 
-Toutes les fonctions de figures sont PURES : elles reçoivent des données déjà calculées
-(dicts, tableaux numpy) et renvoient une figure Plotly. Elles ne chargent ni modèle ni
-catalogue, donc elles sont réutilisables telles quelles dans :
-    - l'application Streamlit (st.plotly_chart(fig)) ;
-    - les notebooks 04 / 05 / 06 ;
-    - le rapport et les slides (export PNG avec save_figure, via kaleido).
+All figure functions are PURE: they take data that has already been computed
+(dicts, numpy arrays) and return a Plotly figure. They load neither a model nor the
+catalogue, so they can be reused as they are in:
+    - the Streamlit app (st.plotly_chart(fig));
+    - notebooks 04 / 05 / 06;
+    - the report and the slides (PNG export with save_figure, through kaleido).
 
-Figures (PLAN §11.5) :
-    radar_profile(block_affinities)          profil du lecteur : affinité pour chaque label, par bloc
-    radar_compare(weights, books_scores)     « vous vs ce(s) livre(s) » sur les 4 blocs
-    score_breakdown(recommendations)         décomposition du score final (barres empilées)
-    similarity_map(coords, genres, ...)      carte 2D du catalogue (UMAP / PCA) + utilisateur + top 3
-    similarity_heatmap(sim, rows, cols)      cosinus phrases utilisateur × labels/phrases du livre
+Figures (PLAN §11.5):
+    radar_profile(block_affinities)          reader profile: affinity for each label, per block
+    radar_compare(weights, books_scores)     "you vs this/these book(s)" on the 4 blocks
+    score_breakdown(recommendations)         breakdown of the final score (stacked bars)
+    similarity_map(coords, genres, ...)      2D map of the catalogue (UMAP / PCA) + user + top 3
+    similarity_heatmap(sim, rows, cols)      cosine between user sentences × the book's labels/sentences
 
-Utilitaires de données (pour la carte) :
-    compute_map_coords(matrix)               projection 2D (UMAP si installé, sinon PCA)
-    load_or_compute_map_coords(...)          lit data/embeddings/umap_2d.npy (P3) ou le calcule + cache
-    user_map_position(coords, sims)          position de l'utilisateur = barycentre de ses k plus proches livres
+Data helpers (for the map):
+    compute_map_coords(matrix)               2D projection (UMAP if installed, otherwise PCA)
+    load_or_compute_map_coords(...)          reads data/embeddings/umap_2d.npy (P3) or computes it + caches it
+    user_map_position(coords, sims)          user position = barycentre of their k closest books
 
-Choix de lisibilité : une couleur FIXE par bloc dans toutes les figures (Genre toujours
-bleu, Thèmes toujours vert…), pour que le jury fasse le lien d'un graphique à l'autre.
+Readability choice: ONE FIXED colour per block in every figure (Genre is always
+blue, Themes always green…), so that the reader can link one chart to the next.
 """
 from __future__ import annotations
 
@@ -36,30 +36,30 @@ from plotly.subplots import make_subplots
 from src import config
 
 # --------------------------------------------------------------------------- #
-# 0. Charte graphique commune
+# 0. Shared visual identity
 # --------------------------------------------------------------------------- #
 
 BLOCK_ORDER: tuple[str, ...] = tuple(config.BLOCKS)  # ("Genre", "Themes", "Style", "Atmosphere")
 
-# Une couleur par composante du score, réutilisée PARTOUT (radars, barres, heatmap).
+# One colour per score component, reused EVERYWHERE (radars, bars, heatmap).
 COMPONENT_COLORS: dict[str, str] = {
-    "Description": "#5B6770",   # similarité requête ↔ résumé : gris ardoise (le « socle »)
+    "Description": "#5B6770",   # query ↔ synopsis similarity: slate grey (the "base")
     "Genre": "#2F6FDE",
     "Themes": "#1A9E77",
     "Style": "#E08A1E",
     "Atmosphere": "#9B4DCA",
     "Popularity": "#C9A227",
-    "Avoid": "#D64545",         # pénalité « à éviter » (valeur négative)
+    "Avoid": "#D64545",         # "avoid" penalty (negative value)
 }
-USER_COLOR = "#111827"           # l'utilisateur est toujours en noir
-BOOK_COLORS = ("#E4572E", "#17BEBB", "#FFC914")  # livres n°1, 2, 3 (contraste élevé)
+USER_COLOR = "#111827"           # the user is always black
+BOOK_COLORS = ("#E4572E", "#17BEBB", "#FFC914")  # books #1, 2, 3 (high contrast)
 MATCH_COLORS = {"Excellent": "#1A9E77", "Good": "#E08A1E", "Partial": "#8A8F98"}
 
 FONT = dict(family="Inter, Segoe UI, Helvetica, Arial, sans-serif", size=13)
 
-# Synonymes acceptés pour les clés de block_scores / contributions : le contrat (§4.4)
-# écrit « S_desc, S_Genre… » mais P4 peut choisir « desc », « Genre », « pop »… On normalise
-# tout vers les noms de COMPONENT_COLORS pour ne pas dépendre de la convention exacte.
+# Accepted synonyms for the keys of block_scores / contributions: the contract (§4.4)
+# says "S_desc, S_Genre…" but P4 may use "desc", "Genre", "pop"… Everything is mapped
+# to the names of COMPONENT_COLORS so that we do not depend on the exact convention.
 _KEY_ALIASES = {
     "desc": "Description", "s_desc": "Description", "description": "Description",
     "synopsis": "Description", "global": "Description",
@@ -80,12 +80,12 @@ def normalize_key(key: str) -> str:
 
 
 def normalize_scores(scores: Mapping[str, float] | None) -> dict[str, float]:
-    """Applique normalize_key à toutes les clés (et convertit en float)."""
+    """Apply normalize_key to every key (and convert the values to float)."""
     return {normalize_key(k): float(v) for k, v in (scores or {}).items()}
 
 
 def _base_layout(fig: go.Figure, title: str | None = None, height: int | None = None) -> go.Figure:
-    """Mise en forme commune : police, marges, fond transparent (s'adapte au thème Streamlit)."""
+    """Shared layout: font, margins, transparent background (adapts to the Streamlit theme)."""
     fig.update_layout(
         title=dict(text=title, x=0.0, xanchor="left", font=dict(size=16)) if title else None,
         font=FONT,
@@ -95,14 +95,14 @@ def _base_layout(fig: go.Figure, title: str | None = None, height: int | None = 
         legend=dict(orientation="h", yanchor="bottom", y=-0.25, xanchor="center", x=0.5),
         height=height,
     )
-    # automargin : Plotly agrandit la marge si les libellés d'axes sont longs (sinon ils sont coupés)
+    # automargin: Plotly widens the margin when axis labels are long (otherwise they are cut off)
     fig.update_xaxes(automargin=True)
     fig.update_yaxes(automargin=True)
     return fig
 
 
 def _short(text: str, n: int = 38) -> str:
-    """Raccourcit un libellé trop long pour un axe (avec « … »)."""
+    """Shorten a label that is too long for an axis (adds "…")."""
     text = " ".join(str(text).split())
     return text if len(text) <= n else text[: n - 1].rstrip() + "…"
 
@@ -114,14 +114,14 @@ def _hex_to_rgba(hex_color: str, alpha: float) -> str:
 
 
 def _get(obj: Any, name: str, default: Any = None) -> Any:
-    """Lit un attribut de dataclass OU une clé de dict (les recos peuvent venir d'un JSON)."""
+    """Read a dataclass attribute OR a dict key (recommendations may come from a JSON file)."""
     if isinstance(obj, Mapping):
         return obj.get(name, default)
     return getattr(obj, name, default)
 
 
 # --------------------------------------------------------------------------- #
-# 1. Radar « profil du lecteur »
+# 1. "Reader profile" radar
 # --------------------------------------------------------------------------- #
 
 def radar_profile(
@@ -130,17 +130,17 @@ def radar_profile(
     title: str | None = "Your reader profile",
     height: int = 620,
 ) -> go.Figure:
-    """Un radar par bloc (2 × 2) : affinité de l'utilisateur pour les labels les plus proches.
+    """One radar per block (2 × 2): the user's affinity for the closest labels.
 
     Args:
-        block_affinities: UserProfile.block_affinities = {bloc: {label: affinité}}.
-            L'affinité vient d'un cosinus entre les réponses de l'utilisateur et la phrase
-            descriptive du label (calculée par P4). Elle peut être brute (≈ 0,1-0,7) ou
-            calibrée dans [0, 1] : on rééchelonne chaque bloc sur [0, 1] pour la lisibilité.
-        top_n: nombre de labels montrés par bloc (les plus forts). 5 à 7 reste lisible.
+        block_affinities: UserProfile.block_affinities = {block: {label: affinity}}.
+            The affinity is a cosine between the user's answers and the label's descriptive
+            sentence (computed by P4). It can be raw (≈ 0.1-0.7) or calibrated to [0, 1]:
+            each block is rescaled to [0, 1] for readability.
+        top_n: number of labels shown per block (the strongest ones). 5 to 7 stays readable.
 
-    Pourquoi 4 petits radars plutôt qu'un grand : ~66 labels sur un seul radar seraient
-    illisibles, et séparer les blocs montre directement la structure du référentiel de P2.
+    Why 4 small radars rather than one big one: ~66 labels on a single radar would be
+    unreadable, and splitting the blocks directly shows the structure of P2's label set.
     """
     blocks = [b for b in BLOCK_ORDER if b in block_affinities] or list(block_affinities)
     rows, cols = 2, 2
@@ -154,15 +154,15 @@ def radar_profile(
         aff = {k: float(v) for k, v in block_affinities[block].items()}
         if not aff:
             continue
-        # Étape 1 : garder les top_n labels (ordre décroissant d'affinité)
+        # Step 1: keep the top_n labels (decreasing affinity)
         top = sorted(aff.items(), key=lambda kv: kv[1], reverse=True)[:top_n]
         labels = [_short(k, 18) for k, _ in top]
         vals = np.array([v for _, v in top], dtype=float)
-        # Étape 2 : rééchelonner sur [0,1] DANS le bloc (min du bloc complet -> 0, max -> 1)
+        # Step 2: rescale to [0, 1] WITHIN the block (min of the whole block -> 0, max -> 1)
         all_vals = np.array(list(aff.values()), dtype=float)
         lo, hi = float(all_vals.min()), float(all_vals.max())
         scaled = (vals - lo) / (hi - lo) if hi > lo else np.ones_like(vals)
-        # Étape 3 : fermer le polygone (répéter le premier point)
+        # Step 3: close the polygon (repeat the first point)
         color = COMPONENT_COLORS.get(block, "#444")
         fig.add_trace(
             go.Scatterpolar(
@@ -183,7 +183,7 @@ def radar_profile(
         angularaxis=dict(tickfont=dict(size=10), gridcolor="#DDD"),
         bgcolor="rgba(0,0,0,0)",
     )
-    # Titres des sous-graphiques un peu remontés pour ne pas toucher les libellés du radar
+    # Subplot titles moved up a little so they do not touch the radar labels
     for ann in fig.layout.annotations:
         ann.update(yshift=18, font=dict(size=14))
     fig = _base_layout(fig, title, height)
@@ -192,7 +192,7 @@ def radar_profile(
 
 
 # --------------------------------------------------------------------------- #
-# 2. Radar « vous vs ce(s) livre(s) »
+# 2. "You vs this/these book(s)" radar
 # --------------------------------------------------------------------------- #
 
 def radar_compare(
@@ -203,18 +203,18 @@ def radar_compare(
     max_weight: float = 5.0,
     height: int = 430,
 ) -> go.Figure:
-    """Compare l'importance que l'utilisateur donne à chaque bloc et le score du livre sur ce bloc.
+    """Compare how important each block is to the user with the book's score on that block.
 
     Args:
-        weights: UserProfile.weights = {bloc: W_b} (Likert 1-5, ou déjà normalisé).
-        books_block_scores: {titre du livre: Recommendation.block_scores}. Un seul livre
-            -> radar individuel ; trois livres -> comparaison des recommandations.
-        include_description: ajoute l'axe « Description » (S̃_desc). Côté utilisateur, il
-            vaut 1 : la similarité au résumé compte toujours (poids fixe 0,5 de la formule).
-        max_weight: W_b maximal possible (5 pour un Likert) pour ramener les poids sur [0, 1].
+        weights: UserProfile.weights = {block: W_b} (Likert 1-5, or already normalised).
+        books_block_scores: {book title: Recommendation.block_scores}. One book
+            -> individual radar; three books -> comparison of the recommendations.
+        include_description: adds the "Description" axis (S̃_desc). On the user side it is
+            1: the synopsis similarity always counts (fixed weight 0.5 in the formula).
+        max_weight: largest possible W_b (5 for a Likert scale), used to map weights to [0, 1].
 
-    Lecture : là où le polygone du livre « couvre » celui de l'utilisateur, le livre satisfait
-    les critères jugés importants ; un creux sur un axe important explique un score plus faible.
+    How to read it: where the book's polygon "covers" the user's, the book meets the criteria
+    the user cares about; a dip on an important axis explains a lower score.
     """
     axes = (["Description"] if include_description else []) + list(BLOCK_ORDER)
     w = normalize_scores(weights)
@@ -222,14 +222,14 @@ def radar_compare(
     user_r = [1.0 if a == "Description" else w.get(a, 0.0) / wmax for a in axes]
 
     fig = go.Figure()
-    # Polygone de l'utilisateur (pointillés noirs) : ce qu'il demande
+    # User polygon (black dashes): what the user asks for
     fig.add_trace(go.Scatterpolar(
         r=user_r + [user_r[0]], theta=axes + [axes[0]],
         name="Your priorities", line=dict(color=USER_COLOR, width=2, dash="dash"),
         fill="toself", fillcolor="rgba(17,24,39,0.06)",
         hovertemplate="%{theta}: importance %{r:.2f}<extra>You</extra>",
     ))
-    # Un polygone par livre : ce que le livre offre (scores calibrés dans [0, 1])
+    # One polygon per book: what the book offers (scores calibrated to [0, 1])
     for i, (book, scores) in enumerate(books_block_scores.items()):
         s = normalize_scores(scores)
         r = [float(np.clip(s.get(a, 0.0), 0, 1)) for a in axes]
@@ -248,7 +248,7 @@ def radar_compare(
 
 
 # --------------------------------------------------------------------------- #
-# 3. Décomposition du score (barres horizontales empilées)
+# 3. Score breakdown (horizontal stacked bars)
 # --------------------------------------------------------------------------- #
 
 def score_breakdown(
@@ -257,21 +257,22 @@ def score_breakdown(
     height: int | None = None,
     show_legend: bool = True,
 ) -> go.Figure:
-    """Barres empilées : chaque segment = contribution d'une composante au score final.
+    """Stacked bars: each segment = the contribution of one component to the final score.
 
     Args:
-        recommendations: liste de Recommendation (ou de dicts) ; on lit `title`,
-            `contributions` (poids × score de chaque composante, calculé par P4) et
-            `final_score`. Une valeur négative (pénalité « à éviter ») part vers la gauche.
+        recommendations: list of Recommendation objects (or dicts); reads `title`,
+            `contributions` (weight × score of each component, computed by P4) and
+            `final_score`. A negative value ("avoid" penalty) goes to the left.
+        show_legend: hide the legend for small single-book charts.
 
-    La somme des segments = le score final (à la pénalité près) : c'est la preuve visuelle
-    que la recommandation est TRAÇABLE, exigence « Demonstrate how results are derived ».
+    The segments add up to the final score: this is the visual proof that the
+    recommendation is TRACEABLE (requirement "Demonstrate how results are derived").
     """
     recs = list(recommendations)
-    # Ordre d'affichage : n°1 en haut -> on inverse pour l'axe y de Plotly
+    # Display order: #1 at the top -> reversed for Plotly's y axis
     names = [f"#{_get(r, 'rank', i + 1)} {_short(_get(r, 'title', '?'), 34)}" for i, r in enumerate(recs)]
     contribs = [normalize_scores(_get(r, "contributions", {})) for r in recs]
-    # Composantes présentes, dans un ordre stable (connues d'abord, puis les autres)
+    # Components present, in a stable order (known ones first, then the others)
     known = [k for k in COMPONENT_COLORS if any(k in c for c in contribs)]
     others = sorted({k for c in contribs for k in c} - set(known))
     components = known + others
@@ -287,7 +288,7 @@ def score_breakdown(
             textposition="inside", insidetextanchor="middle", textangle=0,
             textfont=dict(color="white", size=11),
         ))
-    # Marqueur du score final (losange noir) pour vérifier que la somme tombe juste
+    # Final score marker (black diamond), to check that the sum is right
     finals = [float(_get(r, "final_score", np.nan)) for r in recs]
     fig.add_trace(go.Scatter(
         y=names[::-1], x=finals[::-1], mode="markers+text", name="Final score",
@@ -301,7 +302,7 @@ def score_breakdown(
                                                           for c in contribs), default=0)) - 0.02,
                                               max(1.0, max(finals, default=1.0)) + 0.18])
     fig = _base_layout(fig, title, height or 160 + 70 * len(recs))
-    # Légende AU-DESSUS du graphique : en dessous, elle chevauche les barres quand la figure est basse
+    # Legend ABOVE the chart: below it, it overlaps the bars when the figure is short
     fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0,
                                   font=dict(size=11)),
                       margin=dict(t=95 if title and show_legend else 60), showlegend=show_legend)
@@ -309,7 +310,7 @@ def score_breakdown(
 
 
 # --------------------------------------------------------------------------- #
-# 4. Carte de similarité 2D du catalogue
+# 4. 2D similarity map of the catalogue
 # --------------------------------------------------------------------------- #
 
 def similarity_map(
@@ -326,32 +327,32 @@ def similarity_map(
     height: int = 600,
     seed: int = config.RANDOM_SEED,
 ) -> go.Figure:
-    """Nuage 2D des livres (projection des embeddings) coloré par genre + l'utilisateur + le top 3.
+    """2D scatter of the books (projected embeddings) coloured by genre + the user + the top 3.
 
     Args:
-        coords: (N, 2) coordonnées 2D de TOUS les livres (même ordre que le catalogue).
-        genres: genre principal de chaque livre (N,) ; les genres rares sont regroupés en « Other ».
-        titles: titres (N,) pour le survol.
-        highlight: indices des livres recommandés (étoiles numérotées).
-        user_xy: position de l'utilisateur (voir user_map_position).
-        neighbours: indices des plus proches voisins de la requête (cerclés).
-        max_points: sous-échantillonnage pour garder l'app fluide (12 000 points restent ok,
-            mais 6 000 suffisent à voir la structure ; les livres mis en avant sont toujours tracés).
+        coords: (N, 2) 2D coordinates of ALL the books (same order as the catalogue).
+        genres: main genre of each book (N,); rare genres are grouped into "Other".
+        titles: titles (N,) shown on hover.
+        highlight: indices of the recommended books (numbered stars).
+        user_xy: position of the user (see user_map_position).
+        neighbours: indices of the query's nearest neighbours (circled).
+        max_points: subsampling to keep the app responsive (12,000 points still work,
+            but 6,000 are enough to see the structure; highlighted books are always drawn).
 
-    Interprétation : deux livres proches sur la carte ont des résumés de sens proche
-    (pas forcément les mêmes mots). Les couleurs montrent que les genres forment des
-    régions cohérentes, et l'étoile de l'utilisateur tombe dans la région qui lui correspond.
+    Interpretation: two books that are close on the map have synopses with a similar
+    meaning (not necessarily the same words). The colours show that genres form coherent
+    regions, and the user's marker falls in the region that matches their request.
     """
     coords = np.asarray(coords, dtype=float)
     n = coords.shape[0]
     genres = np.asarray([g if isinstance(g, str) and g else "Unknown" for g in genres], dtype=object)
     titles = np.asarray(titles, dtype=object)
 
-    # Étape 1 : sous-échantillonnage reproductible (on garde toujours les points importants)
+    # Step 1: reproducible subsampling (important points are always kept)
     rng = np.random.default_rng(seed)
     keep = np.arange(n) if n <= max_points else np.sort(rng.choice(n, max_points, replace=False))
 
-    # Étape 2 : regrouper les genres rares pour une légende lisible (≤ top_genres + Other)
+    # Step 2: group rare genres for a readable legend (≤ top_genres + Other)
     uniq, counts = np.unique(genres[keep], return_counts=True)
     main = set(uniq[np.argsort(-counts)][:top_genres])
     shown_genre = np.where(np.isin(genres, list(main)), genres, "Other")
@@ -371,7 +372,7 @@ def similarity_map(
             text=titles[idx], hovertemplate="%{text}<extra>" + g + "</extra>",
         ))
 
-    # Étape 3 : voisins de la requête (cercles), puis top 3 (étoiles), puis utilisateur
+    # Step 3: query neighbours (circles), then top 3 (stars), then the user
     nb = [i for i in neighbours if 0 <= i < n and i not in set(highlight)]
     if nb:
         fig.add_trace(go.Scatter(
@@ -397,8 +398,8 @@ def similarity_map(
             text=["YOU"], textposition="bottom center", textfont=dict(size=13, color=USER_COLOR),
             hovertemplate="Your position (weighted barycentre of your closest books)<extra></extra>",
         ))
-    # Cadrage robuste : quelques livres isolés (descriptions atypiques) écraseraient le nuage
-    # principal ; on cadre sur les percentiles 1-99 (+ marge), en gardant toujours le top 3 et l'utilisateur.
+    # Robust framing: a few isolated books (unusual descriptions) would squash the main
+    # cloud; we frame on the 1st-99th percentiles (+ margin), always keeping the top 3 and the user.
     pts = [coords[highlight[i]] for i in range(len(highlight)) if 0 <= highlight[i] < n]
     if user_xy is not None:
         pts.append(np.asarray(user_xy))
@@ -418,7 +419,7 @@ def similarity_map(
 
 
 # --------------------------------------------------------------------------- #
-# 5. Heatmap de similarité : phrases utilisateur × phrases/labels du livre
+# 5. Similarity heatmap: user sentences × the book's sentences/labels
 # --------------------------------------------------------------------------- #
 
 def similarity_heatmap(
@@ -430,11 +431,11 @@ def similarity_heatmap(
     zmin: float | None = None,
     zmax: float | None = None,
 ) -> go.Figure:
-    """Matrice de cosinus (lignes = textes de l'utilisateur, colonnes = labels ou phrases du livre).
+    """Cosine matrix (rows = the user's texts, columns = the book's labels or sentences).
 
-    C'est la visualisation la plus directe de l'analyse SÉMANTIQUE : une case foncée relie
-    une demande de l'utilisateur à un élément du livre qui exprime la même idée, même sans
-    mot commun (ex. « old university » ↔ label « Academic & campus »).
+    This is the most direct view of the SEMANTIC analysis: a dark cell links something the
+    user asked for to an element of the book that expresses the same idea, even without any
+    shared word (e.g. "old university" ↔ label "Academic & campus").
     """
     sim = np.asarray(sim, dtype=float)
     fig = go.Figure(go.Heatmap(
@@ -453,12 +454,12 @@ def similarity_heatmap(
 
 
 # --------------------------------------------------------------------------- #
-# 6. Petits graphiques d'appoint
+# 6. Small supporting charts
 # --------------------------------------------------------------------------- #
 
 def weights_bar(weights: Mapping[str, float], title: str | None = "Importance you gave to each block",
                 max_weight: float = 5.0, height: int = 220) -> go.Figure:
-    """Barres horizontales des poids W_b choisis par l'utilisateur (Likert 1-5)."""
+    """Horizontal bars of the weights W_b chosen by the user (Likert 1-5)."""
     w = normalize_scores(weights)
     blocks = [b for b in BLOCK_ORDER if b in w]
     fig = go.Figure(go.Bar(
@@ -474,7 +475,7 @@ def weights_bar(weights: Mapping[str, float], title: str | None = "Importance yo
 
 
 def score_gauge(score: float, label: str = "", height: int = 170) -> go.Figure:
-    """Jauge compacte du score final (pour une carte de recommandation)."""
+    """Compact gauge of the final score (for a recommendation card)."""
     color = MATCH_COLORS.get(label.split()[0] if label else "", "#2F6FDE")
     fig = go.Figure(go.Indicator(
         mode="gauge+number", value=round(100 * float(score), 1),
@@ -490,18 +491,26 @@ def score_gauge(score: float, label: str = "", height: int = 170) -> go.Figure:
 
 
 # --------------------------------------------------------------------------- #
-# 7. Données de la carte : projection 2D et position de l'utilisateur
+# 7. Map data: 2D projection and user position
 # --------------------------------------------------------------------------- #
 
 def compute_map_coords(matrix: np.ndarray, method: str = "auto", seed: int = config.RANDOM_SEED) -> np.ndarray:
-    """Projette les embeddings (N, d) en 2D.
+    """Project the (N, d) embeddings to 2D.
 
-    method = "umap" (préserve les voisinages : meilleure carte, ~30-60 s pour 12 000 livres),
-    "pca" (instantané, linéaire : clusters moins nets) ou "auto" (UMAP si installé, sinon PCA).
-    UMAP utilise la métrique cosinus, cohérente avec le reste du moteur.
+    method = "umap" (keeps neighbourhoods: best map, ~30-60 s for 12,000 books),
+    "pca" (instant, linear: less distinct clusters) or "auto" (UMAP if installed, otherwise PCA).
+    UMAP uses the cosine metric, consistent with the rest of the engine.
     """
     matrix = np.asarray(matrix, dtype=np.float32)
     if method in ("auto", "umap"):
+        try:   # P3's version (frozen UMAP layout: same map for every team member)
+            from src.semantic_map import compute_umap  # type: ignore
+
+            return compute_umap(matrix, seed=seed)
+        except ImportError:
+            pass
+        except Exception:  # noqa: BLE001 - e.g. spaCy blocked by Windows when src.embeddings is imported
+            pass
         try:
             import umap  # type: ignore
 
@@ -510,7 +519,7 @@ def compute_map_coords(matrix: np.ndarray, method: str = "auto", seed: int = con
         except ImportError:
             if method == "umap":
                 raise
-    # PCA via SVD (numpy seul, aucune dépendance)
+    # PCA through SVD (numpy only, no extra dependency)
     centered = matrix - matrix.mean(axis=0, keepdims=True)
     _, _, vt = np.linalg.svd(centered, full_matrices=False)
     return (centered @ vt[:2].T).astype(np.float32)
@@ -522,14 +531,14 @@ def load_or_compute_map_coords(
     path: Path | str = config.DATA_EMBEDDINGS / "umap_2d.npy",
     method: str = "auto",
 ) -> np.ndarray:
-    """Coordonnées 2D alignées sur le catalogue : lues sur disque si valides, sinon calculées puis cachées.
+    """2D coordinates aligned with the catalogue: read from disk if valid, otherwise computed and cached.
 
-    Le fichier umap_2d.npy est normalement produit par P3 (notebook 03). Pour garantir
-    l'alignement ligne i ↔ livre i, on vérifie le fichier voisin umap_2d_book_ids.json
-    (s'il existe) ou, à défaut, que le nombre de lignes correspond.
+    umap_2d.npy is normally produced by P3 (notebook 03, src/semantic_map.save_umap). To guarantee
+    that row i ↔ book i, we check the companion file umap_book_ids.json written next to it
+    (same convention as P3) or, if it does not exist, that the number of rows matches.
     """
     path = Path(path)
-    ids_path = path.with_name(path.stem + "_book_ids.json")
+    ids_path = path.parent / "umap_book_ids.json"          # same file name as src/semantic_map.py (P3)
     ids = [str(b) for b in book_ids]
     if path.exists():
         coords = np.load(path)
@@ -546,25 +555,25 @@ def load_or_compute_map_coords(
 
 
 def user_map_position(coords: np.ndarray, sims: np.ndarray, k: int = 15) -> tuple[tuple[float, float], np.ndarray]:
-    """Place l'utilisateur sur la carte = barycentre (pondéré par le cosinus) de ses k livres les plus proches.
+    """Place the user on the map = cosine-weighted barycentre of their k closest books.
 
-    Pourquoi pas umap.transform : il faudrait garder l'objet UMAP entraîné (lourd, non
-    sérialisé par P3) et le résultat serait instable. Le barycentre des plus proches voisins
-    est simple, déterministe et fidèle à l'idée « vous êtes là où sont les livres qui vous ressemblent ».
+    Why not umap.transform: we would have to keep the fitted UMAP object (heavy, not saved
+    by P3) and the result would be unstable. The nearest-neighbour barycentre is simple,
+    deterministic and faithful to the idea "you are where the books that resemble you are".
 
     Returns:
-        ((x, y), indices des k voisins)
+        ((x, y), indices of the k neighbours)
     """
     sims = np.asarray(sims, dtype=float)
     k = int(min(k, len(sims)))
     nn = np.argsort(-sims)[:k]
-    w = np.clip(sims[nn], 1e-6, None) ** 2      # on accentue les plus proches
+    w = np.clip(sims[nn], 1e-6, None) ** 2      # emphasise the closest ones
     xy = (coords[nn] * w[:, None]).sum(axis=0) / w.sum()
     return (float(xy[0]), float(xy[1])), nn
 
 
 def primary_genre(genres: Any) -> str:
-    """Premier genre d'une liste (colonne `genres` de P2), 'Unknown' si vide."""
+    """First genre of a list (P2's `genres` column), 'Unknown' if empty."""
     if isinstance(genres, (list, tuple, np.ndarray)) and len(genres) > 0:
         return str(genres[0])
     if isinstance(genres, str) and genres:
@@ -573,15 +582,15 @@ def primary_genre(genres: Any) -> str:
 
 
 # --------------------------------------------------------------------------- #
-# 8. Export pour le rapport et les slides
+# 8. Export for the report and the slides
 # --------------------------------------------------------------------------- #
 
 def save_figure(fig: go.Figure, name: str, folder: Path | str = config.FIGURES_DIR,
                 width: int = 1100, height: int | None = None, scale: float = 2.0) -> Path | None:
-    """Exporte une figure en PNG (docs/figures/05_<name>.png) via kaleido.
+    """Export a figure as PNG (docs/figures/05_<name>.png) through kaleido.
 
-    Renvoie None (avec un message) si kaleido / Chrome n'est pas disponible, au lieu de planter
-    le notebook : la figure reste visible en interactif.
+    Returns None (with a message) if kaleido / Chrome is not available, instead of crashing
+    the notebook: the figure is still visible interactively.
     """
     folder = Path(folder)
     folder.mkdir(parents=True, exist_ok=True)
@@ -589,14 +598,14 @@ def save_figure(fig: go.Figure, name: str, folder: Path | str = config.FIGURES_D
     try:
         fig.write_image(str(out), width=width, height=height or fig.layout.height or 600, scale=scale)
         return out
-    except Exception as err:  # kaleido absent, Chrome introuvable (kaleido >= 1.0)…
-        print(f"[save_figure] export PNG impossible ({type(err).__name__}: {err}). "
-              "Installer kaleido (pip install kaleido) puis, si demandé, `plotly_get_chrome`.")
+    except Exception as err:  # kaleido missing, Chrome not found (kaleido >= 1.0)…
+        print(f"[save_figure] PNG export failed ({type(err).__name__}: {err}). "
+              "Install kaleido (pip install kaleido) and, if asked, run `plotly_get_chrome`.")
         return None
 
 
 def export_all(figures: Mapping[str, go.Figure], **kwargs: Any) -> list[Path]:
-    """Exporte plusieurs figures d'un coup : {"radar_profile": fig, ...} -> liste de chemins."""
+    """Export several figures at once: {"radar_profile": fig, ...} -> list of paths."""
     paths = [save_figure(f, n, **kwargs) for n, f in figures.items()]
     return [p for p in paths if p is not None]
 

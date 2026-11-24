@@ -1,18 +1,18 @@
 """
-questions.py : contenu du questionnaire (Personne 5).
+questions.py: content of the questionnaire (Person 5).
 
-Ce module ne dépend PAS de Streamlit : il définit les questions, les personas de démo,
-la validation et la construction de answers.json (contrat PLAN §4.3). On peut donc le
-tester avec pytest et le réutiliser dans les notebooks (P4, P6) pour fabriquer des réponses.
+This module does NOT depend on Streamlit: it defines the questions, the demo personas,
+the validation and the construction of answers.json (contract PLAN §4.3). It can therefore
+be tested with pytest and reused in the notebooks (P4, P6) to build answers.
 
-Correspondance avec le tableau des questions (PLAN §6) et les 5 types exigés par le sujet :
-    Q1-Q4   texte libre (Q1 obligatoire, >= 30 caractères)    -> free_text
-    Q5-Q6   cases à cocher (genres, thèmes)                   -> genres, themes
-    Q7      choix multiple, radio (époque du récit)            -> period
-    Q8      choix multiple, selectbox (public)                 -> audience
-    Q9      multiselect (formats)                              -> formats
-    Q10-Q14 échelles de Likert 1-5                             -> likert
-    Q15-Q17 questions guidées (conditionnelles)                -> favorite_author, guided
+Mapping with the question table (PLAN §6) and the 5 question types required by the brief:
+    Q1-Q4   free text (Q1 required, >= 30 characters)     -> free_text
+    Q5-Q6   checkboxes (genres, themes)                   -> genres, themes
+    Q7      multiple choice, radio (era of the story)     -> period
+    Q8      multiple choice, selectbox (audience)         -> audience
+    Q9      multiselect (formats)                         -> formats
+    Q10-Q14 Likert scales 1-5                             -> likert
+    Q15-Q17 guided questions (conditional)                -> favorite_author, guided
 """
 from __future__ import annotations
 
@@ -24,28 +24,28 @@ from typing import Any, Mapping
 from src import config
 
 # --------------------------------------------------------------------------- #
-# 1. Référentiel des labels (lu dans blocks.json de P2 : une seule source de vérité)
+# 1. Label set (read from P2's blocks.json: a single source of truth)
 # --------------------------------------------------------------------------- #
 
 
 def load_blocks(path: Path | str = config.BLOCKS_JSON) -> dict[str, dict[str, str]]:
-    """{bloc: {label: phrase descriptive}}. Les phrases servent de bulles d'aide (help=)."""
+    """{block: {label: descriptive sentence}}. The sentences are used as tooltips (help=)."""
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
 
-# Labels d'ÉPOQUE du bloc Atmosphere (P2). Q7 renvoie exactement l'un de ces labels :
-# P4 peut donc retrouver directement la phrase descriptive dans blocks.json.
+# ERA labels of the Atmosphere block (P2). Q7 returns exactly one of these labels,
+# so P4 can directly look up its descriptive sentence in blocks.json.
 ERA_LABELS = ("Ancient world", "Medieval", "18th-19th century", "20th century", "Contemporary", "Future")
 NO_PREFERENCE = "No preference"
 
-AUDIENCES = ("Adult", "Young Adult", "Children", "Any")   # "Any" = pas de filtre (géré par apply_constraints)
+AUDIENCES = ("Adult", "Young Adult", "Children", "Any")   # "Any" = no filter (handled by apply_constraints)
 FORMATS = tuple(config.KEEP_FORMATS)                       # ("Paperback", "Hardback")
 FOCUS_OPTIONS = ("Characters", "Plot", "Both")
 
 MIN_Q1_CHARS = 30
 
 # --------------------------------------------------------------------------- #
-# 2. Textes des questions (interface en anglais, cohérente avec le dataset)
+# 2. Question texts (English interface, consistent with the dataset)
 # --------------------------------------------------------------------------- #
 
 STEPS = (
@@ -57,7 +57,7 @@ STEPS = (
 )
 
 FREE_TEXT_QUESTIONS = {
-    # clé de session : (clé dans answers.json, question, placeholder, obligatoire)
+    # session key: (key in answers.json, question, placeholder, required)
     "q1_ideal": ("ideal_book", "Q1. Describe the kind of book you'd love to read right now.",
                  "e.g. A psychological novel about a group of students who commit a crime and must live "
                  "with the guilt, full of moral dilemmas…", True),
@@ -70,12 +70,12 @@ FREE_TEXT_QUESTIONS = {
                  "e.g. No romance-centred plots, no gore…", False),
 }
 
-# Échelles de Likert : clé -> (question, libellé à 1, libellé à 5)
+# Likert scales: key -> (question, label at 1, label at 5)
 LIKERT_TASTE = {
     "complexity": ("Q10. Narrative complexity", "Simple & easy to read", "Complex, dense & literary"),
     "pace": ("Q11. Pace", "Slow & contemplative", "Fast-paced page-turner"),
     "darkness": ("Q12. Tone", "Light & feel-good", "Dark & intense"),
-    # Même sens que P4 (profile.lambda_from_likert) : 1 = pépites méconnues, 5 = best-sellers
+    # Same direction as P4 (profile.lambda_from_likert): 1 = hidden gems, 5 = best-sellers
     "popularity": ("Q13. Popularity", "Hidden gems", "Well-known best-sellers"),
 }
 LIKERT_WEIGHTS = {
@@ -87,7 +87,7 @@ LIKERT_WEIGHTS = {
 LIKERT_KEYS = tuple(LIKERT_TASTE) + tuple(LIKERT_WEIGHTS)
 
 # --------------------------------------------------------------------------- #
-# 3. État par défaut (clés de st.session_state)
+# 3. Default state (st.session_state keys)
 # --------------------------------------------------------------------------- #
 
 
@@ -100,11 +100,11 @@ def theme_key(label: str) -> str:
 
 
 def default_state(blocks: Mapping[str, Mapping[str, str]]) -> dict[str, Any]:
-    """Valeurs initiales de TOUS les widgets du questionnaire.
+    """Initial values of ALL the questionnaire widgets.
 
-    On initialise st.session_state avec ce dict AVANT d'afficher les widgets et on ne passe
-    jamais `value=` aux widgets : c'est ce qui permet au mode démo de pré-remplir le
-    formulaire et aux réponses de survivre à la navigation entre étapes.
+    st.session_state is initialised with this dict BEFORE the widgets are drawn, and `value=`
+    is never passed to the widgets: this is what lets the demo mode pre-fill the form and
+    lets the answers survive navigation between steps.
     """
     state: dict[str, Any] = {k: "" for k in FREE_TEXT_QUESTIONS}
     state.update({genre_key(g): False for g in blocks["Genre"]})
@@ -124,7 +124,7 @@ def default_state(blocks: Mapping[str, Mapping[str, str]]) -> dict[str, Any]:
 
 
 # --------------------------------------------------------------------------- #
-# 4. Personas de démo (bouton « mode démo » pour la soutenance)
+# 4. Demo personas ("demo mode" button for the oral presentation)
 # --------------------------------------------------------------------------- #
 
 DEMO_PERSONAS: dict[str, dict[str, Any]] = {
@@ -179,7 +179,7 @@ DEMO_PERSONAS: dict[str, dict[str, Any]] = {
 
 
 def persona_state(name: str, blocks: Mapping[str, Mapping[str, str]]) -> dict[str, Any]:
-    """État complet du questionnaire pour un persona (les cases non citées sont décochées)."""
+    """Full questionnaire state for a persona (boxes that are not listed are unticked)."""
     persona = DEMO_PERSONAS[name]
     state = default_state(blocks)
     for k, v in persona.items():
@@ -193,12 +193,12 @@ def persona_state(name: str, blocks: Mapping[str, Mapping[str, str]]) -> dict[st
 
 
 # --------------------------------------------------------------------------- #
-# 5. Validation et construction de answers.json
+# 5. Validation and construction of answers.json
 # --------------------------------------------------------------------------- #
 
 
 def validate_step(step: int, state: Mapping[str, Any]) -> list[str]:
-    """Erreurs bloquantes de l'étape `step` (0 à 4). Liste vide = on peut passer à la suite."""
+    """Blocking errors of step `step` (0 to 4). Empty list = the user can move on."""
     errors: list[str] = []
     if step == 0:
         q1 = str(state.get("q1_ideal", "")).strip()
@@ -210,7 +210,7 @@ def validate_step(step: int, state: Mapping[str, Any]) -> list[str]:
             errors.append("Q9: select at least one format.")
     elif step == 4:
         if state.get("q15_has_author") == "Yes" and not str(state.get("q15_author", "")).strip():
-            errors.append("Q15: type the name of your favourite author, or answer « No ».")
+            errors.append("Q15: type the name of your favourite author, or answer \"No\".")
     return errors
 
 
@@ -219,10 +219,10 @@ def validate_all(state: Mapping[str, Any]) -> list[str]:
 
 
 def build_answers(state: Mapping[str, Any], blocks: Mapping[str, Mapping[str, str]]) -> dict[str, Any]:
-    """Transforme l'état du formulaire en answers.json EXACTEMENT conforme au contrat (PLAN §4.3).
+    """Turn the form state into an answers.json that matches the contract EXACTLY (PLAN §4.3).
 
-    Les textes sont nettoyés (espaces) ; le Likert est en entiers 1-5 ; les champs guidés
-    non pertinents sont neutralisés (pas d'auteur -> favorite_author = "" et exclusion False).
+    Texts are cleaned (whitespace); Likert values are integers 1-5; guided fields that do
+    not apply are neutralised (no author -> favorite_author = "" and exclusion False).
     """
     has_author = state.get("q15_has_author") == "Yes"
     author = " ".join(str(state.get("q15_author", "")).split()) if has_author else ""
@@ -247,13 +247,13 @@ def build_answers(state: Mapping[str, Any], blocks: Mapping[str, Mapping[str, st
 
 
 def save_answers(answers: Mapping[str, Any], folder: Path | str = config.DATA_RESPONSES) -> Path:
-    """Sauvegarde horodatée data/responses/answers_YYYYmmdd_HHMMSS.json (consigne « structured format »)."""
+    """Timestamped save to data/responses/answers_YYYYmmdd_HHMMSS.json ("structured format" requirement)."""
     folder = Path(folder)
     folder.mkdir(parents=True, exist_ok=True)
     stamp = time.strftime("%Y%m%d_%H%M%S")
     path = folder / f"answers_{stamp}.json"
     i = 1
-    while path.exists():                     # deux envois dans la même seconde
+    while path.exists():                     # two submissions within the same second
         path = folder / f"answers_{stamp}_{i}.json"
         i += 1
     path.write_text(json.dumps(answers, indent=2, ensure_ascii=False), encoding="utf-8")
@@ -261,7 +261,7 @@ def save_answers(answers: Mapping[str, Any], folder: Path | str = config.DATA_RE
 
 
 def state_from_answers(answers: Mapping[str, Any], blocks: Mapping[str, Mapping[str, str]]) -> dict[str, Any]:
-    """Inverse de build_answers : recharge un answers.json dans le formulaire (bouton « Load answers »)."""
+    """Inverse of build_answers: reload an answers.json into the form ("Load answers" button)."""
     state = default_state(blocks)
     ft = answers.get("free_text", {})
     for sk, (ans_key, *_rest) in FREE_TEXT_QUESTIONS.items():

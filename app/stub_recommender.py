@@ -1,19 +1,19 @@
 """
-stub_recommender.py : remplaçant PROVISOIRE de src/recommender.recommend (Personne 5).
+stub_recommender.py: TEMPORARY stand-in for src/recommender.recommend (Person 5).
 
-⚠️ Ce n'est PAS le moteur de recommandation du projet (c'est le travail de P4).
-Il sert uniquement à développer et tester l'application tant que src/recommender.py
-n'existe pas. Dès que P4 livre `recommend(answers, top_k)`, l'app l'utilise
-automatiquement (voir get_recommend_fn dans streamlit_app.py) et ce fichier ne sert plus.
+⚠️ This is NOT the project's recommendation engine (that is P4's work).
+It is only used to develop and test the app while src/recommender.py does not exist.
+As soon as P4's `recommend(answers, top_k)` is available, the app uses it
+automatically (see get_recommend_fn in streamlit_app.py) and this file is no longer used.
 
-Il respecte EXACTEMENT le contrat de sortie (PLAN §4.4) pour que l'interface et les
-visualisations soient déjà branchées sur les bons champs. Pour que la démo soit crédible,
-il utilise de vraies données quand elles existent :
-    - avec un EmbeddingEngine (P3) : retrieval par cosinus requête ↔ résumé + best_sentence ;
-    - toujours : les label_scores de P2 (books_enriched.parquet) pour les scores par bloc ;
-    - toujours : apply_constraints de P1 pour les filtres durs.
-La formule est une version simplifiée de PLAN §5 (pas de phrases issues du Likert, calibration
-grossière min/max des candidats) : les chiffres affichés ne doivent PAS être cités dans le rapport.
+It follows the output contract EXACTLY (PLAN §4.4) so that the interface and the
+visualisations are already wired to the right fields. To keep the demo credible,
+it uses real data whenever it exists:
+    - with an EmbeddingEngine (P3): cosine retrieval query ↔ synopsis + best_sentence;
+    - always: P2's label_scores (books_enriched.parquet) for the per-block scores;
+    - always: P1's apply_constraints for the hard filters.
+The formula is a simplified version of PLAN §5 (no sentences derived from the Likert answers,
+rough min/max calibration on the candidates): the numbers it shows must NOT be quoted in the report.
 """
 from __future__ import annotations
 
@@ -27,11 +27,11 @@ import pandas as pd
 from src import config
 
 # --------------------------------------------------------------------------- #
-# 1. Dataclasses du contrat : on prend celles de P4 si elles existent déjà
+# 1. Contract dataclasses: use P4's ones if they already exist
 # --------------------------------------------------------------------------- #
-try:  # pragma: no cover - dépend de l'avancement de P4
+try:  # pragma: no cover - depends on P4's progress
     from src.schemas import Recommendation, UserProfile  # type: ignore
-except ImportError:  # copie conforme du contrat PLAN §4.4
+except ImportError:  # exact copy of the contract in PLAN §4.4
 
     @dataclass
     class UserProfile:  # type: ignore[no-redef]
@@ -65,14 +65,14 @@ LABEL_COLUMNS = {"Genre": "genres", "Themes": "themes", "Style": "styles", "Atmo
 
 
 # --------------------------------------------------------------------------- #
-# 2. Préférences par bloc (version simplifiée de profile.py)
+# 2. Preferences per block (simplified version of profile.py)
 # --------------------------------------------------------------------------- #
 
 def preferred_labels(answers: Mapping[str, Any]) -> dict[str, list[str]]:
-    """Labels que l'utilisateur « demande » dans chaque bloc.
+    """Labels the user "asks for" in each block.
 
-    Genre / Themes : cases cochées. Style : déduit du Likert et de la question guidée.
-    Atmosphere : époque choisie + tonalité. (P4 fera mieux : phrases encodées, pas des labels.)
+    Genre / Themes: ticked boxes. Style: derived from the Likert scales and the guided question.
+    Atmosphere: chosen era + tone. (P4 does better: encoded sentences rather than labels.)
     """
     lik = answers.get("likert", {})
     style: list[str] = []
@@ -102,7 +102,7 @@ def preferred_labels(answers: Mapping[str, Any]) -> dict[str, list[str]]:
 
 
 def _label_score_matrix(books: pd.DataFrame, block: str, labels: list[str]) -> np.ndarray:
-    """(N, len(labels)) : cosinus livre ↔ label tirés de label_scores (P2)."""
+    """(N, len(labels)): book ↔ label cosines taken from label_scores (P2)."""
     out = np.zeros((len(books), len(labels)), dtype=np.float32)
     for i, ls in enumerate(books["label_scores"].tolist()):
         if isinstance(ls, str):
@@ -113,13 +113,13 @@ def _label_score_matrix(books: pd.DataFrame, block: str, labels: list[str]) -> n
 
 
 def _minmax(x: np.ndarray) -> np.ndarray:
-    """Calibration grossière sur [0, 1] (P4 utilise les percentiles p5/p95 du catalogue)."""
+    """Rough calibration to [0, 1] (P4 uses the catalogue's p5/p95 percentiles)."""
     lo, hi = np.nanpercentile(x, 5), np.nanpercentile(x, 95)
     return np.clip((x - lo) / (hi - lo), 0, 1) if hi > lo else np.full_like(x, 0.5)
 
 
 def _match_label(score: float) -> str:
-    """Mêmes libellés que P4 : "Excellent" / "Good" / "Partial"."""
+    """Same labels as P4: "Excellent" / "Good" / "Partial"."""
     if score >= config.MATCH_THRESHOLDS["Excellent"]:
         return "Excellent"
     if score >= config.MATCH_THRESHOLDS["Good"]:
@@ -128,15 +128,15 @@ def _match_label(score: float) -> str:
 
 
 # --------------------------------------------------------------------------- #
-# 3. recommend() : même signature que P4 (+ arguments optionnels pour l'app)
+# 3. recommend(): same signature as P4 (+ optional arguments for the app)
 # --------------------------------------------------------------------------- #
 
 def recommend(answers: dict, top_k: int = 3, engine: Any = None,
               books: pd.DataFrame | None = None) -> tuple[UserProfile, list[Recommendation]]:
-    """Recommandations PROVISOIRES conformes au contrat. Voir l'avertissement en tête de fichier."""
+    """TEMPORARY recommendations that follow the contract. See the warning at the top of this file."""
     from src.data_loader import apply_constraints, find_author, load_books
 
-    # Étape 0 : catalogue (celui du moteur s'il existe, pour garder l'alignement des indices)
+    # Step 0: catalogue (the engine's one if available, to keep the indices aligned)
     if books is None:
         books = engine.books if engine is not None else load_books()
     books = books.reset_index(drop=True)
@@ -145,7 +145,7 @@ def recommend(answers: dict, top_k: int = 3, engine: Any = None,
     lik = answers.get("likert", {})
     guided = answers.get("guided", {})
 
-    # Étape 1 : requête globale (Q1 + Q2 + Q3) et requête « à éviter »
+    # Step 1: global query (Q1 + Q2 + Q3) and "avoid" query
     global_text = " ".join(t for t in (ft.get("ideal_book"), ft.get("loved_book"), ft.get("atmosphere")) if t)
     avoid_text = (ft.get("avoid") or "").strip()
     q_vecs: dict[str, np.ndarray] = {}
@@ -158,7 +158,7 @@ def recommend(answers: dict, top_k: int = 3, engine: Any = None,
             q_vecs["avoid"] = engine.encode([avoid_text])[0]
             s_avoid = engine.book_matrix() @ q_vecs["avoid"]
 
-    # Étape 2 : filtres durs (P1)
+    # Step 2: hard filters (P1)
     favourite = answers.get("favorite_author") or ""
     excluded = [favourite] if favourite and guided.get("exclude_favorite_author") else None
     mask = apply_constraints(books, audience=answers.get("audience"), formats=answers.get("formats"),
@@ -166,10 +166,10 @@ def recommend(answers: dict, top_k: int = 3, engine: Any = None,
     cand = np.flatnonzero(mask)
     if len(cand) == 0:
         return _profile(answers, global_text, avoid_text, q_vecs, {}, engine, mask), []
-    if engine is not None:                       # retrieval top-300 par similarité au résumé
+    if engine is not None:                       # top-300 retrieval by synopsis similarity
         cand = cand[np.argsort(-s_desc[cand])][: config.RETRIEVAL_TOP_K]
 
-    # Étape 3 : score par bloc = moyenne des cosinus (label_scores) sur les labels demandés
+    # Step 3: block score = mean cosine (label_scores) over the requested labels
     prefs = preferred_labels(answers)
     weights = {"Genre": lik.get("w_genre", 3), "Themes": lik.get("w_themes", 3),
                "Style": lik.get("w_style", 3), "Atmosphere": lik.get("w_atmosphere", 3)}
@@ -179,21 +179,21 @@ def recommend(answers: dict, top_k: int = 3, engine: Any = None,
         if prefs[b]:
             raw_block[b] = _label_score_matrix(sub, b, prefs[b]).mean(axis=1)
     cal_block = {b: _minmax(v) for b, v in raw_block.items()}
-    active = [b for b in BLOCKS if b in cal_block]          # bloc sans préférence = ignoré
+    active = [b for b in BLOCKS if b in cal_block]          # block without a preference = ignored
     w_sum = sum(weights[b] for b in active) or 1.0
     coverage = sum(weights[b] * cal_block[b] for b in active) / w_sum if active else np.zeros(len(cand))
 
-    # Étape 4 : score final (forme de PLAN §5)
+    # Step 4: final score (shape of PLAN §5)
     desc_cal = _minmax(s_desc[cand]) if engine is not None else np.zeros(len(cand))
     alpha = config.ALPHA_DESC if engine is not None else 0.0
     beta = config.BETA_COVERAGE if engine is not None else config.ALPHA_DESC + config.BETA_COVERAGE
-    lam = config.LAMBDA_POP_MAX * (lik.get("popularity", 3) - 1) / 4      # même sens que P4 : 5 = best-sellers
+    lam = config.LAMBDA_POP_MAX * (lik.get("popularity", 3) - 1) / 4      # same direction as P4: 5 = best-sellers
     pop = books["popularity"].to_numpy(dtype=float)[cand]
     pen = config.MU_AVOID * np.maximum(0, s_avoid[cand] - config.TAU_AVOID) if avoid_text else np.zeros(len(cand))
-    denom = (alpha + beta + lam) or 1.0                                   # normalisation de P4
+    denom = (alpha + beta + lam) or 1.0                                   # P4's normalisation
     final = np.clip((alpha * desc_cal + beta * coverage + lam * pop) / denom - pen, 0, 1)
 
-    # Étape 5 : top-k avec diversité (1 livre max par auteur principal)
+    # Step 5: top-k with diversity (at most 1 book per main author)
     recs: list[Recommendation] = []
     seen_authors: set[str] = set()
     for j in np.argsort(-final):
@@ -228,7 +228,7 @@ def recommend(answers: dict, top_k: int = 3, engine: Any = None,
 
 
 def _matched_labels(row: pd.Series, prefs: dict[str, list[str]]) -> dict[str, list[tuple[str, float]]]:
-    """Pour chaque bloc : les 2 labels (demandés par l'utilisateur, sinon ceux du livre) les plus forts."""
+    """For each block: the 2 strongest labels (those requested by the user, otherwise the book's own)."""
     ls = row["label_scores"]
     if isinstance(ls, str):
         ls = json.loads(ls)
@@ -244,7 +244,7 @@ def _matched_labels(row: pd.Series, prefs: dict[str, list[str]]) -> dict[str, li
 
 
 def _explain(rec: Recommendation, answers: Mapping[str, Any]) -> str:
-    """Explication par template (version simple ; P4 écrira la version finale dans explain.py)."""
+    """Template-based explanation (simple version; P4 writes the final one in explain.py)."""
     parts = []
     if rec.best_sentence:
         parts.append(f"Its synopsis is semantically close to what you described "
@@ -262,7 +262,7 @@ def _explain(rec: Recommendation, answers: Mapping[str, Any]) -> str:
 
 
 def _profile(answers, global_text, avoid_text, q_vecs, weights, engine, mask) -> UserProfile:
-    """Profil lecteur : affinités par label (radar) + résumé texte."""
+    """Reader profile: affinity per label (radar) + text summary."""
     from src.enrichment import load_blocks
 
     blocks = load_blocks()
@@ -275,7 +275,7 @@ def _profile(answers, global_text, avoid_text, q_vecs, weights, engine, mask) ->
             sims = dict(zip(names, (mat @ q_vecs["global"]).tolist()))
         else:
             sims = {l: 0.0 for l in labels}
-        # Un label explicitement choisi par l'utilisateur reçoit un bonus (il l'a demandé)
+        # A label explicitly chosen by the user gets a bonus (they asked for it)
         affinities[b] = {l: float(sims.get(l, 0.0)) + (0.3 if l in prefs[b] else 0.0) for l in labels}
     top = {b: [l for l, _ in sorted(affinities[b].items(), key=lambda kv: -kv[1])[:2]] for b in BLOCKS}
     summary = (f"You are looking for {', '.join(top['Genre']).lower()} books exploring "

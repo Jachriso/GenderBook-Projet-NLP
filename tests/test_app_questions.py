@@ -1,6 +1,6 @@
-"""Tests du questionnaire (app/questions.py, P5) : answers.json respecte le contrat PLAN §4.3.
+"""Tests for the questionnaire (app/questions.py, P5): answers.json follows the contract in PLAN §4.3.
 
-Lancer : python -m pytest tests/test_app_questions.py -q
+Run: python -m pytest tests/test_app_questions.py -q
 """
 import json
 
@@ -27,7 +27,7 @@ def test_personas_produce_valid_contract(persona):
     assert set(ans["genres"]) <= set(BLOCKS["Genre"])
     assert set(ans["themes"]) <= set(BLOCKS["Themes"])
     assert ans["period"] in (Q.NO_PREFERENCE, *BLOCKS["Atmosphere"])
-    json.dumps(ans)                                   # sérialisable
+    json.dumps(ans)                                   # JSON-serialisable
 
 
 def test_era_labels_exist_in_blocks():
