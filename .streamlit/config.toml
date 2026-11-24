@@ -1,0 +1,15 @@
+# App theme (read automatically when streamlit is started from the root of the repo).
+# "Rose reading nook" palette: raspberry, blush paper, powder-pink sidebar; same colours as src/viz.py.
+[theme]
+base = "light"
+primaryColor = "#8E2F56"
+backgroundColor = "#FFF8F8"
+secondaryBackgroundColor = "#F8E6EC"
+textColor = "#2E2226"
+
+[browser]
+gatherUsageStats = false
+
+[client]
+# Hide the developer menu ("Deploy", "Rerun"…) so that the demo looks like a finished site
+toolbarMode = "minimal"
