@@ -58,7 +58,7 @@ At this scale, an exhaustive search takes only a few milliseconds: an approximat
 
 ## 4.6 Long texts: truncation or chunking?
 
-MiniLM only reads **256 tokens**. On the catalogue, the median is 178 tokens, the 95th percentile 308 and the maximum 419: **19.5 % of the blurbs exceed the limit**, and their end is ignored. Two strategies were compared on 7 paraphrased "famous book" queries, measuring the rank of the expected book among the 12,000:
+MiniLM only reads **256 tokens**. On the catalogue, the median is 178 tokens, the 95th percentile 308 and the maximum 419: **19.5 % of the blurbs exceed the limit**, and their end is ignored. Two strategies were compared on the 7 paraphrased "famous book" queries of section 4.8, measuring the rank of the expected book among the 12,000. Only **6 of them can be scored**: the book expected for the seventh query (*Moby Dick*) is not in the catalogue.
 
 | | Truncation | Chunking (average of chunks) |
 |---|---|---|
