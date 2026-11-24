@@ -1,7 +1,7 @@
 """
 Construction du PROFIL SÉMANTIQUE du lecteur à partir des réponses au questionnaire (P4).
 
-    answers.json (P5)  ->  build_profile(answers, engine)  ->  UserProfile
+    answers.json (P5)  ──►  build_profile(answers, engine)  ──►  UserProfile
 
 Idée directrice : TOUT ce que l'utilisateur répond devient du TEXTE puis un
 EMBEDDING, y compris les réponses numériques. Un Likert « complexité = 5 » n'est
@@ -290,6 +290,91 @@ def profile_summary(answers: dict, affinities: dict[str, dict[str, float]],
 
 
 # ---------------------------------------------------------------------------
+# Corrections de la relecture : fiction_only automatique et labels « demandés »
+# ---------------------------------------------------------------------------
+# Labels de style / atmosphère que chaque réponse Likert DEMANDE ou CONTREDIT.
+# Ex. pace = 1 ou 2 demande « Slow and contemplative » et contredit « Fast-paced page-turner ».
+LIKERT_LABELS: dict[str, dict[str, tuple[tuple[str, ...], tuple[str, ...]]]] = {
+    #               (labels demandés,                     labels contredits)
+    "pace": {
+        "low":  (("Slow and contemplative",),          ("Fast-paced page-turner",)),
+        "high": (("Fast-paced page-turner",),          ("Slow and contemplative",)),
+    },
+    "complexity": {
+        "low":  (("Simple & accessible",),             ("Dense literary prose",)),
+        "high": (("Dense literary prose",),            ("Simple & accessible",)),
+    },
+    "darkness": {
+        "low":  (("Cozy & heartwarming",),             ("Dark & unsettling", "Dark & gritty voice", "Urban & gritty")),
+        "high": (("Dark & unsettling", "Melancholic"), ("Cozy & heartwarming", "Whimsical & magical")),
+    },
+}
+FOCUS_LABELS: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
+    "Characters": (("Character-driven",),     ("Plot-driven & twisty",)),
+    "Plot":       (("Plot-driven & twisty",), ("Character-driven",)),
+}
+
+
+def auto_fiction_only(answers: dict, blocks: dict[str, dict[str, str]] | None = None) -> bool | None:
+    """fiction_only effectif : la réponse explicite, sinon True si SEULS des genres de fiction sont cochés.
+
+    - fiction_only explicite (True / False) : on le respecte.
+    - au moins un genre de config.FICTION_GENRES et aucun de config.NONFICTION_GENRES : True.
+    - sinon : None (pas de filtre).
+    """
+    explicit = answers.get("fiction_only")
+    if explicit is not None:
+        return explicit
+    genres = [resolve_label(blocks or {}, "Genre", g) or g for g in answers.get("genres") or []]
+    if any(g in config.NONFICTION_GENRES for g in genres):
+        return None
+    if any(g in config.FICTION_GENRES for g in genres):
+        return True
+    return None
+
+
+def requested_labels(answers: dict, blocks: dict[str, dict[str, str]],
+                     affinities: dict[str, dict[str, float]],
+                     n_top: int = config.N_TOP_AFFINITIES) -> dict[str, list[str]]:
+    """Labels que l'explication a le droit de citer, par bloc.
+
+    = labels cochés (genres, thèmes, époque) + labels déduits des Likert et du focus
+      + top n_top des affinités du bloc,
+      MOINS les labels qui contredisent une réponse (ex. « Fast-paced » si pace = 2).
+    """
+    likert = answers.get("likert", {}) or {}
+    guided = answers.get("guided", {}) or {}
+    asked: dict[str, list[str]] = {b: [] for b in BLOCKS}
+    banned: set[str] = set()
+
+    asked["Genre"] += [resolve_label(blocks, "Genre", g) or g for g in answers.get("genres") or []]
+    asked["Themes"] += [resolve_label(blocks, "Themes", t) or t for t in answers.get("themes") or []]
+    period = str(answers.get("period") or "").strip()
+    if period and period.lower() not in NO_PREFERENCE:
+        asked["Atmosphere"].append(PERIOD_TO_LABEL.get(period.lower(), period))
+
+    def _add(block: str, pair: tuple[tuple[str, ...], tuple[str, ...]]) -> None:
+        asked[block] += list(pair[0])
+        banned.update(pair[1])
+
+    for key, block in (("pace", "Style"), ("complexity", "Style"), ("darkness", "Atmosphere")):
+        v = likert.get(key)
+        if v is None or v == config.LIKERT_NEUTRAL:
+            continue
+        _add(block, LIKERT_LABELS[key]["low" if v < config.LIKERT_NEUTRAL else "high"])
+    if guided.get("focus") in FOCUS_LABELS:
+        _add("Style", FOCUS_LABELS[guided["focus"]])
+
+    out: dict[str, list[str]] = {}
+    for b in BLOCKS:
+        aff = affinities.get(b, {})
+        top = sorted(aff, key=aff.get, reverse=True)[:n_top]
+        labels = list(dict.fromkeys(asked[b] + top))      # ordre conservé, sans doublon
+        out[b] = [lab for lab in labels if lab not in banned]
+    return out
+
+
+# ---------------------------------------------------------------------------
 # 5. Point d'entrée
 # ---------------------------------------------------------------------------
 def build_profile(answers: dict, engine, books: pd.DataFrame | None = None,
@@ -355,7 +440,9 @@ def build_profile(answers: dict, engine, books: pd.DataFrame | None = None,
         "formats": list(answers.get("formats") or []) or None,
         "excluded_authors": excluded or None,
         "period": answers.get("publication_period") or None,   # année de PUBLICATION (optionnel)
-        "fiction_only": answers.get("fiction_only"),            # True / False / None
+        # True / False / None ; True automatique si seuls des genres de fiction sont cochés
+        "fiction_only": auto_fiction_only(answers, blocks),
+        "fiction_only_auto": answers.get("fiction_only") is None and auto_fiction_only(answers, blocks) is True,
         # Pas d'information de série dans le dataset : préférence notée mais non filtrable
         "standalone_only": bool(guided.get("standalone_only", False)),
         "relaxed": [],                                           # filtres relâchés si 0 résultat
@@ -375,6 +462,7 @@ def build_profile(answers: dict, engine, books: pd.DataFrame | None = None,
         query_texts=query_texts, query_vecs=query_vecs, weights=weights,
         block_affinities=affinities, constraints=constraints, summary=summary,
         block_phrases=phrases, lambda_pop=lam, favorite_author=author,
+        requested_labels=requested_labels(answers, blocks, affinities),
     )
 
 

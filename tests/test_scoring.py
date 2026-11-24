@@ -281,3 +281,59 @@ def test_works_without_p2_columns(books):
 def test_split_sentences():
     assert split_sentences("First sentence here. Second one is longer. Ok.") == \
         ["First sentence here.", "Second one is longer. Ok."]
+
+
+# ---------------------------------------------------------------------------
+# Corrections de la relecture de la PR
+# ---------------------------------------------------------------------------
+def test_fiction_only_auto_when_only_fiction_genres():
+    assert pr.auto_fiction_only({"genres": ["Literary Fiction", "Thriller & Suspense"]}) is True
+    assert pr.auto_fiction_only({"genres": ["Fantasy", "History"]}) is None       # mélange
+    assert pr.auto_fiction_only({"genres": ["Classics"]}) is None                 # genre ambigu
+    assert pr.auto_fiction_only({"genres": []}) is None
+    # une réponse explicite l'emporte toujours
+    assert pr.auto_fiction_only({"genres": ["Fantasy"], "fiction_only": False}) is False
+
+
+def test_non_narrative_books_excluded_when_fiction_only():
+    df = pd.DataFrame({"categories": [["Humour Collections & Anthologies"],
+                                      ["Fantasy", "Humour Collections & Anthologies"],
+                                      ["Fantasy"]]})
+    assert Recommender.non_narrative_mask(df).tolist() == [True, False, False]
+
+
+def test_explanation_never_cites_contradicted_labels(reco):
+    # rythme lent demandé : « Fast-paced page-turner » ne doit jamais être cité
+    a = fantasy_answers(likert={"complexity": 3, "pace": 1, "darkness": 3, "popularity": 3,
+                                "w_genre": 5, "w_themes": 3, "w_style": 5, "w_atmosphere": 1})
+    profile, recs = reco.recommend(a, top_k=3)
+    assert "Fast-paced page-turner" not in profile.requested_labels["Style"]
+    assert "Slow and contemplative" in profile.requested_labels["Style"]
+    for r in recs:
+        assert all(lab != "Fast-paced page-turner" for lab, _ in r.matched_labels.get("Style", []))
+        assert "Fast-paced page-turner" not in r.explanation
+
+
+def test_match_label_uses_displayed_rounded_score():
+    assert sc.match_label(0.7497) == "Excellent"   # affiché 0.75
+    assert sc.match_label(0.7449) == "Good"        # affiché 0.74
+    assert sc.match_label(0.5460) == "Good"        # affiché 0.55
+    assert sc.match_label(0.5440) == "Partial"     # affiché 0.54
+
+
+def test_engine_fallback_is_not_silent(books, monkeypatch):
+    import sys
+    import types
+
+    from src import recommender as rm
+
+    class BrokenEngine:
+        def __init__(self):
+            raise OSError("modèle SBERT non téléchargé")
+
+    fake = types.ModuleType("src.embeddings")
+    fake.EmbeddingEngine = BrokenEngine
+    monkeypatch.setitem(sys.modules, "src.embeddings", fake)
+    monkeypatch.setattr("src.fallback_engine.LocalEngine.__init__", lambda self, *a, **k: None)
+    with pytest.warns(RuntimeWarning, match="EmbeddingEngine"):
+        rm.get_engine(books, BLOCKS_REF)

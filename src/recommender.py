@@ -5,9 +5,9 @@ Point d'entrée UNIQUE du moteur de recommandation, utilisé par l'app Streamlit
     profile, recs = recommend(answers, top_k=3)
 
 Pipeline (PLAN_PROJET.md §3) :
-    answers -> build_profile -> (1) filtres durs -> (2) retrieval top-300 par S_desc
-            -> (3) re-ranking par la formule complète -> (4) diversité (1 livre / auteur)
-            -> (5) Recommendation (scores, contributions, labels, phrase, explication)
+    answers ─► build_profile ─► (1) filtres durs ─► (2) retrieval top-300 par S_desc
+            ─► (3) re-ranking par la formule complète ─► (4) diversité (1 livre / auteur)
+            ─► (5) Recommendation (scores, contributions, labels, phrase, explication)
 
 Tout ce qui est lourd (catalogue, modèle SBERT, embeddings, calibration) est
 chargé UNE fois par ``get_recommender()`` (singleton) : les appels suivants ne
@@ -23,6 +23,9 @@ Fallbacks (si les autres parties ne sont pas encore livrées) :
 from __future__ import annotations
 
 import json
+import logging
+import re
+import warnings
 from functools import lru_cache
 
 import numpy as np
@@ -35,6 +38,8 @@ from src.profile import build_profile
 from src.schemas import BLOCKS, Recommendation, UserProfile
 from src.scoring import (compute_calibration, load_calibration, matched_labels_for_book,
                          score_books)
+
+logger = logging.getLogger(__name__)
 
 # Ordre dans lequel on relâche les filtres si aucun livre ne passe
 # (les auteurs exclus ne sont jamais relâchés : c'est une demande explicite).
@@ -55,10 +60,17 @@ def get_engine(books: pd.DataFrame, blocks: dict[str, dict[str, str]], encoder=N
             from src.embeddings import EmbeddingEngine  # type: ignore  # livré par P3
 
             engine = EmbeddingEngine()
-            if engine.book_matrix().shape[0] == len(books):
+            n_rows = engine.book_matrix().shape[0]
+            if n_rows == len(books):
                 return engine
-        except Exception:  # module absent, signature différente, cache non aligné…
-            pass
+            reason = f"book_matrix() a {n_rows} lignes alors que le catalogue a {len(books)} livres"
+        except Exception as exc:  # module absent, modèle non téléchargé, pas de Wi-Fi…
+            reason = f"{type(exc).__name__}: {exc}"
+        # On ne bascule plus en silence : sinon une panne pendant la démo passerait inaperçue
+        msg = (f"[GenderBook] EmbeddingEngine (P3) indisponible ({reason}). "
+               "Bascule sur le moteur de secours fallback_engine.LocalEngine.")
+        warnings.warn(msg, RuntimeWarning, stacklevel=2)
+        logger.warning(msg)
     from src.fallback_engine import LocalEngine
 
     return LocalEngine(books, blocks, encoder=encoder)
@@ -80,6 +92,7 @@ class Recommender:
                  calibration: dict[str, tuple[float, float]] | None = None, encoder=None):
         # Étape 1 : catalogue indexé 0..N-1 (l'index sert de position dans les matrices)
         self.books = (books if books is not None else load_books()).reset_index(drop=True)
+        self.non_narrative = self.non_narrative_mask(self.books)
         self.blocks = blocks if blocks is not None else load_blocks_safe()
         # Étape 2 : moteur d'embeddings + matrice des livres (cache disque)
         self.engine = engine if engine is not None else get_engine(self.books, self.blocks, encoder)
@@ -103,11 +116,34 @@ class Recommender:
 
     # ------------------------------------------------------------------ filtres
     def _constraint_mask(self, c: dict) -> np.ndarray:
-        return apply_constraints(
+        mask = apply_constraints(
             self.books, audience=c.get("audience"), formats=c.get("formats"),
             period=c.get("period"), excluded_authors=c.get("excluded_authors"),
             fiction_only=c.get("fiction_only"),
         ).to_numpy()
+        if c.get("fiction_only") is True:
+            mask = mask & ~self.non_narrative
+        return mask
+
+    @staticmethod
+    def non_narrative_mask(books: pd.DataFrame) -> np.ndarray:
+        """Livres classés fiction mais qui ne sont pas des récits (recueils de confessions, blagues…).
+
+        data_loader classe « Humour Collections & Anthologies » en fiction : *My Secret:
+        A PostSecret Book* passait donc le filtre fiction_only. On écarte les livres dont
+        TOUTES les catégories « fiction » sont de ce type (config.NON_NARRATIVE_CATEGORY_RE).
+        """
+        if "categories" not in books.columns:
+            return np.zeros(len(books), dtype=bool)
+        from src.data_loader import classify_category
+
+        rx = re.compile(config.NON_NARRATIVE_CATEGORY_RE, re.IGNORECASE)
+
+        def _only_non_narrative(cats) -> bool:
+            fic = [c for c in (list(cats) if cats is not None else []) if classify_category(c) == "fiction"]
+            return bool(fic) and all(rx.search(c) for c in fic)
+
+        return books["categories"].apply(_only_non_narrative).to_numpy(dtype=bool)
 
     def filter_mask(self, profile: UserProfile, min_books: int) -> np.ndarray:
         """Filtres durs ; si trop peu de livres passent, on relâche progressivement."""
@@ -206,6 +242,7 @@ class Recommender:
 @lru_cache(maxsize=1)
 def get_recommender() -> Recommender:
     """Singleton : le catalogue et le modèle ne sont chargés qu'une fois par processus.
+
     Dans Streamlit, P5 peut l'envelopper dans ``st.cache_resource``.
     """
     return Recommender()

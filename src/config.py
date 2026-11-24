@@ -121,3 +121,17 @@ N_MATCHED_LABELS = 2
 MATCHED_LABEL_MIN_SIM = 0.35
 # Personas de référence (format answers.json) : calibration + démos du notebook 04
 PERSONAS_JSON = DATA_REFERENCE / "personas_p4.json"
+
+# Genres de fiction : si l'utilisateur ne coche QUE des genres de cette liste
+# (et ne répond pas à « fiction only »), on active fiction_only automatiquement.
+# Les genres ambigus (Classics, Young Adult, Children's, Humour, Poetry & Drama,
+# Graphic Novels & Comics) ne déclenchent rien et ne bloquent rien.
+FICTION_GENRES = ("Fantasy", "Science Fiction", "Mystery & Detective", "Thriller & Suspense",
+                  "Horror", "Romance", "Historical Fiction", "Literary Fiction")
+NONFICTION_GENRES = ("Biography & Memoir", "History", "Science & Nature", "Self-help & Psychology",
+                     "Philosophy & Religion", "Business & Economics", "Cooking & Lifestyle")
+# Catégories classées « fiction » par data_loader mais qui ne sont pas des récits
+# (recueils de blagues, confessions, catalogues) : exclues quand fiction_only = True.
+NON_NARRATIVE_CATEGORY_RE = r"humour collections|jokes & humour|exhibition catalogues"
+# Nombre d'affinités les plus fortes citables dans l'explication (en plus des labels cochés)
+N_TOP_AFFINITIES = 3

@@ -41,6 +41,8 @@ class UserProfile:
         block_phrases: bloc -> liste des phrases de préférence P_b(u).
         lambda_pop: poids λ du bonus popularité, déduit du Likert « popularity ».
         favorite_author: nom de l'auteur préféré retrouvé dans le catalogue (ou None).
+        requested_labels: bloc -> labels que l'utilisateur a demandés (cochés, déduits
+            des Likert ou top 3 des affinités) ; seuls ceux-là sont cités dans l'explication.
     """
 
     query_texts: dict[str, str]
@@ -53,6 +55,7 @@ class UserProfile:
     block_phrases: dict[str, list[str]] = field(default_factory=dict)
     lambda_pop: float = 0.0
     favorite_author: str | None = None
+    requested_labels: dict[str, list[str]] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         """Version sérialisable en JSON (les vecteurs sont omis, trop lourds)."""

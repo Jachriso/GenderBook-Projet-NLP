@@ -194,7 +194,12 @@ def compute_calibration(engine, books: pd.DataFrame, blocks: dict[str, dict[str,
 # 4. Formule complète
 # ---------------------------------------------------------------------------
 def match_label(score: float) -> str:
-    """Libellé lisible du score final (seuils du sujet, config.MATCH_THRESHOLDS)."""
+    """Libellé lisible du score final (seuils du sujet, config.MATCH_THRESHOLDS).
+
+    Calculé sur le score ARRONDI à 2 décimales, comme il est affiché : sinon un
+    0,7497 affiché « 0.75 » serait étiqueté Good au lieu d'Excellent.
+    """
+    score = round(float(score), 2)
     if score >= config.MATCH_THRESHOLDS["Excellent"]:
         return "Excellent"
     if score >= config.MATCH_THRESHOLDS["Good"]:
@@ -285,12 +290,18 @@ def matched_labels_for_book(profile: UserProfile, book: pd.Series,
 
     sim(label) = max sur les phrases P_b(u) de cos(phrase, label). Sert aux « chips »
     de l'app et à l'explication (« It shares the themes you care about: … »).
+    Seuls les labels que l'utilisateur a demandés (profile.requested_labels : cochés,
+    déduits des Likert ou top 3 des affinités) peuvent être cités : on n'affiche
+    jamais « Fast-paced page-turner » à quelqu'un qui a demandé un rythme lent.
     """
     out: dict[str, list[tuple[str, float]]] = {}
     for b in BLOCKS:
         labels, L = label_mats.get(b, ([], None))
         col = BLOCK_COLUMNS[b]
         book_labels = [l for l in (book.get(col) if col in book.index else []) or [] if l in labels]
+        allowed = profile.requested_labels.get(b) if profile.requested_labels else None
+        if allowed is not None:
+            book_labels = [l for l in book_labels if l in allowed]
         P = profile.query_vecs.get(b)
         if not book_labels or P is None or len(P) == 0:
             out[b] = []
