@@ -1,0 +1,10 @@
+# Thème de l'application (lu automatiquement quand on lance streamlit depuis la racine du repo)
+[theme]
+base = "light"
+primaryColor = "#2F6FDE"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F4F6FA"
+textColor = "#1F2937"
+
+[browser]
+gatherUsageStats = false
