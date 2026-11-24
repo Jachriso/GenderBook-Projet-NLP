@@ -1,14 +1,14 @@
 """
-Aide à choisir ERA_Z_MIN (seuil pour attribuer une époque au récit). L'époque n'est plus forcée : elle n'est gardée
-que si son z-score est élevé et nettement supérieur à celui de la 2e meilleure époque.
+Helps choose ERA_Z_MIN (threshold to assign a period to the story). The period is no longer forced: it is only kept
+if its z-score is high and clearly higher than that of the 2nd best period.
 
     python scripts/calibrate_era.py
     python scripts/calibrate_era.py --titles "Harry Potter" "Dune" "Pride and Prejudice" --era-z-min 2.5
 
-1) Le tableau donne la part des livres qui reçoivent une époque selon le seuil (viser environ 20 à 40 %).
-2) Pour des livres dont tu connais l'époque, il affiche les meilleures époques, leur z-score et la décision.
-   Choisis le seuil le plus bas pour lequel ces livres ne reçoivent plus d'époque fausse, puis mets-le dans
-   src/enrichment.py (ERA_Z_MIN) et relance run_enrichment.
+1) The table gives the share of books that receive a period depending on the threshold (aim for about 20 to 40%).
+2) For books whose period you know, it shows the best periods, their z-score and the decision.
+   Pick the lowest threshold for which these books no longer get a wrong period, then put it in
+   src/enrichment.py (ERA_Z_MIN) and rerun run_enrichment.
 """
 import argparse
 import sys

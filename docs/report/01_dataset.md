@@ -1,111 +1,111 @@
-# 2. Dataset : origine, structure et préparation
+# 2. Dataset: origin, structure and preparation
 
-*Section rédigée par la personne 1 (Data Engineering). Code : `src/data_loader.py`, `src/marketing.py`, `scripts/build_dataset.py`, `notebooks/01_data_preparation.ipynb`.*
+*Section written by person 1 (Data Engineering). Code: `src/data_loader.py`, `src/marketing.py`, `scripts/build_dataset.py`, `notebooks/01_data_preparation.ipynb`.*
 
-## 2.1 Origine
+## 2.1 Origin
 
-Le catalogue de référence provient du dataset public **Book Depository Dataset** publié sur Kaggle (`sp1thas/book-depository-dataset`). Il a été obtenu par scraping du site du libraire en ligne britannique Book Depository.
-Il contient **1 109 383 lignes**, soit un fichier `dataset.csv` de 1,1 Go, et quatre tables de correspondance (`authors.csv`, `categories.csv`, `formats.csv`, `places.csv`).
-Chaque ligne est une **édition** de livre décrite par un titre, des auteurs et des catégories (stockés sous forme de listes d'identifiants), une **description éditoriale** en langage naturel, la langue, le format, l'âge conseillé, la date de publication et les **notes Goodreads** (moyenne et nombre de notes).
-Le téléchargement est automatisé avec `kagglehub`, sans clé API. Les données brutes ne sont pas versionnées.
+The reference catalogue comes from the public **Book Depository Dataset** published on Kaggle (`sp1thas/book-depository-dataset`). It was obtained by scraping the website of the British online bookseller Book Depository.
+It contains **1,109,383 rows**, i.e. a 1.1 GB `dataset.csv` file, and four lookup tables (`authors.csv`, `categories.csv`, `formats.csv`, `places.csv`).
+Each row is a book **edition** described by a title, authors and categories (stored as lists of identifiers), an **editorial description** in natural language, the language, the format, the recommended age, the publication date and the **Goodreads ratings** (average and number of ratings).
+The download is automated with `kagglehub`, without an API key. The raw data is not versioned.
 
-## 2.2 Pourquoi ce dataset convient à une recommandation sémantique
+## 2.2 Why this dataset suits semantic recommendation
 
-Le sujet impose une analyse **contextuelle** des préférences du lecteur et non un simple appariement de mots-clés. Il faut donc un texte riche décrivant le contenu de chaque livre. La colonne `description` est renseignée pour 93 % des livres, avec une médiane de 441 caractères. Les **catégories** (≈ 2 900 libellés de la nomenclature des libraires) fournissent des blocs thématiques, et les **notes Goodreads** un signal de qualité et de popularité. En revanche, le dataset ne contient ni thèmes, ni style narratif, ni mots-clés, contrairement à la structure suggérée par le sujet (`BookID | Genre | Title | Author | Synopsis | Themes | Style | Keywords`). Ces attributs sont **dérivés par NLP** à l'étape suivante (section 3).
+The assignment requires a **contextual** analysis of the reader's preferences, not simple keyword matching. A rich text describing the content of each book is therefore needed. The `description` column is filled in for 93% of the books, with a median of 441 characters. The **categories** (≈ 2,900 labels from the booksellers' nomenclature) provide thematic blocks, and the **Goodreads ratings** a quality and popularity signal. On the other hand, the dataset contains no themes, narrative style or keywords, unlike the structure suggested by the assignment (`BookID | Genre | Title | Author | Synopsis | Themes | Style | Keywords`). These attributes are **derived by NLP** in the next step (section 3).
 
-## 2.3 Constats de l'analyse exploratoire
+## 2.3 Findings of the exploratory analysis
 
-- **Langues** : 89 % des livres sont en anglais.
-- **Formats** : environ 105 000 CD audio, ainsi que des calendriers, cartes et jeux.
-- **Descriptions génériques** : 12 485 textes sont répétés au moins 3 fois et couvrent 141 070 livres. Il s'agit surtout de réimpressions automatiques du domaine public (« *This book is a facsimile reprint…* », « *Print on Demand* ») et de carnets. Ces textes ne décrivent aucun contenu et produiraient des embeddings identiques.
-- **Marketing** : environ 7 % des descriptions commencent par des citations de presse (*"A chilling thriller" --Booklist*) ou des bandeaux (*#1 NEW YORK TIMES BESTSELLER*), et beaucoup se terminent par une section *Praise for…*. Ces passages décrivent le succès d'un livre, pas son contenu, et rapprocheraient artificiellement les best-sellers entre eux dans l'espace vectoriel.
-- **Éditions multiples** : une même œuvre apparaît sous des dizaines d'éditions, jusqu'à 101 pour *Romeo and Juliet*. Les titres varient (*Philosopher's Stone* / *Sorcerer's Stone*, *Dune : Deluxe Edition*, *Cat's Eye* / *Cats Eye*).
-- **Auteurs** : un même auteur a un identifiant différent pour chaque orthographe (*J.K. Rowling* / *J. K. Rowling* / *J K Rowling*), et certaines éditions contiennent des fautes de saisie (*Jane Austin*).
-- **Public visé** : `for-ages` manque pour 93 % des livres.
+- **Languages**: 89% of the books are in English.
+- **Formats**: about 105,000 audio CDs, as well as calendars, maps and games.
+- **Generic descriptions**: 12,485 texts are repeated at least 3 times and cover 141,070 books. They are mostly automatic public-domain reprints ("*This book is a facsimile reprint…*", "*Print on Demand*") and notebooks. These texts describe no content and would produce identical embeddings.
+- **Marketing**: about 7% of the descriptions start with press quotes (*"A chilling thriller" --Booklist*) or banners (*#1 NEW YORK TIMES BESTSELLER*), and many end with a *Praise for…* section. These passages describe a book's success, not its content, and would artificially bring best-sellers closer together in the vector space.
+- **Multiple editions**: the same work appears in dozens of editions, up to 101 for *Romeo and Juliet*. Titles vary (*Philosopher's Stone* / *Sorcerer's Stone*, *Dune : Deluxe Edition*, *Cat's Eye* / *Cats Eye*).
+- **Authors**: the same author has a different identifier for each spelling (*J.K. Rowling* / *J. K. Rowling* / *J K Rowling*), and some editions contain typos (*Jane Austin*).
+- **Target audience**: `for-ages` is missing for 93% of the books.
 
-## 2.4 Pipeline de préparation
+## 2.4 Preparation pipeline
 
-| Étape | Livres restants | Justification |
+| Step | Books left | Justification |
 |---|---:|---|
-| Dataset brut | 1 109 383 | |
-| Langue anglaise | 986 575 | modèle SBERT anglais, interface en anglais |
-| Titre et description présents | 952 244 | rien à encoder sinon |
-| Format Paperback / Hardback | 832 881 | retire CD audio, calendriers, jouets |
-| ≥ 50 notes Goodreads | 232 731 | notes fiables, métadonnées riches ; filtre numérique fait avant les nettoyages de texte coûteux |
-| Description brute ≥ 300 caractères | 136 531 | un texte trop court porte trop peu de sens |
-| Pas uniquement du texte générique | 135 877 | phrases génériques retirées dans 1 018 textes ; on écarte ceux qui n'avaient que ça |
-| ≥ 300 caractères sans marketing | 135 257 | il reste assez de contenu une fois le marketing retiré |
-| Catégories « lecture loisir » | 110 905 | fiction + non-fiction narrative |
-| Au moins un auteur nommé | 110 883 | nécessaire à l'affichage et au dédoublonnage |
-| Sans coffrets / lots | 110 632 | un coffret n'est pas *une* expérience de lecture |
-| Sans produits dérivés | 110 303 | livres pop-up, « making of » de films, guides officiels |
-| Fusion des éditions | 95 877 | une œuvre = une ligne |
-| Sans descriptions partagées | 93 724 | textes génériques d'éditeur restants |
-| ≤ 8 livres par auteur | 80 718 | diversité du catalogue |
-| Top candidats par popularité | 13 799 | marge de 15 % avant le contrôle de langue |
-| Description réellement en anglais (langdetect) | 13 709 | `lang` décrit le livre, pas toujours sa description |
-| **Catalogue final** | **12 000** | les œuvres les plus notées |
+| Raw dataset | 1,109,383 | |
+| English language | 986,575 | English SBERT model, English interface |
+| Title and description present | 952,244 | nothing to encode otherwise |
+| Paperback / Hardback format | 832,881 | removes audio CDs, calendars, toys |
+| ≥ 50 Goodreads ratings | 232,731 | reliable ratings, rich metadata; numeric filter applied before the costly text cleaning |
+| Raw description ≥ 300 characters | 136,531 | a text that is too short carries too little meaning |
+| Not only generic text | 135,877 | generic sentences removed in 1,018 texts; those that had nothing else are discarded |
+| ≥ 300 characters without marketing | 135,257 | enough content remains once marketing is removed |
+| "Leisure reading" categories | 110,905 | fiction + narrative non-fiction |
+| At least one named author | 110,883 | needed for display and deduplication |
+| Without box sets / bundles | 110,632 | a box set is not *one* reading experience |
+| Without spin-off products | 110,303 | pop-up books, film "making of" books, official guides |
+| Merging editions | 95,877 | one work = one row |
+| Without shared descriptions | 93,724 | remaining generic publisher texts |
+| ≤ 8 books per author | 80,718 | catalogue diversity |
+| Top candidates by popularity | 13,799 | 15% margin before the language check |
+| Description really in English (langdetect) | 13,709 | `lang` describes the book, not always its description |
+| **Final catalogue** | **12,000** | the most rated works |
 
-Dans l'EDA, la majorité des lignes écartées au stade « description » l'est par le **seuil de longueur** (≈ 295 000 descriptions brutes de moins de 300 caractères), et non par la détection de texte générique (≈ 42 000). Les deux filtres sont logués séparément.
+In the EDA, most of the rows discarded at the "description" stage are removed by the **length threshold** (≈ 295,000 raw descriptions under 300 characters), not by the generic-text detection (≈ 42,000). The two filters are logged separately.
 
-**Nettoyage du texte.** Le nettoyage est volontairement **minimal** : décodage des entités HTML, suppression des balises et URLs, normalisation Unicode (NFKC) et des espaces. On ne met pas en minuscules et on ne retire ni les stopwords ni ne lemmatise, car les modèles contextuels exploitent la phrase complète (négations, ponctuation, mots grammaticaux). Ce preprocessing classique est réservé aux baselines TF-IDF et GloVe. Le texte avec nettoyage minimal seulement est conservé dans `description_raw` pour la traçabilité.
+**Text cleaning.** The cleaning is deliberately **minimal**: decoding HTML entities, removing tags and URLs, Unicode (NFKC) and whitespace normalisation. We do not lowercase, remove stopwords or lemmatise, because contextual models use the full sentence (negations, punctuation, function words). This classic preprocessing is reserved for the TF-IDF and GloVe baselines. The text with minimal cleaning only is kept in `description_raw` for traceability.
 
-**Texte générique, phrase par phrase.** Les motifs génériques (« facsimile reprint », « public domain », « print on demand »…) sont appliqués **phrase par phrase** : on retire la phrase concernée et on garde le reste. La phrase « *The original book has been in the public domain since 1956* » disparaît, mais le résumé du *Magicien d'Oz* qui l'entoure est conservé. Un livre dont la description n'était que du texte générique passe sous le seuil de 300 caractères et est écarté.
+**Generic text, sentence by sentence.** The generic patterns ("facsimile reprint", "public domain", "print on demand"…) are applied **sentence by sentence**: the sentence concerned is removed and the rest is kept. The sentence "*The original book has been in the public domain since 1956*" disappears, but the blurb of *The Wizard of Oz* around it is kept. A book whose description was only generic text falls below the 300-character threshold and is discarded.
 
-**Retrait du marketing (`src/marketing.py`).** La difficulté est de savoir **où s'arrête l'attribution** qui suit une citation de presse. Dans *"A premium delivery." --People Meghan doesn't know Agatha…*, « People » est un magazine mais « Meghan » est déjà l'intrigue. Une règle du type « suite de mots en majuscule » ne peut pas faire la différence. Le module s'appuie donc sur des connaissances tirées du dataset lui-même :
-- une liste de **publications de presse** (People, Booklist, Kirkus…) ;
-- les **631 000 noms d'auteurs** de `authors.csv`, pour reconnaître « --Stephen King » ;
-- les **1,1 million de titres** du dataset, pour savoir où s'arrête « *author of The Statistical Probability of Love at First Sight* ».
+**Marketing removal (`src/marketing.py`).** The difficulty is knowing **where the attribution** following a press quote **ends**. In *"A premium delivery." --People Meghan doesn't know Agatha…*, "People" is a magazine but "Meghan" is already the plot. A "sequence of capitalised words" rule cannot tell the difference. The module therefore relies on knowledge taken from the dataset itself:
+- a list of **press publications** (People, Booklist, Kirkus…);
+- the **631,000 author names** of `authors.csv`, to recognise "--Stephen King";
+- the **1.1 million titles** of the dataset, to know where "*author of The Statistical Probability of Love at First Sight*" ends.
 
-Quand rien n'est reconnu, un repli prudent ne retire qu'un nom probable. Deux règles de sécurité complètent le tout :
-- un bandeau n'est retiré que s'il forme un **segment autonome**, jamais s'il est suivi d'un mot en minuscule (« *The #1 New York Times bestselling debut novel that…* » est conservé) ;
-- une citation sans source identifiable après le tiret est une citation **du récit** et n'est pas touchée.
+When nothing is recognised, a cautious fallback only removes a likely name. Two safety rules complete the approach:
+- a banner is only removed if it forms a **standalone segment**, never if it is followed by a lowercase word ("*The #1 New York Times bestselling debut novel that…*" is kept);
+- a quote without an identifiable source after the dash is a quote **from the story** and is left untouched.
 
-*Évaluation* : une description qui commence par une minuscule signale une phrase coupée. La première version purement regex en produisait 235. La version actuelle en produit 28, contre 9 dans le texte brut. Les cas restants sont surtout des **restes d'attribution** non retirés (« *via Twitter* »), une erreur volontairement prudente.
+*Evaluation*: a description that starts with a lowercase letter signals a cut sentence. The first, purely regex-based version produced 235 of them. The current version produces 28, against 9 in the raw text. The remaining cases are mostly **leftover attributions** that were not removed ("*via Twitter*"), a deliberately cautious error.
 
-**Catégories.** Chaque libellé est classé par des règles regex transparentes en *fiction*, *non-fiction narrative* (biographies, histoire, true crime, vulgarisation, philosophie…), *exclu* (cuisine, informatique, manuels scolaires, droit, médecine, dictionnaires…) ou *neutre*. Un livre est gardé s'il a au moins une catégorie « loisir » et au moins autant de catégories loisir que de catégories exclues. Le domaine (*Fiction* / *Non-fiction*) correspond à la classe majoritaire.
+**Categories.** Each label is classified by transparent regex rules as *fiction*, *narrative non-fiction* (biographies, history, true crime, popular science, philosophy…), *excluded* (cookery, computing, textbooks, law, medicine, dictionaries…) or *neutral*. A book is kept if it has at least one "leisure" category and at least as many leisure categories as excluded ones. The domain (*Fiction* / *Non-fiction*) is the majority class.
 
-**Orthographe canonique des auteurs.** Chaque auteur est remplacé par l'orthographe la plus fréquente parmi les variantes de même clé normalisée (`jkrowling`). Les utilitaires de recherche comparent aussi ces clés. Sans cela, 119 auteurs du catalogue avaient plusieurs orthographes, et exclure J.K. Rowling ne retirait qu'un Harry Potter sur 7.
+**Canonical author spelling.** Each author is replaced by the most frequent spelling among the variants with the same normalised key (`jkrowling`). The search utilities also compare these keys. Without this, 119 authors of the catalogue had several spellings, and excluding J.K. Rowling only removed one Harry Potter out of 7.
 
-**Produits dérivés.** Une liste **précise** de motifs (livre pop-up, *Page to Screen*, guides officiels ou non officiels, livres d'art de films, livres de stickers, journaux à remplir), complétée par les auteurs « corporate » (Warner Bros, Scholastic…), retire 329 produits. Des motifs larges (« guide to », « the art of ») auraient supprimé *The Art of War* ou *The Hitchhiker's Guide to the Galaxy*.
+**Spin-off products.** A **precise** list of patterns (pop-up book, *Page to Screen*, official or unofficial guides, film art books, sticker books, fill-in journals), complemented by "corporate" authors (Warner Bros, Scholastic…), removes 329 products. Broad patterns ("guide to", "the art of") would have removed *The Art of War* or *The Hitchhiker's Guide to the Galaxy*.
 
-**Fusion des éditions.** Un algorithme **union-find** relie deux lignes si :
-- (a) elles ont le même titre normalisé (sans mentions d'édition, apostrophes supprimées, tirets remplacés par des espaces, comparé **sans espaces**) et au moins un auteur en commun ;
-- (b) ou leurs notes Goodreads sont quasi identiques (Goodreads agrège les notes par œuvre : nombre de notes à ±2 %, moyenne à ±0,05) **et** leurs titres sont proches : Jaccard des mots significatifs ≥ 0,5, ou un titre inclus dans l'autre si le plus court a au moins 3 mots (ou 2 mots et un auteur en commun).
+**Merging editions.** A **union-find** algorithm links two rows if:
+- (a) they have the same normalised title (without edition mentions, apostrophes deleted, hyphens replaced by spaces, compared **without spaces**) and at least one shared author;
+- (b) or their Goodreads ratings are nearly identical (Goodreads aggregates ratings per work: number of ratings within ±2%, average within ±0.05) **and** their titles are similar: Jaccard of the meaningful words ≥ 0.5, or one title contained in the other if the shorter one has at least 3 words (or 2 words and a shared author).
 
-Dans chaque groupe, on conserve l'édition standard la plus notée. L'auteur principal est l'**auteur majoritaire parmi toutes les éditions**, ce qui corrige les fautes de saisie isolées (*Pride and Prejudice* est bien crédité à Jane Austen). Par exemple, les 25 éditions anglaises de *Harry Potter* tome 1 sont regroupées en une seule œuvre.
+In each group, the most rated standard edition is kept. The main author is the **majority author across all the editions**, which fixes isolated typos (*Pride and Prejudice* is correctly credited to Jane Austen). For example, the 25 English editions of *Harry Potter* book 1 are grouped into a single work.
 
-Les règles ont été affinées en inspectant les groupes dont les titres n'ont aucun mot en commun :
-- une première version acceptait « même auteur » sans titre proche et fusionnait des romans différents de Lee Child (1 606 groupes douteux) ;
-- la règle d'inclusion fusionnait ensuite *Civil War* (Lucain) avec *Spider-Man: Miles Morales: Civil War II*.
+The rules were refined by inspecting the groups whose titles have no word in common:
+- a first version accepted "same author" without a similar title and merged different Lee Child novels (1,606 doubtful groups);
+- the inclusion rule then merged *Civil War* (Lucan) with *Spider-Man: Miles Morales: Civil War II*.
 
-Il reste aujourd'hui 14 groupes de ce type sur ≈ 70 000, et ce sont de vraies variantes (*Blindside* / *Blind Side*, traductions). Aucun doublon titre + auteur ne subsiste dans le catalogue.
+Today 14 groups of this kind remain out of ≈ 70,000, and they are real variants (*Blindside* / *Blind Side*, translations). No title + author duplicate remains in the catalogue.
 
-**Public visé.** On utilise `for-ages` quand il existe (âge minimum < 12 → *Children*, 12-17 → *Young Adult*). Sinon, le public est déduit des catégories (*Teenage*, *Young Adult* → *Young Adult* ; *Children's*, *for Kids*, *Picture Books* → *Children*), et *Adult* par défaut.
+**Target audience.** We use `for-ages` when it exists (minimum age < 12 → *Children*, 12-17 → *Young Adult*). Otherwise, the audience is inferred from the categories (*Teenage*, *Young Adult* → *Young Adult*; *Children's*, *for Kids*, *Picture Books* → *Children*), and *Adult* by default.
 
-**Sélection finale.** On garde les 12 000 œuvres les plus notées, avec au plus 8 livres par auteur principal. L'auteur principal est l'auteur de la liste le plus fréquent dans le corpus, pour ne pas compter les illustrateurs et traducteurs. Le sujet recommande au moins 60 livres. 12 000 livres assurent une bonne couverture de tous les profils, un calcul d'embeddings de quelques minutes sur CPU, des descriptions éditoriales riches et des livres reconnaissables, ce qui facilite l'évaluation qualitative et la démo.
+**Final selection.** We keep the 12,000 most rated works, with at most 8 books per main author. The main author is the author of the list who is most frequent in the corpus, so as not to count illustrators and translators. The assignment recommends at least 60 books. 12,000 books ensure good coverage of all profiles, an embedding computation of a few minutes on CPU, rich editorial descriptions and recognisable books, which makes qualitative evaluation and the demo easier.
 
-## 2.5 Catalogue obtenu
+## 2.5 Resulting catalogue
 
-- **12 000 œuvres**, 5 860 auteurs principaux distincts, 1 074 catégories Book Depository.
-- **Domaine** : 9 336 *Fiction* (78 %), 2 664 *Non-fiction* (22 %).
-- **Public** : 9 339 *Adult*, 1 440 *Children*, 1 221 *Young Adult*.
-- **Popularité** : entre 5 185 et 7,4 millions de notes Goodreads (médiane : 14 143).
-- **Descriptions** : 143 mots en moyenne. Environ 80 % des textes `embed_text` (titre + description, tronqué proprement à ≈ 1 500 caractères) tiennent entièrement dans les 256 tokens de `all-MiniLM-L6-v2`, et la totalité dans les 384 tokens de `all-mpnet-base-v2`, mesuré avec le tokenizer du modèle.
+- **12,000 works**, 5,860 distinct main authors, 1,074 Book Depository categories.
+- **Domain**: 9,336 *Fiction* (78%), 2,664 *Non-fiction* (22%).
+- **Audience**: 9,339 *Adult*, 1,440 *Children*, 1,221 *Young Adult*.
+- **Popularity**: between 5,185 and 7.4 million Goodreads ratings (median: 14,143).
+- **Descriptions**: 143 words on average. About 80% of the `embed_text` texts (title + description, cleanly truncated at ≈ 1,500 characters) fit entirely within the 256 tokens of `all-MiniLM-L6-v2`, and all of them within the 384 tokens of `all-mpnet-base-v2`, measured with the model's tokenizer.
 
-**Colonnes produites** (`data/processed/books_clean.parquet`) : `book_id`, `title` (sans mentions d'édition), `authors` (orthographe canonique), `authors_str`, `main_author`, `categories`, `description` (texte NLP), `description_raw`, `pub_year`, `rating_avg`, `rating_count`, `bestsellers_rank`, `format`, `for_ages`, `audience`, `domain`, `is_fiction`, `image_url`, `url`, `isbn13`, `n_editions`, `popularity`, `n_words`, `embed_text`.
+**Columns produced** (`data/processed/books_clean.parquet`): `book_id`, `title` (without edition mentions), `authors` (canonical spelling), `authors_str`, `main_author`, `categories`, `description` (NLP text), `description_raw`, `pub_year`, `rating_avg`, `rating_count`, `bestsellers_rank`, `format`, `for_ages`, `audience`, `domain`, `is_fiction`, `image_url`, `url`, `isbn13`, `n_editions`, `popularity`, `n_words`, `embed_text`.
 
-**Score de popularité**, utilisé dans la formule de recommandation :
+**Popularity score**, used in the recommendation formula:
 
 $$\text{Pop}(j) = \frac{\text{rating\_avg}_j}{5}\cdot\frac{\log(1+\text{rating\_count}_j)}{\log(1+\max_k \text{rating\_count}_k)} \in [0,1]$$
 
-Le logarithme évite qu'une poignée de best-sellers à plusieurs millions de notes écrase le reste du catalogue.
+The logarithm prevents a handful of best-sellers with several million ratings from crushing the rest of the catalogue.
 
-**Qualité vérifiée par 52 tests unitaires** (`tests/test_data_loader.py`). Ils couvrent notamment les cas signalés en revue : variantes d'auteur, citations de presse, doublons de ponctuation, produits dérivés.
+**Quality checked by 52 unit tests** (`tests/test_data_loader.py`). They cover in particular the cases flagged in review: author variants, press quotes, punctuation duplicates, spin-off products.
 
-## 2.6 Limites
+## 2.6 Limitations
 
-- **Biais de popularité et biais anglophone** : le catalogue reflète les ventes d'un libraire britannique en ligne. Ce biais est atténué par le plafond par auteur et par le réglage « best-sellers ↔ pépites » du questionnaire.
-- **Marketing résiduel** : il reste un peu de marketing intégré aux phrases (« *#1 bestselling classic* »), volontairement conservé quand le retirer couperait la phrase.
-- **Règles imparfaites** : le classement des catégories, le public déduit et la détection des produits dérivés reposent sur des règles et font quelques erreurs à la marge.
-- **`pub_year`** est l'année de publication de l'édition, pas l'époque du récit. L'époque et l'atmosphère sont donc déterminées sémantiquement à partir de la description (bloc *Atmosphere*).
+- **Popularity bias and English-language bias**: the catalogue reflects the sales of a British online bookseller. This bias is mitigated by the per-author cap and by the questionnaire's "best-sellers ↔ hidden gems" setting.
+- **Residual marketing**: a little marketing built into sentences remains ("*#1 bestselling classic*"), deliberately kept when removing it would cut the sentence.
+- **Imperfect rules**: category classification, the inferred audience and spin-off detection are rule-based and make a few errors at the margin.
+- **`pub_year`** is the publication year of the edition, not the period of the story. The period and atmosphere are therefore determined semantically from the description (*Atmosphere* block).

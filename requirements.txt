@@ -1,5 +1,5 @@
-# Python 3.11+ recommandé (testé en 3.12)
-# --- Données (P1) ---
+# Python 3.11+ recommended (tested with 3.12)
+# --- Data (P1) ---
 pandas>=2.2
 pyarrow>=15
 numpy>=1.26

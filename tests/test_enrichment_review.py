@@ -1,4 +1,4 @@
-"""Tests des corrections de la review de la PR P2 (encodeur factice, sans téléchargement de modèle)."""
+"""Tests of the fixes from the P2 PR review (fake encoder, no model download)."""
 import json
 import zlib
 from pathlib import Path
@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class FakeEncoder:
-    """Sac de mots hashé : textes proches => cosinus élevé. Sortie L2-normalisée."""
+    """Hashed bag of words: close texts => high cosine. L2-normalised output."""
 
     def __init__(self, dim: int = 128):
         self.dim = dim
@@ -47,7 +47,7 @@ def toy_catalogue(n: int = 80, audience: str = "Adult") -> pd.DataFrame:
 
 
 # --------------------------------------------------------------------------- #
-# Point 2 : thèmes v2 intégrés au pipeline
+# Point 2: v2 themes built into the pipeline
 # --------------------------------------------------------------------------- #
 def test_themes_v2_are_mean_of_phrase_and_variants():
     enc, blocks = FakeEncoder(), en.load_blocks()
@@ -67,9 +67,9 @@ def test_enrich_catalogue_applies_v2_by_itself():
     assert rep2["themes_version"] == "v2" and rep1["themes_version"] == "v1"
     s2 = json.loads(v2["label_scores"].iloc[0])["Themes"]
     s1 = json.loads(v1["label_scores"].iloc[0])["Themes"]
-    assert s1 != s2                                   # les scores de thèmes sont bien ceux de la v2
+    assert s1 != s2                                   # the theme scores are indeed those of v2
     again, _ = en.enrich_catalogue(df, enc, verbose=False, with_keywords=False)
-    assert again["themes"].tolist() == v2["themes"].tolist()   # reproductible : même appel, même résultat
+    assert again["themes"].tolist() == v2["themes"].tolist()   # reproducible: same call, same result
 
 
 def test_missing_variants_file_fails_loudly(tmp_path):
@@ -85,7 +85,7 @@ def test_variants_must_match_blocks(tmp_path):
 
 
 # --------------------------------------------------------------------------- #
-# Point 4 : l'époque n'est plus forcée
+# Point 4: the period is no longer forced
 # --------------------------------------------------------------------------- #
 LABELS = ["Ancient world", "Medieval", "Contemporary", "Melancholic", "Romantic"]
 
@@ -93,7 +93,7 @@ LABELS = ["Ancient world", "Medieval", "Contemporary", "Melancholic", "Romantic"
 def test_no_era_when_scores_are_weak():
     z = np.array([[0.5, 0.2, 0.1, 1.5, 0.3]])
     out = en.select_atmospheres(z, LABELS, z_min=1.0, era_z_min=2.0)
-    assert out == [["Melancholic"]]                      # pas d'époque forcée
+    assert out == [["Melancholic"]]                      # no forced period
 
 
 def test_era_kept_when_strong_and_clear():
@@ -102,7 +102,7 @@ def test_era_kept_when_strong_and_clear():
 
 
 def test_era_rejected_when_ambiguous():
-    z = np.array([[2.4, 2.3, 0.1, 1.5, 0.3]])            # deux époques quasi à égalité
+    z = np.array([[2.4, 2.3, 0.1, 1.5, 0.3]])            # two periods almost tied
     assert en.select_atmospheres(z, LABELS, 1.0, 2.0, 0.3) == [["Melancholic"]]
 
 
@@ -120,10 +120,10 @@ def test_era_coverage_decreases_with_threshold():
 
 
 # --------------------------------------------------------------------------- #
-# Point 5 : « Young Adult » / « Children's » seulement via audience
+# Point 5: "Young Adult" / "Children's" only through audience
 # --------------------------------------------------------------------------- #
 def test_adult_books_never_get_audience_genres():
-    df = toy_catalogue(80, audience="Adult")             # inclut des livres de catégorie « Young Adult Fiction »
+    df = toy_catalogue(80, audience="Adult")             # includes books of the "Young Adult Fiction" category
     out, _ = en.enrich_catalogue(df, FakeEncoder(), verbose=False, with_keywords=False)
     assert not any(g in en.AUDIENCE_GENRES for gs in out["genres"] for g in gs)
 
@@ -136,7 +136,7 @@ def test_audience_column_gives_the_label(audience, label):
 
 
 # --------------------------------------------------------------------------- #
-# Point 6 : mots-clés = groupes nominaux
+# Point 6: keywords = noun phrases
 # --------------------------------------------------------------------------- #
 STOP = en.EXTRA_STOP | en.NOISE_WORDS | {"with", "the", "and"}
 
@@ -145,9 +145,9 @@ def test_noun_phrases_drop_verb_noun_pairs_and_noise():
     tagged = [("She", "PRON"), ("deals", "VERB"), ("with", "ADP"), ("issues", "NOUN"), ("The", "DET"),
               ("young", "ADJ"), ("wizard", "NOUN"), ("school", "NOUN"), ("font", "NOUN"), ("size", "NOUN")]
     c = en.noun_phrase_candidates(tagged, STOP)
-    assert "deals issues" not in c and "deals" not in c      # verbe : coupe le groupe
-    assert "font size" not in c and "size" not in c          # vocabulaire de mise en page
-    assert "wizard school" in c and "school" in c            # groupe nominal conservé
+    assert "deals issues" not in c and "deals" not in c      # verb: breaks the phrase
+    assert "font size" not in c and "size" not in c          # layout vocabulary
+    assert "wizard school" in c and "school" in c            # noun phrase kept
     assert all(len(t) >= 3 for k in c for t in k.split())
 
 
@@ -185,7 +185,7 @@ def test_pos_true_without_spacy_raises(monkeypatch):
 
 
 # --------------------------------------------------------------------------- #
-# Point 3 : sample = sous-ensemble exact du fichier complet
+# Point 3: sample = exact subset of the full file
 # --------------------------------------------------------------------------- #
 def test_subset_is_exact_and_ordered():
     full, _ = en.enrich_catalogue(toy_catalogue(60), FakeEncoder(), verbose=False, with_keywords=False)
@@ -205,7 +205,7 @@ def test_subset_missing_id_raises():
 
 
 # --------------------------------------------------------------------------- #
-# Point 1 : jeu de test disjoint du jeu de réglage
+# Point 1: test set disjoint from the tuning set
 # --------------------------------------------------------------------------- #
 def test_holdout_sheet_excludes_tuning_books():
     df = toy_catalogue(200)
@@ -216,7 +216,7 @@ def test_holdout_sheet_excludes_tuning_books():
 
 
 # --------------------------------------------------------------------------- #
-# Point 7 : plus de [x] dans le rapport
+# Point 7: no more [x] in the report
 # --------------------------------------------------------------------------- #
 def test_report_has_no_placeholders():
     report = ROOT / "docs" / "report" / "02_enrichment.md"
@@ -226,7 +226,7 @@ def test_report_has_no_placeholders():
 
 
 # --------------------------------------------------------------------------- #
-# Outil d'annotation (point 1)
+# Annotation tool (point 1)
 # --------------------------------------------------------------------------- #
 def _gold_tools():
     import importlib.util
@@ -257,18 +257,18 @@ def test_review_loop_keeps_edits_and_saves():
                        "description": ["d"] * 3, "gold_genres": ["Fantasy | Romance", "Horror", ""],
                        "gold_themes": ["Friendship | Revenge", "Survival", ""],
                        "annotator": ["LLM (Claude), à relire", "Marie", ""]})
-    answers = iter(["", "", "1", "2,3", "q"])      # livre 1 : garder ; livre 3 : Fantasy + thèmes 2,3 ; puis quitter
+    answers = iter(["", "", "1", "2,3", "q"])      # book 1: keep; book 3: Fantasy + themes 2,3; then quit
     saves = []
     out = gt.review_rows(df, blocks, "Hajar", lambda d: saves.append(d.copy()), input_fn=lambda p: next(answers),
                          print_fn=lambda *a, **k: None)
-    assert out.at[0, "annotator"] == "Hajar" and out.at[0, "gold_genres"] == "Fantasy | Romance"   # gardé
-    assert out.at[1, "annotator"] == "Marie"                                                       # déjà humain : non touché
+    assert out.at[0, "annotator"] == "Hajar" and out.at[0, "gold_genres"] == "Fantasy | Romance"   # kept
+    assert out.at[1, "annotator"] == "Marie"                                                       # already human: untouched
     assert out.at[2, "gold_genres"] == "Fantasy" and out.at[2, "annotator"] == "Hajar"
-    assert len(saves) == 2                                                                         # sauvegarde à chaque livre
+    assert len(saves) == 2                                                                         # saved after each book
 
 
 # --------------------------------------------------------------------------- #
-# Évaluation réglage / test
+# Tuning / test evaluation
 # --------------------------------------------------------------------------- #
 def _evaluate_module():
     import importlib.util, sys
@@ -296,7 +296,7 @@ def test_evaluate_set_metrics_and_ci():
     res = ev.evaluate_set(enr, gold)
     g = res["metrics"]["genres"]
     assert res["n"] == 4 and g["n"] == 4 and res["reviewed"]
-    assert g["hit"][0] == 0.75                                   # 3 livres sur 4 ont >= 1 bon genre
+    assert g["hit"][0] == 0.75                                   # 3 books out of 4 have >= 1 correct genre
     assert g["precision"][0] == pytest.approx((1 + 0.5 + 0 + 1) / 4)
     lo, hi = g["hit"][1], g["hit"][2]
     assert lo <= 0.75 <= hi

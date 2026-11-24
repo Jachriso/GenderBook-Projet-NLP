@@ -1,5 +1,5 @@
-"""Balayage de z_min et top_k pour le bloc Themes, évalué sur gold_60_clean.csv.
-Réutilise les cosinus bruts stockés dans label_scores : pas de ré-encodage."""
+"""Sweep of z_min and top_k for the Themes block, evaluated on gold_60_clean.csv.
+Reuses the raw cosines stored in label_scores: no re-encoding."""
 import json, sys
 from pathlib import Path
 import numpy as np, pandas as pd

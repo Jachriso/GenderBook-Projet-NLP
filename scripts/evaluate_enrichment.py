@@ -1,18 +1,18 @@
 """
-Valide l'enrichissement P2 contre des annotations manuelles, avec une séparation RÉGLAGE / TEST.
+Validate the P2 enrichment against manual annotations, with a TUNING / TEST split.
 
-  dev  = gold_60_clean.csv   : les 60 livres qui ont servi à choisir les phrases de thèmes et le seuil z_min
-                               (scores optimistes : ces livres ont été « vus » pendant le réglage)
-  test = gold_holdout.csv    : 40 livres JAMAIS utilisés pour le réglage (créés par gold_tools.py make-holdout)
-                               => c'est CE score qu'il faut citer comme performance du système.
+  dev  = gold_60_clean.csv   : the 60 books used to choose the theme sentences and the z_min threshold
+                               (optimistic scores: these books were "seen" during tuning)
+  test = gold_holdout.csv    : 40 books NEVER used for tuning (created by gold_tools.py make-holdout)
+                               => THIS is the score to quote as the system's performance.
 
-Usage :
-    python scripts/evaluate_enrichment.py                       # affiche dev + test
-    python scripts/evaluate_enrichment.py --write-report        # écrit aussi le bloc de résultats du rapport
+Usage:
+    python scripts/evaluate_enrichment.py                       # shows dev + test
+    python scripts/evaluate_enrichment.py --write-report        # also writes the results block of the report
 
-Chaque métrique est donnée avec un intervalle de confiance à 95 % (bootstrap sur les livres) : sur ~40 livres
-il est large, ce qui est une information honnête à reporter.
-Le script REFUSE d'écrire le rapport si une annotation n'a pas été relue par un humain (colonne `annotator`).
+Each metric is given with a 95% confidence interval (bootstrap over the books): on ~40 books
+it is wide, which is honest information to report.
+The script REFUSES to write the report if an annotation has not been reviewed by a human (`annotator` column).
 """
 from __future__ import annotations
 
@@ -39,7 +39,7 @@ def book_scores(pred: set, truth: set) -> tuple[float, float, int]:
 
 
 def bootstrap_ci(values: np.ndarray, n_boot: int = 2000, seed: int = 0) -> tuple[float, float, float]:
-    """Moyenne et IC 95 % (percentiles) par rééchantillonnage des livres."""
+    """Mean and 95% CI (percentiles) by resampling the books."""
     values = np.asarray(values, dtype=float)
     rng = np.random.default_rng(seed)
     means = values[rng.integers(0, len(values), (n_boot, len(values)))].mean(1)
@@ -47,7 +47,7 @@ def bootstrap_ci(values: np.ndarray, n_boot: int = 2000, seed: int = 0) -> tuple
 
 
 def evaluate_set(enriched: pd.DataFrame, gold: pd.DataFrame) -> dict:
-    """Métriques d'un jeu annoté. Retourne {'n', 'n_unannotated', 'reviewed', 'annotators', 'metrics', 'rows'}."""
+    """Metrics of an annotated set. Returns {'n', 'n_unannotated', 'reviewed', 'annotators', 'metrics', 'rows'}."""
     enr = enriched.assign(book_id=enriched["book_id"].astype(str)).set_index("book_id")
     gold = gold.assign(book_id=gold["book_id"].astype(str))
     rows, missing = [], []
@@ -88,7 +88,7 @@ def fmt(t: tuple[float, float, float], pct: bool = False) -> str:
 
 
 def render_block(results: dict[str, dict]) -> str:
-    """Bloc Markdown (tableau + phrase) à insérer dans le rapport."""
+    """Markdown block (table + sentence) to insert in the report."""
     labels = {"dev": "Réglage (60 livres, vus pendant le réglage)", "test": "**Test (livres jamais vus)**"}
     lines = ["| Jeu | Livres | Genres : précision / rappel / ≥1 bon label | Thèmes : précision / rappel / ≥1 bon label |",
              "|---|---|---|---|"]

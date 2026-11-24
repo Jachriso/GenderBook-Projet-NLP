@@ -1,4 +1,4 @@
-"""Tests unitaires de src/enrichment.py (sans télécharger de modèle : encodeur factice déterministe)."""
+"""Unit tests of src/enrichment.py (without downloading a model: deterministic fake encoder)."""
 import json
 import zlib
 
@@ -9,7 +9,7 @@ from src import enrichment as en
 
 
 class FakeEncoder:
-    """Sac de mots hashé + projection : texte proche => cosinus élevé. Sortie L2-normalisée."""
+    """Hashed bag of words + projection: close text => high cosine. L2-normalised output."""
 
     def __init__(self, dim: int = 128):
         self.dim = dim
@@ -62,8 +62,8 @@ def test_select_labels_groups_and_min_keep():
     z = np.array([[3.0, 2.5, 2.0, -1.0], [-5.0, -6.0, -7.0, -8.0]])
     group_of = {l: ("era" if l in en.ERA_LABELS else "mood") for l in labels}
     out = en.select_labels(z, labels, 2, 1.0, 1, group_of, 1)
-    assert out[0] == ["Ancient world", "Melancholic"]  # 1 époque + 1 ambiance
-    assert out[1] == ["Ancient world"]                 # min_keep : jamais vide
+    assert out[0] == ["Ancient world", "Melancholic"]  # 1 period + 1 mood
+    assert out[1] == ["Ancient world"]                 # min_keep: never empty
 
 
 def test_mmr_no_redundant_keywords():

@@ -1,9 +1,9 @@
-"""Tests unitaires de src/embeddings.py (P3).
+"""Unit tests of src/embeddings.py (P3).
 
-On remplace le vrai SBERT par un FAUX modèle déterministe (sac de mots haché) :
-les tests sont instantanés, ne téléchargent rien et vérifient la LOGIQUE du moteur
-(normalisation, cache, alignement, recherche, découpage), pas la qualité de SBERT.
-Lancer : python -m pytest tests/test_embeddings.py -q
+The real SBERT is replaced by a deterministic FAKE model (hashed bag of words):
+the tests are instantaneous, download nothing and check the LOGIC of the engine
+(normalisation, cache, alignment, search, chunking), not the quality of SBERT.
+Run: python -m pytest tests/test_embeddings.py -q
 """
 import json
 import zlib
@@ -16,18 +16,18 @@ from src.embeddings import EmbeddingEngine, cosine_sim, l2_normalize, model_slug
 
 
 class FakeTokenizer:
-    """Imite le tokenizer Hugging Face : 1 mot = 1 token."""
+    """Mimics the Hugging Face tokenizer: 1 word = 1 token."""
 
-    def __call__(self, texts, add_special_tokens=False):
+    def __call__(self, texts, add_special_tokens=False, **kwargs):
         if isinstance(texts, str):
             texts = [texts]
         return {"input_ids": [list(range(len(t.split()))) for t in texts]}
 
 
 class FakeModel:
-    """Imite SentenceTransformer.encode : vecteur = sac de mots haché (dimension 64)."""
+    """Mimics SentenceTransformer.encode: vector = hashed bag of words (dimension 64)."""
 
-    max_seq_length = 12  # petite limite pour tester le découpage en morceaux
+    max_seq_length = 12  # small limit to test the chunking
 
     def __init__(self):
         self.tokenizer = FakeTokenizer()
@@ -38,7 +38,7 @@ class FakeModel:
         self.n_calls += 1
         out = np.zeros((len(texts), 64), dtype=np.float32)
         for i, t in enumerate(texts):
-            words = t.lower().split()[: self.max_seq_length]  # le vrai modèle tronque aussi
+            words = t.lower().split()[: self.max_seq_length]  # the real model truncates too
             for w in words:
                 out[i, zlib.crc32(w.strip(".,!?").encode()) % 64] += 1.0
         return l2_normalize(out) if normalize_embeddings else out
@@ -58,7 +58,7 @@ def engine(books, tmp_path):
     return EmbeddingEngine(model_name="fake/model", books=books, cache_dir=tmp_path, model=FakeModel())
 
 
-# ---------- utilitaires ----------
+# ---------- utilities ----------
 
 def test_l2_normalize_unit_norm_and_zero_rows():
     m = l2_normalize(np.array([[3.0, 4.0], [0.0, 0.0]]))
@@ -83,7 +83,7 @@ def test_encode_is_normalized_float32(engine):
 
 
 def test_encode_accepts_single_string_and_p2_signature(engine):
-    # Signature utilisée par encode_cached de P2 : encode(texts, batch_size=..., show_progress=...)
+    # Signature used by P2's encode_cached: encode(texts, batch_size=..., show_progress=...)
     assert engine.encode("wizard", batch_size=8, show_progress=False).shape == (1, 64)
 
 
@@ -108,15 +108,15 @@ def test_book_matrix_reloads_from_cache_without_encoding(books, tmp_path):
     fresh_model = FakeModel()
     e2 = EmbeddingEngine("fake/model", books=books, cache_dir=tmp_path, model=fresh_model)
     e2.book_matrix(show_progress=False)
-    assert fresh_model.n_calls == 0  # rechargé depuis le .npy, aucun encodage
+    assert fresh_model.n_calls == 0  # reloaded from the .npy, no encoding
 
 
 def test_book_matrix_reencodes_if_catalogue_changed(books, tmp_path):
     EmbeddingEngine("fake/model", books=books, cache_dir=tmp_path, model=FakeModel()).book_matrix(show_progress=False)
-    reordered = books.iloc[::-1].reset_index(drop=True)  # même livres, ordre différent
+    reordered = books.iloc[::-1].reset_index(drop=True)  # same books, different order
     model = FakeModel()
     m = EmbeddingEngine("fake/model", books=reordered, cache_dir=tmp_path, model=model).book_matrix(show_progress=False)
-    assert model.n_calls == 1  # cache refusé : alignement non garanti -> ré-encodage
+    assert model.n_calls == 1  # cache refused: alignment not guaranteed -> re-encoding
     assert np.allclose(m[0], EmbeddingEngine("fake/model", books=books, cache_dir=tmp_path / "x",
                                              model=FakeModel()).book_matrix(show_progress=False)[2])
 
@@ -148,17 +148,17 @@ def test_best_sentence_empty(engine):
     assert engine.best_sentence(np.ones(64), "") == ("", 0.0)
 
 
-# ---------- textes longs ----------
+# ---------- long texts ----------
 
 def test_chunk_text_respects_token_limit(engine):
-    text = ("The wizard boy goes to school every day. " * 4).strip()  # 4 phrases de 8 mots
-    chunks = engine.chunk_text(text)  # limite = 12 - 2 = 10 tokens -> 1 phrase par morceau
+    text = ("The wizard boy goes to school every day. " * 4).strip()  # 4 sentences of 8 words
+    chunks = engine.chunk_text(text)  # limit = 12 - 2 = 10 tokens -> 1 sentence per chunk
     assert len(chunks) == 4
     assert all(len(c.split()) <= 10 for c in chunks)
 
 
 def test_chunks_mode_uses_text_beyond_the_limit(books, tmp_path):
-    # Le mot décisif est APRÈS la limite de 12 tokens : la troncature le perd, pas les morceaux.
+    # The decisive word is AFTER the 12-token limit: truncation loses it, chunking does not.
     text = "One two three four five six seven eight nine ten. Then dragons appear everywhere."
     trunc = EmbeddingEngine("fake/m", books=books, cache_dir=tmp_path, model=FakeModel())
     chunk = EmbeddingEngine("fake/m", books=books, cache_dir=tmp_path, model=FakeModel(), long_text="chunks")
@@ -166,7 +166,7 @@ def test_chunks_mode_uses_text_beyond_the_limit(books, tmp_path):
     assert float(chunk.encode([text])[0] @ q) > float(trunc.encode([text])[0] @ q)
 
 
-# ---------- label_matrix (réutilise encode_blocks de P2) ----------
+# ---------- label_matrix (reuses P2's encode_blocks) ----------
 
 def test_label_matrix_all_blocks(engine):
     from src.enrichment import load_blocks
