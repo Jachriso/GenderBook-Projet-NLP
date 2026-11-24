@@ -60,16 +60,16 @@ def main(engine: EmbeddingEngine | None = None, force_umap: bool = False) -> dic
 
     fig, ax = plt.subplots(figsize=(9, 4.5))
     bins = np.linspace(-0.2, 0.8, 101)
-    ax.hist(dist["_all_scores"], bins=bins, density=True, alpha=0.55, label="catalogue entier")
+    ax.hist(dist["_all_scores"], bins=bins, density=True, alpha=0.55, label="whole catalogue")
     ax.hist(dist["_top_scores"], bins=bins, density=True, alpha=0.55,
-            label=f"{dist['top_k']} candidats (retrieval)")
-    for name, v, style in [("p5 catalogue", cat["p5"], ":"), ("p95 catalogue", cat["p95"], "--")]:
+            label=f"{dist['top_k']} candidates (retrieval)")
+    for name, v, style in [("catalogue p5", cat["p5"], ":"), ("catalogue p95", cat["p95"], "--")]:
         ax.axvline(v, color="black", linestyle=style, linewidth=1)
         ax.text(v, ax.get_ylim()[1] * 0.92, f" {name}\n {v:.2f}", fontsize=8)
-    ax.set_xlabel(f"similarité cosinus requête ↔ résumé ({engine.model_name.split('/')[-1]})")
-    ax.set_ylabel("densité")
-    ax.set_title(f"Distribution des cosinus : catalogue entier vs {dist['top_k']} candidats "
-                 f"({dist['n_queries']} requêtes)")
+    ax.set_xlabel(f"cosine similarity query ↔ blurb ({engine.model_name.split('/')[-1]})")
+    ax.set_ylabel("density")
+    ax.set_title(f"Cosine distribution: whole catalogue vs {dist['top_k']} candidates "
+                 f"({dist['n_queries']} queries)")
     ax.legend()
     fig.tight_layout()
     fig.savefig(config.FIGURES_DIR / "p3_cosine_distribution.png", dpi=150)
@@ -101,7 +101,7 @@ def main(engine: EmbeddingEngine | None = None, force_umap: bool = False) -> dic
 
     fig, ax = plt.subplots(figsize=(13, 8))
     other = ~np.isin(main_genre, top_genres)
-    ax.scatter(coords[other, 0], coords[other, 1], s=2, c="lightgrey", label="autres genres")
+    ax.scatter(coords[other, 0], coords[other, 1], s=2, c="lightgrey", label="other genres")
     cmap = plt.get_cmap("tab10")
     for i, g in enumerate(top_genres):
         m = main_genre == g
@@ -110,8 +110,8 @@ def main(engine: EmbeddingEngine | None = None, force_umap: bool = False) -> dic
     demo_q, _ = FAMOUS_QUERIES[0]
     xy = project_query(engine.encode([demo_q])[0], M, coords)
     ax.scatter([xy[0]], [xy[1]], marker="*", s=400, c="black", edgecolors="white", zorder=5,
-               label="requête : « a boy discovers he is a wizard… »")
-    ax.set_title(f"Carte sémantique UMAP des {len(books)} livres (couleur = genre principal)")
+               label='query: "a boy discovers he is a wizard…"')
+    ax.set_title(f"UMAP semantic map of the {len(books)} books (colour = main genre)")
     ax.set_xticks([]); ax.set_yticks([])
     # Légende à droite du graphique, avec des marqueurs de taille lisible (y compris l'étoile)
     leg = ax.legend(fontsize=8, loc="upper left", bbox_to_anchor=(1.01, 1), frameon=False)
