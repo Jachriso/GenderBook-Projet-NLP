@@ -17,3 +17,6 @@ data/responses/
 data/embeddings/*
 !data/embeddings/umap_2d.npy
 !data/embeddings/umap_book_ids.json
+# Caches P4 (régénérés automatiquement, dépendent du modèle)
+data/embeddings/p4_*
+data/embeddings/calibration_p4.json
