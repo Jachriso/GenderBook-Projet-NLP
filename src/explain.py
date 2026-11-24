@@ -3,8 +3,8 @@ TRANSPARENT explanations of the recommendations, generated from templates (P4).
 
 No LLM: each sentence is built from the NLP results actually computed
 (similarities, shared labels, closest sentence, coverage). The text is
-therefore faithful to the score by construction. P6's LLM bonus
-(llm_explain.py) may rephrase it, but the app works without it.
+therefore faithful to the score by construction. An optional LLM module could
+rephrase it (not implemented, see report section 10.1).
 
 Structure of an explanation (in English, like the interface):
 1. opening line depending on the score level (Excellent / Good / Partial);
