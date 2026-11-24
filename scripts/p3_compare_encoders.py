@@ -92,7 +92,10 @@ def main() -> None:
     print(res.pivot(index="target", columns="encoder", values="top1_title")[names].to_string())
 
     # 6. Sauvegarde pour le notebook 03 et le rapport
-    out = config.FIGURES_DIR / "p3_encoder_comparison_sample.csv"
+    # Nom du fichier = encodeurs comparés, pour ne jamais écraser une comparaison précédente
+    # (le lancement par défaut garde le nom historique p3_encoder_comparison_sample.csv).
+    suffix = "" if not (args.only or args.mpnet) else "_" + "-".join(names)
+    out = config.FIGURES_DIR / f"p3_encoder_comparison_sample{suffix}.csv"
     out.parent.mkdir(parents=True, exist_ok=True)
     res.to_csv(out, index=False)
     print(f"\nRésultats détaillés sauvegardés : {out.relative_to(config.ROOT)}")
