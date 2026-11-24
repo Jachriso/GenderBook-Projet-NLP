@@ -57,14 +57,14 @@ The code is organised into independent modules (`src/`), each with a commented n
 
 The work was split into six roles of comparable workload. The **interfaces between modules were fixed from the start**: catalogue columns, format of `blocks.json` and `answers.json`, shared dataclasses. Everyone could therefore code in parallel against sample data. Each contribution was integrated through a *pull request* reviewed by another member before being merged.
 
-| Role | Responsibility | Section |
-|---|---|---|
-| P1: Data Engineer | dataset cleaning, catalogue, EDA | 2 |
-| P2: Reference framework and enrichment | block taxonomy, genres, themes, keywords, validation | 3 |
-| P3: Semantic engine | preprocessing, embeddings, encoder comparison | 4 |
-| P4: Scoring and recommendation | profile, formula, explanations | 5 |
-| P5: Application and visualisations | questionnaire, results page, charts | 6 |
-| P6: Evaluation and integration | evaluation, code reviews, integration, report | 1, 7 to 10 |
+| Member | Role | Responsibility | Section |
+|---|---|---|---|
+|  | P1: Data Engineer | dataset cleaning, catalogue, EDA | 2 |
+|  | P2: Reference framework and enrichment | block taxonomy, genres, themes, keywords, validation | 3 |
+|  | P3: Semantic engine | preprocessing, embeddings, encoder comparison | 4 |
+|  | P4: Scoring and recommendation | profile, formula, explanations | 5 |
+|  | P5: Application and visualisations | questionnaire, results page, charts | 6 |
+|  | P6: Evaluation and integration | evaluation, code reviews, integration, report | 1, 7 to 10 |
 
 
 ## 1.6 Outline

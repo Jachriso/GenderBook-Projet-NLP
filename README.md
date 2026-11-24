@@ -15,12 +15,21 @@ questionnaire ──► answers.json ──► build_profile() ──► filters
 Python **3.11 or 3.12** is required (some dependencies, e.g. `gensim`, do not build on newer versions yet).
 
 ```bash
+# macOS / Linux
 python3.11 -m venv .venv
-source .venv/bin/activate                 # Windows: .venv\Scripts\activate
+source .venv/bin/activate
+
+# Windows (PowerShell)
+py -3.11 -m venv .venv
+.venv\Scripts\Activate.ps1
+
+# then, on every system
 pip install -r requirements.txt
-python -m spacy download en_core_web_sm   # needed by the TF-IDF / GloVe preprocessing
+python -m spacy download en_core_web_sm   # spaCy's English model, needed by the TF-IDF / GloVe preprocessing
 python -m pytest tests -q                 # all tests should pass
 ```
+
+> Windows: if activation is refused ("running scripts is disabled"), run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once. If spaCy fails with "an application control policy has blocked this file", Windows Smart App Control is blocking it: use WSL (Ubuntu) instead.
 
 The first time a model is used, `sentence-transformers` downloads it (≈ 90 MB for MiniLM) and the catalogue is encoded once (≈ 7 min on CPU), then cached in `data/embeddings/`.
 
@@ -54,11 +63,15 @@ The answer format is documented in [PLAN_PROJET.md §4.3](PLAN_PROJET.md); ready
 
 ### Run the web application
 
-<!-- TO COMPLETE when P5's pull request is merged (app/streamlit_app.py). -->
-
 ```bash
-streamlit run app/streamlit_app.py
+python -m scripts.prepare_app       # once: downloads the SBERT model, encodes the 12,000 books, checks the demo personas
+streamlit run app/streamlit_app.py  # then open http://localhost:8501
 ```
+
+- The first `prepare_app` takes a few minutes (model download + encoding); afterwards everything is read from `data/embeddings/` and the app starts in seconds.
+- Demo mode for the presentation: `http://localhost:8501/?demo=1` shows a folded "Demo mode" menu in the sidebar (3 pre-filled personas, reload of a saved `answers.json`). `?demo=1&persona=Dark%20academia%20reader` opens the questionnaire already filled in.
+- Answers are saved as timestamped JSON files in `data/responses/` (not versioned).
+- Offline (no Wi-Fi during the demo): once the model is downloaded, set `HF_HUB_OFFLINE=1` (PowerShell: `$env:HF_HUB_OFFLINE = "1"`) so that the model is not checked on Hugging Face.
 
 ## 3. Reproduce the whole pipeline
 
@@ -80,7 +93,7 @@ The notebooks document each step with comments and explanations and can be run i
 | `notebooks/02_reference_enrichment.ipynb` | block taxonomy, zero-shot labels, keywords, validation | 3 |
 | `notebooks/03_semantic_engine.ipynb` | preprocessing, TF-IDF / GloVe / SBERT, cosine, model choice | 4 |
 | `notebooks/04_scoring_recommendation.ipynb` | user profile, scoring formula, calibration, explanations | 5 |
-| `notebooks/05_app_and_visualization.ipynb` | questionnaire and visualisations (P5, to be merged) | 6 |
+| `notebooks/05_app_and_visualization.ipynb` | questionnaire, results page and visualisations | 6 |
 | `notebooks/06_evaluation.ipynb` | end-to-end evaluation on 10 test personas | 7 |
 
 ## 4. Evaluation
@@ -93,9 +106,9 @@ jupyter nbconvert --to notebook --execute --inplace notebooks/06_evaluation.ipyn
 
 - Test personas: `data/eval/personas.json` (expected books fixed by hand before running the system).
 - Results: `data/eval/results/*.csv`; figures: `docs/figures/06_*.png`.
-- Blind manual judgments of the recommended books: `data/eval/judgments.csv` (fill the `relevant` column with 1 / 0, then re-run the last cells).
+- Blind relevance judgments of every recommended book (pooling): `data/eval/judgments.csv` (final labels: human for E01–E04, LLM for E05–E10) and `data/eval/judgments_ai.csv` (LLM, all personas), compared in section 8 of the notebook.
 - MPNet (`RUN_MPNET` in the first cell) needs the MPNet embeddings of the catalogue: encoding them takes ≈ 80 min on CPU (≈ 10 min on a GPU, e.g. Google Colab) with `python -X utf8 -m scripts.p3_build_embeddings --model mpnet`, or copy the three `all-mpnet-base-v2_*` cache files from a teammate into `data/embeddings/` (they are not versioned).
-- Main results (report section 7): with MiniLM, genre-precision@3 0.97 and theme-overlap@3 0.97 on the 10 test personas; the top 3 is twice as stable under rephrasing as with the lexical baseline (Jaccard 0.63 vs 0.28).
+- Main results (report section 7): with MiniLM, genre-precision@3 0.97 and theme-overlap@3 0.97 on the 10 test personas; the top 3 is twice as stable under rephrasing as with the lexical baseline (Jaccard 0.63 vs 0.28); judged precision@3 0.50 (TF-IDF + LSA and MPNet 0.60, GloVe 0.40).
 
 ## 5. Tests
 
@@ -103,7 +116,7 @@ jupyter nbconvert --to notebook --execute --inplace notebooks/06_evaluation.ipyn
 python -m pytest tests -q
 ```
 
-Unit tests cover data cleaning, enrichment, preprocessing, the embedding engine, encoders, scoring and evaluation metrics. They use small fake models and run in a few seconds without downloading anything.
+Unit tests cover data cleaning, enrichment, preprocessing, the embedding engine, encoders, scoring, the questionnaire, the visualisations and the evaluation metrics. They use small fake models and run in a few seconds without downloading anything.
 
 ## 6. Repository structure
 
@@ -121,14 +134,15 @@ src/
   enrichment.py                                        P2: genres, themes, styles, keywords
   preprocessing.py, embeddings.py, encoders.py, semantic_map.py   P3: semantic engine
   schemas.py, profile.py, scoring.py, recommender.py, explain.py, fallback_engine.py   P4
+  viz.py                                               P5: Plotly figures of the app
   evaluation.py                                        P6: end-to-end evaluation
-scripts/               command-line versions of the pipeline steps
+scripts/               command-line versions of the pipeline steps · prepare_app.py (app warm-up) · capture_screens.py
 tests/                 unit tests
 docs/
   report/              sections of the PDF report (00 introduction … 11 appendix)
   slides/              slide plans per person
   figures/             figures used in the report and the slides
-app/                   Streamlit application (P5)
+app/                   Streamlit application (P5): streamlit_app.py (pages) · questions.py (questionnaire) · assets/ (logo)
 ```
 
 ## 7. Data
@@ -153,13 +167,11 @@ mask = apply_constraints(books, audience="Young Adult", formats=["Paperback"], f
 
 ## 8. Team
 
-| Role | Responsibility |
-|---|---|
-| P1: Data engineering | dataset cleaning, catalogue, EDA |
-| P2: Taxonomy and enrichment | block taxonomy, genres, themes, styles, keywords, validation |
-| P3: Semantic engine | preprocessing, embeddings, encoder comparison, semantic map |
-| P4: Scoring and recommendation | user profile, scoring formula, calibration, explanations |
-| P5: Application and visualisations | Streamlit questionnaire, results page, charts |
-| P6: Evaluation and integration | code reviews and merges, evaluation, README, report, slides |
-
-<!-- TO COMPLETE: add the name of each member next to their role. -->
+| Member | Role | Responsibility |
+|---|---|---|
+|  | P1: Data engineering | dataset cleaning, catalogue, EDA |
+|  | P2: Taxonomy and enrichment | block taxonomy, genres, themes, styles, keywords, validation |
+|  | P3: Semantic engine | preprocessing, embeddings, encoder comparison, semantic map |
+|  | P4: Scoring and recommendation | user profile, scoring formula, calibration, explanations |
+|  | P5: Application and visualisations | Streamlit questionnaire, results page, charts |
+|  | P6: Evaluation and integration | code reviews and merges, evaluation, README, report, slides |

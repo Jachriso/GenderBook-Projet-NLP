@@ -2,11 +2,6 @@
 
 *Code: `notebooks/06_evaluation.ipynb`. Data: `data/eval/personas.json`.*
 
-<!-- HOW TO USE (remove before PDF export):
-     The "—" values in the tables must be filled in with the outputs of notebook 06.
-     Do not invent anything: if a measurement could not be made, delete the row
-     and say so in the text. -->
-
 The previous sections evaluate each component separately: label quality (section 3, on 40 unseen books), the encoders on queries with no word in common (section 4), and the formula on the tuning personas (section 5). This section evaluates the **complete system** as the user sees it: starting from a filled-in questionnaire, is the top 3 relevant, stable and explainable?
 
 ## 7.1 Protocol
@@ -52,14 +47,12 @@ The representations of section 4 are obtained with `get_encoder()` and plugged i
 
 The complete pipeline requires dense vectors. Plain TF-IDF produces a sparse matrix of about 50,000 columns (≈ 2.4 GB once made dense for 12,000 books), so the lexical baseline is used here in its **TF-IDF + LSA** form (`tfidf-lsa`: truncated SVD, 256 dimensions). LSA groups words that appear in the same blurbs and therefore captures part of the synonymy: it is a slightly stronger baseline than pure keyword matching. The pure TF-IDF comparison, with no word in common, is the one in section 4.7.
 
-<!-- EVAL-ENCODERS:START -->
 | Encoder | Genre-precision@3 | Theme-overlap@3 | Hit@3 | MRR | Book already read returned | Time / rec. |
 |---|---:|---:|---:|---:|---:|---:|
 | TF-IDF + LSA (`tfidf-lsa`) | **1.00** | 0.90 | **0.20** | 0.109 | 2 / 10 | 0.03 s |
 | GloVe (IDF-weighted mean) | 0.93 | 0.87 | 0.10 | 0.063 | 1 / 10 | 0.02 s |
 | **MiniLM** (`all-MiniLM-L6-v2`) | 0.97 | **0.97** | 0.10 | 0.065 | **0 / 10** | 0.05 s |
 | MPNet (`all-mpnet-base-v2`) | 0.97 | 0.87 | 0.10 | **0.130** | 2 / 10 | 0.20 s |
-<!-- EVAL-ENCODERS:END -->
 
 *Mean over the 10 personas; time = median duration of one recommendation, model already loaded. All encoders respect the hard constraints for the 10 personas (excluded author, "must not appear" books).*
 
@@ -69,34 +62,38 @@ The complete pipeline requires dense vectors. Plain TF-IDF produces a sparse mat
 - **The lexical baseline stays close to the user's words.** Despite the rule of section 7.1, TF-IDF + LSA returns the book the user said they had already read in 2 personas out of 10 (*A Man Called Ove*, *Middlemarch*), because the request reuses the vocabulary of its blurb. MiniLM never does.
 - **MPNet is not clearly better on the complete system.** Its MRR is the highest, but because of a single persona (horror, *Ghost Story* ranked 1st); its theme coverage is lower than MiniLM's, it returns an already-read book twice, and each recommendation takes 4 times longer (0.20 s vs 0.05 s), mostly to encode the request.
 
-**Model kept for the application: MiniLM.** On our 10 personas, no encoder clearly outperforms MiniLM on relevance, MiniLM is the most stable under rephrasing (section 7.3), never returns a book already read, and is the fastest SBERT model. This is consistent with section 4, where MPNet's advantage appeared on difficult retrieval queries but came at a high encoding cost.
+**Manual judgments.** Because hit@3 and MRR ignore relevant books we did not list in advance, every book proposed by any of the four encoders was judged, blind to the system that proposed it (pooling, as in the TREC evaluation campaigns): 103 distinct (persona, book) pairs in `data/eval/judgments.csv`. Each row shows only the request and one book (title, authors, genres, blurb); a book is relevant (1) if it is the right kind of book for the right audience, contains the core of the request (main theme or atmosphere) and nothing the reader asked to avoid.
 
-**Manual judgments.** Because hit@3 and MRR ignore relevant books we did not list in advance, every book proposed by any of the four encoders was judged by hand, blind to the system that proposed it (`data/eval/judgments.csv`, pooling).
+The pairs were judged **twice, independently**: by a team member for the first four personas (E01 to E04, 44 pairs), and by an LLM (Claude) for all ten, given only the CSV file and the guideline above (`data/eval/judgments_ai.csv`). The **final labels** keep the human judgments for E01 to E04 and the LLM judgments for E05 to E10. Note that the LLM is used here only to *evaluate*; the recommender itself uses no generative model.
 
-<!-- EVAL-JUDGED:START (fill in from data/eval/results/judged_precision.csv once judgments.csv is complete) -->
-| Encoder | Judged precision@3 |
-|---|---:|
-| TF-IDF + LSA | — |
-| GloVe | — |
-| MiniLM | — |
-| MPNet | — |
-<!-- EVAL-JUDGED:END -->
+| Encoder | **Final labels** (10 personas) | Human judge (E01–E04) | LLM judge (E01–E04) | LLM judge (10 personas) |
+|---|---:|---:|---:|---:|
+| TF-IDF + LSA | **0.60** | 0.75 | 0.50 | 0.50 |
+| GloVe | 0.40 | 0.50 | 0.17 | 0.27 |
+| **MiniLM** | 0.50 | 0.75 | 0.50 | 0.40 |
+| MPNet | **0.60** | 0.75 | 0.58 | 0.53 |
 
-<!-- TO WRITE after the judgments: 2-3 sentences. Does the judged precision confirm the
-     choice of MiniLM? Who judged (one person, so no agreement measure)? -->
+*Judged precision@3: share of the top 3 judged relevant, averaged over the personas (30 recommended books per encoder).*
+
+**Agreement between the two judges.** On the 44 pairs judged by both, the human and the LLM agree on 57% of the books, a **Cohen's kappa of 0.18** (only *slight* agreement once chance is taken into account). The disagreement is mostly one of **strictness**: the human judged 68% of the books relevant, the LLM 43%. Of the 19 disagreements, 15 are books the human accepted and the LLM rejected. The clearest case is the Nordic crime persona: the human accepted American police procedurals with a troubled detective (*Night Sin*, *Undone*, *Beyond Reach*), the LLM required a Nordic setting. Both readings of the request are defensible. Relevance therefore depends heavily on the judge, and the absolute values of the table matter less than the comparison between encoders under the same judge.
+
+**What the judgments show.**
+- **The ranking of the encoders depends on the judge, and the gaps are small.** For the human judge, LSA, MiniLM and MPNet are tied (0.75). For the LLM judge and for the final labels, MiniLM is behind LSA and MPNet: 15 relevant books out of 30 against 18, i.e. **3 books**. GloVe is last for every judge.
+- **The gap comes mostly from one persona.** For the cozy mystery request ("*a gentle whodunit in a peaceful village … cups of tea and friendly gossip*"), TF-IDF + LSA returns three cozy mysteries (*Death by Darjeeling: A Tea Shop Mystery*, *Due or Die*, *An Incomplete Revenge*) whose blurbs repeat the very words of the request (*cozy*, *tea shop*, *small rural community*). MiniLM returns a Victorian Sherlock pastiche, *Cold Comfort Farm* and a Chandler noir, judged 0/3. When a genre has a fixed vocabulary that the user also uses, keyword matching is a strong method.
+- **The judgments do not confirm an advantage of MiniLM on relevance.** They confirm the semantic encoders' advantage over GloVe, and that MPNet is at least as relevant as MiniLM.
+
+**Model kept for the application: MiniLM.** Relevance alone does not separate MiniLM from TF-IDF + LSA and MPNet on 10 personas (a gap of 3 books out of 30). We keep MiniLM for the other criteria: it is twice as stable as the lexical baseline when the request is rephrased (section 7.3), the only encoder that never returns a book the user has already read, and 4 times faster than MPNet. MPNet is the natural next step if the relevance gap is confirmed on more personas (section 9.2).
 
 ## 7.3 Robustness to rephrasing
 
 Each main request (`ideal_book`) is rewritten three times with the same meaning and different vocabulary. A system that understands meaning should return roughly the same top 3. We measure the Jaccard similarity between the original top 3 and the top 3 of each rephrasing (1 = identical lists, 0 = nothing in common).
 
-<!-- EVAL-PARAPHRASE:START -->
 | Encoder | Mean Jaccard of the top 3 |
 |---|---:|
 | TF-IDF + LSA | 0.28 |
 | GloVe (IDF-weighted mean) | 0.39 |
 | **MiniLM** | **0.63** |
 | MPNet | 0.61 |
-<!-- EVAL-PARAPHRASE:END -->
 
 This is the clearest result of the evaluation. **Both SBERT models are more than twice as stable as the lexical baseline**: when the request is rephrased, TF-IDF + LSA changes most of its top 3, because the words change; MiniLM keeps most of it, because the meaning does not. GloVe, which knows synonyms but averages the words of a sentence, lies in between. With MiniLM, 11 of the 30 rephrasings give exactly the same top 3, and the historical romance persona keeps the same three books for all three rephrasings. The least stable persona is the cosy mystery (0.30), whose request mixes several ideas (village, amateur sleuth, puzzle, no violence) that each rephrasing weights differently.
 
@@ -104,7 +101,6 @@ This is the clearest result of the evaluation. **Both SBERT models are more than
 
 Section 5 proposes $\text{Final} = \frac{\alpha \tilde S_{desc} + \beta\, \text{Coverage} + \lambda\, \text{Pop}}{\alpha + \beta + \lambda} - \mu \max(0, \cos(q_{avoid}, e_j) - \tau)$ with $\alpha = 0.5$, $\beta = 0.4$, $\lambda \le 0.2$, $\mu = 0.5$, $\tau = 0.3$. To justify each term, we remove it and measure the effect on the 10 personas (MiniLM).
 
-<!-- EVAL-ABLATION:START -->
 | Variant | Genre-precision@3 | Theme-overlap@3 | Hit@3 | MRR |
 |---|---:|---:|---:|---:|
 | Blurb only ($\tilde S_{desc}$) | 0.80 | 0.97 | 0.10 | 0.123 |
@@ -113,7 +109,6 @@ Section 5 proposes $\text{Final} = \frac{\alpha \tilde S_{desc} + \beta\, \text{
 | Without "to avoid" penalty | 0.97 | 0.97 | 0.00 | 0.055 |
 | Without popularity | 0.97 | 0.92 | 0.10 | 0.059 |
 | **Full formula** | 0.97 | 0.97 | 0.10 | 0.065 |
-<!-- EVAL-ABLATION:END -->
 
 - **The coverage score is what keeps the right type of book.** With the blurb alone, the genre-precision drops from 0.97 to 0.80: one recommended book in five is no longer of the requested genre. This confirms, on personas that were not used for tuning, what section 5 measured on its tuning personas (0.92 vs 0.75).
 - **The blurb term brings the themes.** With coverage alone, the genre-precision is perfect but the theme overlap drops (0.92): the two terms are complementary, which justifies combining them.
@@ -123,11 +118,9 @@ Section 5 proposes $\text{Final} = \frac{\alpha \tilde S_{desc} + \beta\, \text{
 
 The importance Likert answers (Genre, Themes, Style, Atmosphere) become the weights $W_b$ of the coverage score. If the system is consistent, increasing the importance of a block should push up the books that are close on that block. We vary $W_{Themes}$ from 1 to 5, keeping the other answers fixed, and measure the mean Themes score of the top 10 (MiniLM, mean over the 10 personas).
 
-<!-- EVAL-WEIGHTS:START -->
 | $W_{Themes}$ | 1 | 2 | 3 | 4 | 5 |
 |---|---:|---:|---:|---:|---:|
 | Mean Themes score of the top 10 | 0.728 | 0.751 | 0.766 | 0.776 | 0.782 |
-<!-- EVAL-WEIGHTS:END -->
 
 The Themes score **increases at every step** (+0.054 between 1 and 5): the user's importance answers really steer the ranking, in the expected direction. The effect is moderate, which is intended: the weights reorder books that are already relevant, they do not replace the semantic similarity with the request.
 
@@ -137,7 +130,7 @@ The notebook prints, for the best and the worst personas (by reciprocal rank), w
 
 **Success: 19th-century social novel.** MiniLM recommends *Howards End*, *Cold Comfort Farm* and *North and South* (scores 0.86, 0.80, 0.79). *North and South* is one of the hand-picked books; *Howards End* is not, but it is exactly what the reader asked for (an English novel of manners about class and money). The explanation shows why: "*Its style (Dense literary prose 0.98) fits the kind of writing you asked for. Atmosphere match: 18th–19th century (1.00). Genre match: Literary Fiction, Classics […]*". *Cold Comfort Farm* is a 1932 parody of rural Victorian novels: close in style, further in period.
 
-**Success that the metrics miss: Nordic crime.** For the request "*a tired, troubled detective uncovers corruption and violence hidden behind a quiet and orderly society*", MiniLM proposes *The Man From Beijing* by Henning Mankell, a Swedish crime novel, with the closest sentence "*One cold January day the police are called to a sleepy little hamlet in the north of Sweden…*". It is not in our list (which contains another Mankell novel), so it counts as a miss for hit@3. This is precisely why we added the manual judgments.
+**Success that the metrics miss: Nordic crime.** For the request "*a tired, troubled detective uncovers corruption and violence hidden behind a quiet and orderly society*", MiniLM proposes *The Man From Beijing* by Henning Mankell, a Swedish crime novel, with the closest sentence "*One cold January day the police are called to a sleepy little hamlet in the north of Sweden…*". It is not in our list (which contains another Mankell novel), so it counts as a miss for hit@3. This is precisely why we added the manual judgments, where it is judged relevant.
 
 **Partial success: psychological novel.** *The Room* by Hubert Selby Jr. matches the request well ("*the workings of a prisoner's unhinged mind*", similarity 0.61). But the two other books are Dean Koontz thrillers (*False Memory*, *The Bad Place*): close in topic (a mind that torments itself), far from the literary novel the reader wanted. This is the limit already met in section 5: **topical proximity is not relevance**, and the complexity Likert (5) is not strong enough to rule out a commercial thriller.
 
@@ -147,6 +140,4 @@ The notebook prints, for the best and the worst personas (by reciprocal rank), w
 
 ## 7.7 Summary
 
-On 10 test personas built independently of the tuning, the complete system recommends books of the requested type (genre-precision@3 of 0.97 with MiniLM), covers the requested themes (0.97) and always respects the user's explicit constraints. The comparison of encoders shows that the formula and the filters make all systems reach a high genre precision; the difference made by semantic embeddings appears in **robustness**: MiniLM's top 3 is more than twice as stable as the lexical baseline's when the request is rephrased (Jaccard 0.63 vs 0.28), and it never returns a book the user has already read. The coverage score is clearly useful (genre-precision 0.80 without it). A recommendation takes about 0.05 s once the model is loaded. With 10 personas and only 2 to 5 hand-picked books each, hit@3 and MRR are too sparse to rank the systems; the manual judgments of all recommended books complete them.
-
-<!-- Add one sentence with the judged precision once judgments.csv is filled in. -->
+On 10 test personas built independently of the tuning, the complete system recommends books of the requested type (genre-precision@3 of 0.97 with MiniLM), covers the requested themes (0.97) and always respects the user's explicit constraints. The comparison of encoders shows that the formula and the filters make all systems reach a high genre precision; the difference made by semantic embeddings appears in **robustness**: MiniLM's top 3 is more than twice as stable as the lexical baseline's when the request is rephrased (Jaccard 0.63 vs 0.28), and it never returns a book the user has already read. The coverage score is clearly useful (genre-precision 0.80 without it). A recommendation takes about 0.05 s once the model is loaded. With 10 personas and only 2 to 5 hand-picked books each, hit@3 and MRR are too sparse to rank the systems. The blind judgments of all recommended books give a judged precision@3 of 0.50 for MiniLM, against 0.60 for TF-IDF + LSA and MPNet and 0.40 for GloVe: a gap of 3 books out of 30, mostly on one persona whose request shares its vocabulary with the blurbs of its genre. A human judge and an LLM judge agree only slightly on what is relevant (kappa 0.18), which shows how subjective relevance is and why these values are trends rather than measurements.

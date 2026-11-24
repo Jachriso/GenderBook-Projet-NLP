@@ -7,7 +7,7 @@ import pytest
 
 from src import config
 from src.evaluation import (build_judgment_pool, first_relevant_rank, forbidden_ids, jaccard,
-                            judged_precision, load_eval_personas, loved_book_ids, n_unjudged, persona_metrics,
+                            judge_agreement, judged_precision, load_eval_personas, loved_book_ids, n_unjudged, persona_metrics,
                             relevant_works, summarize, with_ideal_book)
 
 
@@ -115,6 +115,19 @@ def test_judgment_pool_is_blind_extends_and_keeps_existing_labels(books, persona
     prec = judged_precision({"A": {"T01": ["b0", "b3"]}, "B": {"T01": ["b3", "b4"]}}, path=path)
     assert prec.loc["A", "judged_precision@3"] == 0.5 and prec.loc["A", "n_unjudged"] == 0
     assert prec.loc["B", "judged_precision@3"] == 1.0 and prec.loc["B", "n_unjudged"] == 1
+
+
+def test_judge_agreement_and_persona_filter(tmp_path):
+    cols = {"persona": ["P1", "P1", "P1", "P1", "P2"], "book_id": ["a", "b", "c", "d", "e"]}
+    pd.DataFrame({**cols, "relevant": [1, 1, 0, 0, 1]}).to_csv(tmp_path / "h.csv", index=False)
+    pd.DataFrame({**cols, "relevant": [1, 0, 0, 0, 0]}).to_csv(tmp_path / "m.csv", index=False)
+    ag = judge_agreement(tmp_path / "h.csv", tmp_path / "m.csv", personas=["P1"])
+    assert ag["n"] == 4 and ag["agreement"] == 0.75
+    assert ag["kappa"] == pytest.approx(0.5)        # po 0.75, pe 0.5
+    assert ag["relevant_a"] == 0.5 and ag["relevant_b"] == 0.25
+    tops = {"S": {"P1": ["a", "b", "c"], "P2": ["e"]}}
+    assert judged_precision(tops, tmp_path / "h.csv").loc["S", "judged_precision@3"] == pytest.approx((2 / 3 + 1) / 2, abs=1e-3)
+    assert judged_precision(tops, tmp_path / "h.csv", personas=["P2"]).loc["S", "judged_precision@3"] == 1.0
 
 
 def test_with_ideal_book_does_not_modify_the_original(persona):

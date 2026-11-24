@@ -2,18 +2,14 @@
 
 *Each requirement of the assignment is linked to the code that implements it and to the section of the report that documents it.*
 
-<!-- "Status" column: update before submission. Remove the column from the
-     PDF version once everything is ticked. Files marked (PR pending) are not
-     on main yet as of 24/11: branch p5/streamlit (p3-baselines merged). -->
-
 | Requirement | Implementation | Section | Status |
 |---|---|---|---|
-| **Req. 1**: web questionnaire | `app/streamlit_app.py`, `app/questions.py` (PR pending) | 6 | ☐ |
-| Free text (≥ 1 mandatory) | 4 open questions, one of which requires at least 30 characters | 6 | ☐ |
-| Likert | complexity, pace, tone, popularity, importance of the 4 blocks | 6 | ☐ |
-| Guided questions | favourite author, characters or plot, exclusion of the favourite author | 6 | ☐ |
-| Multiple choice / checkboxes | genres, themes, period, audience, formats | 6 | ☐ |
-| Responses stored in a structured format | timestamped JSON in `data/responses/` | 6 | ☐ |
+| **Req. 1**: web questionnaire | `app/streamlit_app.py`, `app/questions.py` | 6 | ☑ |
+| Free text (≥ 1 mandatory) | 4 open questions, one of which requires at least 30 characters | 6 | ☑ |
+| Likert | complexity, pace, tone, popularity, importance of the 4 blocks | 6 | ☑ |
+| Guided questions | favourite author, characters or plot, exclusion of the favourite author | 6 | ☑ |
+| Multiple choice / checkboxes | genres, themes, period, audience, formats | 6 | ☑ |
+| Responses stored in a structured format | timestamped JSON in `data/responses/` | 6 | ☑ |
 | **Req. 2**: reference dataset | `data/processed/books_enriched.parquet` (12,000 books) | 2, 3 | ☑ |
 | Categories / thematic blocks | `data/reference/blocks.json`: Genre, Themes, Style, Atmosphere | 3 | ☑ |
 | Natural-language descriptions | cleaned blurbs (`description`, `embed_text`) and a descriptive sentence per label | 2, 3 | ☑ |
@@ -36,12 +32,12 @@
 | Semantic score per book | `final_score`, `match_label` | 5 | ☑ |
 | Main criteria | shared labels and per-component contributions | 5 | ☑ |
 | Template-based explanation | `src/explain.py` | 5 | ☑ |
-| **Req. 6**: visualisation | `src/viz.py` (PR pending) | 6 | ☐ |
-| User profile / summary | `UserProfile.summary`, profile radar | 5, 6 | ☐ |
-| Block scores | "you vs the books" radar, contribution bars | 6 | ☐ |
-| Similarity map | UMAP projection of the 12,000 books | 4, 6 | ☐ |
-| Show that results come from semantic analysis | highlighted closest sentence, "How was this score computed?" panel, heatmap | 6 | ☐ |
+| **Req. 6**: visualisation | `src/viz.py` | 6 | ☑ |
+| User profile / summary | `UserProfile.summary`, profile radar | 5, 6 | ☑ |
+| Block scores | "you vs the books" radar, contribution bars | 6 | ☑ |
+| Similarity map | UMAP projection of the 12,000 books | 4, 6 | ☑ |
+| Show that results come from semantic analysis | highlighted closest sentence, "How was this score computed?" panel, heatmap | 6 | ☑ |
 | **Works without generative AI** | no LLM call in `recommend()` | 5, 10 | ☑ |
-| **Deliverables**: commented notebooks | `notebooks/01` to `06` | all | ☐ (05 to merge; 06 in P6's PR) |
+| **Deliverables**: commented notebooks | `notebooks/01` to `06` | all | ☑ |
 | PDF documentation | this report | — | ☐ |
 | Presentation and demo | slides + demo, all 6 members present | — | ☐ |

@@ -19,8 +19,9 @@ Metrics (computed on the top 3 of each persona):
   * loved_book_in_top3 the system returns the book the user said they already loved
                        (reported, but never counted as relevant)
   * stability          Jaccard similarity of the top 3 obtained with rephrased requests
-  * judged precision@3 share of the top 3 judged relevant by hand, in a blind pooled
-                       judgment file (see section 7)
+  * judged precision@3 share of the top 3 judged relevant, in a blind pooled judgment
+                       file (see section 7)
+  * judge agreement    raw agreement and Cohen's kappa between two judges (human / LLM)
 """
 from __future__ import annotations
 
@@ -316,7 +317,13 @@ def make_recommender(encoder: str, books: pd.DataFrame | None = None, blocks: di
 # sees the request and the book, never which encoder proposed it, and the rows are
 # shuffled. Existing judgments are kept when new systems are added to the pool.
 
-JUDGMENTS_PATH = EVAL_DIR / "judgments.csv"
+JUDGMENTS_PATH = EVAL_DIR / "judgments.csv"          # final labels used in the report
+# Second, independent judgment of the SAME blind file by an LLM (it only saw the CSV: the
+# request and the book, never the system). The final file keeps the human labels for
+# HUMAN_JUDGED_PERSONAS and the LLM labels for the others; on the human personas the two
+# judges are compared (judge_agreement) to show how subjective relevance is.
+JUDGMENTS_AI_PATH = EVAL_DIR / "judgments_ai.csv"
+HUMAN_JUDGED_PERSONAS = ("E01_children_fantasy", "E02_nordic_noir", "E03_historical_romance", "E04_ya_dystopia")
 JUDGMENT_COLUMNS = ["persona", "request", "book_id", "title", "authors", "genres", "blurb", "relevant"]
 
 
@@ -362,19 +369,29 @@ def n_unjudged(pool: pd.DataFrame) -> int:
     return int((rel.isna() | rel.astype("string").str.strip().fillna("").eq("")).sum())
 
 
-def judged_precision(tops: dict[str, dict[str, list[str]]], path: Path = JUDGMENTS_PATH) -> pd.DataFrame:
+def _labels(path: Path) -> dict[tuple[str, str], int]:
+    """{(persona, book_id): 0 / 1} for the judged rows of a judgment file."""
+    j = pd.read_csv(path, dtype={"book_id": str})
+    j = j[j["relevant"].astype(str).str.strip().isin(["0", "1", "0.0", "1.0"])]
+    return {(r.persona, r.book_id): int(float(r.relevant)) for r in j.itertuples()}
+
+
+def judged_precision(tops: dict[str, dict[str, list[str]]], path: Path = JUDGMENTS_PATH,
+                     personas: Iterable[str] | None = None) -> pd.DataFrame:
     """Precision@3 according to the manual judgments, for each system.
 
     precision@3 = share of the recommended books judged relevant (1), averaged over the
     personas. Books not judged yet are counted in `n_unjudged` and left out.
+    `personas`: restrict to these persona ids (e.g. HUMAN_JUDGED_PERSONAS).
     """
-    j = pd.read_csv(path, dtype={"book_id": str})
-    j = j[j["relevant"].astype(str).str.strip().isin(["0", "1", "0.0", "1.0"])]
-    label = {(r.persona, r.book_id): int(float(r.relevant)) for r in j.itertuples()}
+    label = _labels(path)
+    keep = set(personas) if personas is not None else None
     rows = []
     for system, system_tops in tops.items():
         per_persona, unjudged = [], 0
         for pid, ids in system_tops.items():
+            if keep is not None and pid not in keep:
+                continue
             vals = [label[(pid, b)] for b in ids if (pid, b) in label]
             unjudged += len(ids) - len(vals)
             if vals:
@@ -383,6 +400,24 @@ def judged_precision(tops: dict[str, dict[str, list[str]]], path: Path = JUDGMEN
                      "judged_precision@3": round(float(np.mean(per_persona)), 3) if per_persona else np.nan,
                      "n_unjudged": unjudged})
     return pd.DataFrame(rows).set_index("system")
+
+
+def judge_agreement(path_a: Path, path_b: Path, personas: Iterable[str] | None = None) -> dict[str, Any]:
+    """Agreement between two judges on the (persona, book) pairs both of them judged.
+
+    Returns the number of pairs, the raw agreement, Cohen's kappa (agreement corrected for
+    chance: 0 = no better than chance, 1 = perfect) and the share judged relevant by each.
+    """
+    a, b = _labels(path_a), _labels(path_b)
+    keys = [k for k in a if k in b and (personas is None or k[0] in set(personas))]
+    if not keys:
+        return {"n": 0, "agreement": np.nan, "kappa": np.nan, "relevant_a": np.nan, "relevant_b": np.nan}
+    x = np.array([a[k] for k in keys]); y = np.array([b[k] for k in keys])
+    po = float((x == y).mean())
+    pe = float(x.mean() * y.mean() + (1 - x.mean()) * (1 - y.mean()))
+    kappa = (po - pe) / (1 - pe) if pe < 1 else 1.0
+    return {"n": len(keys), "agreement": round(po, 3), "kappa": round(kappa, 3),
+            "relevant_a": round(float(x.mean()), 3), "relevant_b": round(float(y.mean()), 3)}
 
 
 def save_results(df: pd.DataFrame, name: str) -> Path:
