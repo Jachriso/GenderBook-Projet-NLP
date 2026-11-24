@@ -59,12 +59,12 @@ The work was split into six roles of comparable workload. The **interfaces betwe
 
 | Member | Role | Responsibility | Section |
 |---|---|---|---|
-|  | P1: Data Engineer | dataset cleaning, catalogue, EDA | 2 |
-|  | P2: Reference framework and enrichment | block taxonomy, genres, themes, keywords, validation | 3 |
-|  | P3: Semantic engine | preprocessing, embeddings, encoder comparison | 4 |
-|  | P4: Scoring and recommendation | profile, formula, explanations | 5 |
-|  | P5: Application and visualisations | questionnaire, results page, charts | 6 |
-|  | P6: Evaluation and integration | evaluation, code reviews, integration, report | 1, 7 to 10 |
+| DUTERTRE Maxime | P1: Data Engineer | dataset cleaning, catalogue, EDA | 2 |
+| BENLEMQADEM Hajar | P2: Reference framework and enrichment | block taxonomy, genres, themes, keywords, validation | 3 |
+| NOMO NGAH Marie | P3: Semantic engine | preprocessing, embeddings, encoder comparison | 4 |
+| FAUTRAD Annabelle | P4: Scoring and recommendation | profile, formula, explanations | 5 |
+| PARRILLA Jade | P5: Application and visualisations | questionnaire, results page, charts | 6 |
+| EBOBISSE Suzy | P6: Evaluation and integration | evaluation, code reviews, integration, report | 1, 7 to 10 |
 
 
 ## 1.6 Outline

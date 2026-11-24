@@ -169,9 +169,9 @@ mask = apply_constraints(books, audience="Young Adult", formats=["Paperback"], f
 
 | Member | Role | Responsibility |
 |---|---|---|
-|  | P1: Data engineering | dataset cleaning, catalogue, EDA |
-|  | P2: Taxonomy and enrichment | block taxonomy, genres, themes, styles, keywords, validation |
-|  | P3: Semantic engine | preprocessing, embeddings, encoder comparison, semantic map |
-|  | P4: Scoring and recommendation | user profile, scoring formula, calibration, explanations |
-|  | P5: Application and visualisations | Streamlit questionnaire, results page, charts |
-|  | P6: Evaluation and integration | code reviews and merges, evaluation, README, report, slides |
+| DUTERTRE Maxime | P1: Data engineering | dataset cleaning, catalogue, EDA |
+| BENLEMQADEM Hajar | P2: Taxonomy and enrichment | block taxonomy, genres, themes, styles, keywords, validation |
+| NOMO NGAH Marie | P3: Semantic engine | preprocessing, embeddings, encoder comparison, semantic map |
+| FAUTRAD Annabelle | P4: Scoring and recommendation | user profile, scoring formula, calibration, explanations |
+| PARRILLA Jade | P5: Application and visualisations | Streamlit questionnaire, results page, charts |
+| EBOBISSE Suzy | P6: Evaluation and integration | code reviews and merges, evaluation, README, report, slides |
