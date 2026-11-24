@@ -1,0 +1,29 @@
+query,target,encoder,rank,score,top1_title,seconds
+a parentless lad learns spells from an old wizard while creatures from another dimension attack his homeland,Magician,tfidf,305.5,0.0,"Tokyo Ghoul, Vol. 12",3.6
+the celebrated pipe-smoking sleuth tracks a serial murderer of prostitutes in Victorian times,Dust and Shadow,tfidf,310.5,0.0,The Murder on the Orient Express,3.6
+mariners whose vessel sank are seized as captives by Bedouin tribes and marched across scorching dunes,Skeletons on the Zahara : A True Story of Survival,tfidf,256.5,0.0,The Rime of the Ancient Mariner,3.6
+a chatty ginger-haired adopted child with a vivid fancy changes the lives of an elderly pair of siblings on a rural homestead,Anne of Green Gables,tfidf,369.0,0.0,My Brother,3.6
+a Greek comic play from two thousand years ago showing what wives and mothers experienced,Lysistrata,tfidf,356.5,0.0,Dustbin Baby,3.6
+an illustrated retelling where a bloodsucking aristocrat from the Carpathians stalks young ladies,Dracula,tfidf,296.5,0.0,Music for Chameleons,3.6
+an antimilitarist comic tale mocking the Habsburg monarchy through a naive army private,The Good Soldier Svejk,tfidf,286.0,0.0,Botchan,3.6
+a parentless lad learns spells from an old wizard while creatures from another dimension attack his homeland,Magician,glove,20.0,0.835,The Enchantress Returns,65.15
+the celebrated pipe-smoking sleuth tracks a serial murderer of prostitutes in Victorian times,Dust and Shadow,glove,14.0,0.767,The Murder on the Orient Express,65.15
+mariners whose vessel sank are seized as captives by Bedouin tribes and marched across scorching dunes,Skeletons on the Zahara : A True Story of Survival,glove,3.0,0.658,Kon Tiki : Across the Pacific by Raft,65.15
+a chatty ginger-haired adopted child with a vivid fancy changes the lives of an elderly pair of siblings on a rural homestead,Anne of Green Gables,glove,33.0,0.819,"Good Wives by Louisa May Alcott, Fiction, Family, Classics",65.15
+a Greek comic play from two thousand years ago showing what wives and mothers experienced,Lysistrata,glove,352.0,0.841,The First Fifteen Lives of Harry August,65.15
+an illustrated retelling where a bloodsucking aristocrat from the Carpathians stalks young ladies,Dracula,glove,55.0,0.625,Castle Waiting Vol.i,65.15
+an antimilitarist comic tale mocking the Habsburg monarchy through a naive army private,The Good Soldier Svejk,glove,1.0,0.814,The Good Soldier Svejk,65.15
+a parentless lad learns spells from an old wizard while creatures from another dimension attack his homeland,Magician,glove-tfidf,5.0,0.802,The Enchantress Returns,62.7
+the celebrated pipe-smoking sleuth tracks a serial murderer of prostitutes in Victorian times,Dust and Shadow,glove-tfidf,16.0,0.715,The Murder on the Orient Express,62.7
+mariners whose vessel sank are seized as captives by Bedouin tribes and marched across scorching dunes,Skeletons on the Zahara : A True Story of Survival,glove-tfidf,3.0,0.671,Kon Tiki : Across the Pacific by Raft,62.7
+a chatty ginger-haired adopted child with a vivid fancy changes the lives of an elderly pair of siblings on a rural homestead,Anne of Green Gables,glove-tfidf,9.0,0.774,"Good Wives by Louisa May Alcott, Fiction, Family, Classics",62.7
+a Greek comic play from two thousand years ago showing what wives and mothers experienced,Lysistrata,glove-tfidf,271.0,0.819,Tyll,62.7
+an illustrated retelling where a bloodsucking aristocrat from the Carpathians stalks young ladies,Dracula,glove-tfidf,69.0,0.546,Castle Waiting Vol.i,62.7
+an antimilitarist comic tale mocking the Habsburg monarchy through a naive army private,The Good Soldier Svejk,glove-tfidf,1.0,0.791,The Good Soldier Svejk,62.7
+a parentless lad learns spells from an old wizard while creatures from another dimension attack his homeland,Magician,minilm,1.0,0.439,Magician,27.07
+the celebrated pipe-smoking sleuth tracks a serial murderer of prostitutes in Victorian times,Dust and Shadow,minilm,3.0,0.403,The Ruby in the Smoke : A Sally Lockhart Mystery,27.07
+mariners whose vessel sank are seized as captives by Bedouin tribes and marched across scorching dunes,Skeletons on the Zahara : A True Story of Survival,minilm,1.0,0.578,Skeletons on the Zahara : A True Story of Survival,27.07
+a chatty ginger-haired adopted child with a vivid fancy changes the lives of an elderly pair of siblings on a rural homestead,Anne of Green Gables,minilm,5.0,0.355,Simplicity Parenting,27.07
+a Greek comic play from two thousand years ago showing what wives and mothers experienced,Lysistrata,minilm,1.0,0.502,Lysistrata,27.07
+an illustrated retelling where a bloodsucking aristocrat from the Carpathians stalks young ladies,Dracula,minilm,32.0,0.3,Lysistrata,27.07
+an antimilitarist comic tale mocking the Habsburg monarchy through a naive army private,The Good Soldier Svejk,minilm,4.0,0.364,"Faust I & II, Volume 2 : Goethe's Collected Works",27.07
