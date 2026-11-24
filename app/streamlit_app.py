@@ -7,8 +7,7 @@ How to run it (from the ROOT of the repo):
 User journey:
     1. 5-step questionnaire (17 questions, the 5 question types required by the brief);
     2. Answers saved as timestamped JSON (data/responses/) + download;
-    3. Call to the engine: src.recommender.recommend(answers, top_k=3) (P4).
-       While P4's engine is not available, app/stub_recommender.py is used (same contract);
+    3. Call to the engine: src.recommender.recommend(answers, top_k=3) (P4);
     4. Results page: reader profile, explained top 3, score breakdown,
        semantic map of the catalogue, similarity heatmap ("how the score is obtained").
 
@@ -167,24 +166,16 @@ def get_books() -> pd.DataFrame:
 def get_engine_context() -> tuple[Any, pd.DataFrame | None, np.ndarray | None, str | None]:
     """(embedding engine, aligned catalogue, book matrix, error if any).
 
-    - If P4 is integrated: reuse the engine of its Recommender (singleton
-      get_recommender): a single SBERT model in memory, and a catalogue whose rows
-      are exactly aligned with the embedding matrix.
-    - Otherwise: P3's EmbeddingEngine.
+    Reuses the engine of P4's Recommender (singleton get_recommender): a single SBERT
+    model in memory, and a catalogue whose rows are exactly aligned with the embedding matrix.
     First launch: the model is downloaded (~90 MB), then the 12,000 books are encoded
     (a few minutes on CPU); afterwards everything is read back from data/embeddings/.
-    If something fails (no Internet, missing module…), the app keeps running in degraded mode.
+    If something fails (no Internet, spaCy blocked…), the app keeps running in degraded mode.
     """
     try:
-        try:
-            from src.recommender import get_recommender  # type: ignore  # P4
-            rec = get_recommender()
-            engine, books = rec.engine, rec.books
-        except ImportError:
-            from src.embeddings import EmbeddingEngine  # P3
-            books = get_books().reset_index(drop=True)
-            engine = EmbeddingEngine(books=books)
-        return engine, books, np.asarray(engine.book_matrix(), dtype=np.float32), None
+        from src.recommender import get_recommender
+        rec = get_recommender()
+        return rec.engine, rec.books, np.asarray(rec.engine.book_matrix(), dtype=np.float32), None
     except Exception as err:  # noqa: BLE001 - we want to show any error
         return None, None, None, f"{type(err).__name__}: {err}"
 
@@ -196,45 +187,32 @@ def get_engine() -> tuple[Any, str | None]:
 
 @st.cache_resource(show_spinner=False)
 def get_map_coords() -> np.ndarray | None:
-    """2D coordinates of the catalogue (P3's umap_2d.npy if present, otherwise computed and cached)."""
+    """2D coordinates of the catalogue, from P3's src/semantic_map.py.
+
+    load_umap returns None when umap_2d.npy is missing OR when its saved book_ids no longer
+    match the catalogue; in both cases the map is recomputed and saved, so the dots can never
+    silently point at the wrong books.
+    """
     engine, books, matrix, _ = get_engine_context()
     if engine is None:
         return None
-    return viz.load_or_compute_map_coords(matrix, books["book_id"].astype(str).tolist())
-
-
-def get_recommend_fn() -> tuple[Callable[..., Any], str]:
-    """P4's real engine if it exists, otherwise the stub. Returns (function, mode name)."""
-    try:
-        from src.recommender import recommend  # type: ignore  # provided by P4
-        return recommend, "P4 recommender"
-    except ImportError:
-        from app.stub_recommender import recommend
-        return recommend, "stub"
+    from src.semantic_map import compute_umap, load_umap, save_umap
+    book_ids = books["book_id"].astype(str).tolist()
+    coords = load_umap(book_ids)
+    if coords is None:
+        coords = compute_umap(matrix)
+        save_umap(coords, book_ids)
+    return coords
 
 
 def run_recommendation(answers: dict) -> dict[str, Any]:
-    """Call the engine and return {"profile", "recs", "mode", "warning"}.
-
-    If P4's engine raises an exception (integration in progress), fall back to the stub
-    with a visible warning rather than crashing during the demo.
-    """
-    fn, mode = get_recommend_fn()
-    engine, _ = get_engine()
-    warning = None
+    """Call P4's engine: {"profile", "recs", "error"}. An error is shown on the page, not raised."""
     try:
-        if mode == "stub":
-            _, ebooks, _, _ = get_engine_context()
-            profile, recs = fn(answers, top_k=3, engine=engine, books=ebooks if ebooks is not None else get_books())
-        else:
-            profile, recs = fn(answers, top_k=3)
-    except Exception as err:  # noqa: BLE001
-        from app.stub_recommender import recommend as stub
-        warning = f"The recommender raised {type(err).__name__}: {err}. Showing the stub results instead."
-        _, ebooks, _, _ = get_engine_context()
-        profile, recs = stub(answers, top_k=3, engine=engine, books=ebooks if ebooks is not None else get_books())
-        mode = "stub (fallback)"
-    return {"profile": profile, "recs": list(recs), "mode": mode, "warning": warning}
+        from src.recommender import recommend
+        profile, recs = recommend(answers, top_k=3)
+        return {"profile": profile, "recs": list(recs), "error": None}
+    except Exception as err:  # noqa: BLE001 - shown to the user instead of a Streamlit traceback
+        return {"profile": None, "recs": [], "error": f"{type(err).__name__}: {err}"}
 
 
 # --------------------------------------------------------------------------- #
@@ -682,7 +660,7 @@ def results_to_json(result: dict) -> str:
         if isinstance(obj, np.ndarray):
             return obj.tolist()
         return obj
-    return json.dumps({"answers": st.session_state.get("answers"), "mode": result["mode"],
+    return json.dumps({"answers": st.session_state.get("answers"),
                        "profile": clean(result["profile"]), "recommendations": clean(result["recs"])},
                       indent=2, ensure_ascii=False)
 
@@ -708,11 +686,11 @@ def page_results() -> None:
     engine, engine_err = get_engine()
 
     st.title("Three books picked for you")
-    if result["mode"].startswith("stub"):
-        st.warning("Temporary recommender (stub): the interface is final, but the scores will change once "
-                   "the real scoring engine (P4) is plugged in.")
-    if result["warning"]:
-        st.error(result["warning"])
+    if result["error"]:
+        st.error(f"The recommendation engine failed ({result['error']}). "
+                 "Check that `python -m scripts.prepare_app` runs without errors, then try again.")
+        st.button("Edit my answers", on_click=go_to, args=(0,))
+        return
     if engine_err:
         st.info(f"Semantic engine unavailable ({engine_err}): map and similarity heatmap are disabled.")
 
@@ -763,8 +741,10 @@ def page_results() -> None:
             q = (profile.query_vecs or {}).get("global")
             if q is None:
                 q = engine.encode([profile.query_texts.get("global", "")])[0]
-            sims = matrix @ np.asarray(q, dtype=np.float32).ravel()
-            user_xy, nn = viz.user_map_position(coords, sims, k=15)
+            from src.semantic_map import project_query
+            q = np.asarray(q, dtype=np.float32).ravel()
+            user_xy = tuple(project_query(q, matrix, coords, k=15))   # weighted mean of the 15 closest books
+            nn = np.argsort(-(matrix @ q))[:15]                         # the same 15 books, circled on the map
             eng_idx = {b: i for i, b in enumerate(ebooks["book_id"].astype(str))}
             hl = [eng_idx[str(r.book_id)] for r in recs if str(r.book_id) in eng_idx]
             fig = viz.similarity_map(coords, [viz.primary_genre(g) for g in ebooks["genres"]],

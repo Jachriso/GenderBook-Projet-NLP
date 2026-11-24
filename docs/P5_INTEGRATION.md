@@ -6,7 +6,6 @@
 |---|---|
 | `app/streamlit_app.py` | application (questionnaire 5 étapes + page résultats en 5 onglets) |
 | `app/questions.py` | contenu des 17 questions, personas de démo, validation, `answers.json` (sans Streamlit, testable) |
-| `app/stub_recommender.py` | remplaçant **provisoire** de `recommend()` (même contrat), supprimable quand P4 a livré |
 | `app/__init__.py` | permet `from app import ...` |
 | `src/viz.py` | les 5 figures (radar profil, radar comparé, barres empilées, carte 2D, heatmap) + export PNG |
 | `scripts/prepare_app.py` | pré-calcule embeddings + carte 2D et teste les personas (à lancer avant la démo) |
@@ -18,7 +17,7 @@
 | `.streamlit/config.toml` | thème clair de l'app |
 
 Lancement : `python -m scripts.prepare_app` (une fois) puis `streamlit run app/streamlit_app.py` depuis la racine.
-Lien direct vers un persona : `http://localhost:8501/?persona=Young%20fantasy%20fan`.
+Menu démo (personas, chargement d'un `answers.json`) : `http://localhost:8501/?demo=1` ; lien direct vers un persona : `?demo=1&persona=Young%20fantasy%20fan`.
 
 ## Intégration avec P4 (branche `p4-scoring`) : testée, compatible
 
@@ -32,15 +31,16 @@ Adaptations faites côté P5 pour suivre P4 :
 - l'app réutilise le moteur de `get_recommender()` : un seul modèle SBERT en mémoire, catalogue aligné ;
 - heatmap : lignes = `profile.block_phrases` (3 phrases max par bloc).
 
-Rien de bloquant à attendre de P4. Seul point : **merger `p4-scoring` dans `main`** ; tant que ce n'est pas fait,
-la branche `p5/streamlit` (partie de `main`) tourne avec le stub. `guided.standalone_only` est lu par P4 mais le
+P4 est mergé dans `main` et `main` est mergé dans `p5/streamlit` : l'app appelle directement `recommend()` et le
+remplaçant provisoire (stub) a été supprimé. `guided.standalone_only` est lu par P4 mais le
 dataset n'a pas d'info de série : la case reste, c'est une préférence douce.
 
 ## Ce que j'attends de P3
 
-- Rien de bloquant : `EmbeddingEngine` fonctionne avec l'app.
-- Si tu produis `data/embeddings/umap_2d.npy` (notebook 03), écris aussi `umap_2d_book_ids.json` (liste des `book_id` dans l'ordre des lignes) : sinon l'app vérifie seulement le nombre de lignes. Sans fichier, l'app calcule elle-même la carte (UMAP, ~1 min) et la met en cache.
-- Rappel : les `.npy` sont dans `.gitignore`, donc chacun doit lancer `python -m scripts.prepare_app` (ou le notebook 03) sur sa machine.
+- Rien de bloquant : l'app utilise directement les fonctions de P3 dans `src/semantic_map.py` (`load_umap`, `compute_umap`,
+  `save_umap`, `project_query`) et la carte `umap_2d.npy` + `umap_book_ids.json` committée dans `main`.
+- Si le catalogue change, `load_umap` détecte que les `book_id` ne correspondent plus : l'app recalcule la carte
+  au lieu d'afficher de mauvais livres.
 
 ## Ce que j'attends de P6
 
@@ -57,9 +57,8 @@ dataset n'a pas d'info de série : la case reste, c'est une préférence douce.
 
 ## Après l'intégration de P4 (ma checklist)
 
-- [ ] Après merge de P4 dans `main` puis de `main` dans `p5/streamlit` : vérifier « Recommender: P4 recommender » dans la barre latérale
+- [x] Merge de `main` (P3 + P4) dans `p5/streamlit` ; stub supprimé
 - [ ] `python -m scripts.prepare_app` sans erreur, 3 personas cohérents
 - [ ] Exécuter le notebook 05 (Run all) → figures `docs/figures/05_*.png`
 - [ ] `python -m scripts.capture_screens` → captures `05_screen_*.png` pour le notebook et les slides
 - [ ] Adapter les phrases du script de démo aux vrais résultats, puis enregistrer la vidéo de secours
-- [ ] Supprimer `app/stub_recommender.py` (ou le garder comme repli : l'app l'utilise si `recommend` plante)

@@ -5,16 +5,16 @@
 ## Avant la soutenance (la veille)
 1. `python -m scripts.prepare_app` : encode les livres et calcule la carte (sinon le premier lancement prend plusieurs minutes).
 2. `streamlit run app/streamlit_app.py`, ouvrir `http://localhost:8501`, faire un premier passage complet (le modèle est alors chargé en mémoire).
-3. Vérifier dans la barre latérale : « Recommender: **P4 recommender** » (et non « stub »).
+3. Vérifier qu'une recommandation s'affiche sans message d'erreur rouge (sinon relancer `prepare_app`).
 4. **Plan B** : enregistrer une vidéo de ce script (OBS ou l'enregistreur d'écran du système) et la garder sur le bureau.
-5. Garder un onglet ouvert sur `http://localhost:8501/?persona=Dark%20academia%20reader` (formulaire pré-rempli).
+5. Garder un onglet ouvert sur `http://localhost:8501/?demo=1&persona=Dark%20academia%20reader` (formulaire pré-rempli, menu « Demo mode » visible).
 
 ## Déroulé
 
 | Temps | Ce que je clique | Ce que je dis |
 |---|---|---|
 | 0:00 | Page d'accueil, étape 1 | « Voici le questionnaire. L'utilisateur décrit librement ce qu'il veut lire : c'est le cœur de l'analyse sémantique. » |
-| 0:10 | Barre latérale → persona *Dark academia reader* → **Fill form** | « Pour gagner du temps, je charge un lecteur type. Il veut un roman psychologique sur des étudiants rongés par la culpabilité, dans une vieille université. » |
+| 0:10 | Barre latérale → menu replié **Demo mode** → *Dark academia reader* → **Fill form** | « Pour gagner du temps, je charge un lecteur type. Il veut un roman psychologique sur des étudiants rongés par la culpabilité, dans une vieille université. » |
 | 0:25 | **Next** → étape 2, survoler la bulle ⓘ d'un thème | « Cases à cocher : genres et thèmes. Chaque label correspond à une phrase, c'est elle que le modèle compare au résumé des livres. » |
 | 0:40 | **Next** → étape 3, puis étape 4 | « Choix multiple : époque du récit, public, formats. Puis les échelles de Likert : elles deviennent des phrases et des poids, pas de simples nombres. » |
 | 0:55 | **Next** → étape 5 | « Questions guidées : l'auteur favori, Donna Tartt, est retrouvé dans le catalogue ; on l'exclut pour découvrir quelqu'un de nouveau. » |
@@ -29,4 +29,4 @@
 ## Si quelque chose casse
 - Aucun résultat → bouton « Relax the filters » (et le dire : « les filtres durs sont respectés »).
 - L'app est lente ou plante → passer à la vidéo sans s'excuser longuement.
-- Bannière jaune « stub » visible → le moteur final n'est pas branché : vérifier que `src/recommender.py` est bien sur la branche.
+- Message d'erreur rouge à la place des résultats → le moteur n'a pas chargé : relancer `python -m scripts.prepare_app` et lire l'erreur affichée.

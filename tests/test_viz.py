@@ -68,20 +68,3 @@ def test_similarity_heatmap_shape():
     sim = np.arange(6).reshape(2, 3) / 10
     fig = viz.similarity_heatmap(sim, ["r1", "r2"], ["c1", "c2", "c3"])
     assert np.asarray(fig.data[0].z).shape == (2, 3)
-
-
-def test_user_map_position_is_near_best_neighbours():
-    coords = np.array([[0, 0], [10, 10], [10.2, 9.8], [-5, 3]], dtype=float)
-    sims = np.array([0.1, 0.9, 0.85, 0.0])
-    (x, y), nn = viz.user_map_position(coords, sims, k=2)
-    assert set(nn) == {1, 2}
-    assert 9.9 < x < 10.3 and 9.7 < y < 10.1
-
-
-def test_map_coords_pca_and_cache(tmp_path):
-    m = np.random.default_rng(1).normal(size=(50, 8)).astype(np.float32)
-    ids = [str(i) for i in range(50)]
-    c1 = viz.load_or_compute_map_coords(m, ids, path=tmp_path / "umap_2d.npy", method="pca")
-    assert c1.shape == (50, 2)
-    c2 = viz.load_or_compute_map_coords(m * 0, ids, path=tmp_path / "umap_2d.npy", method="pca")
-    np.testing.assert_allclose(c1, c2)               # read back from the cache (not recomputed)

@@ -15,17 +15,14 @@ Figures (PLAN §11.5):
     similarity_map(coords, genres, ...)      2D map of the catalogue (UMAP / PCA) + user + top 3
     similarity_heatmap(sim, rows, cols)      cosine between user sentences × the book's labels/sentences
 
-Data helpers (for the map):
-    compute_map_coords(matrix)               2D projection (UMAP if installed, otherwise PCA)
-    load_or_compute_map_coords(...)          reads data/embeddings/umap_2d.npy (P3) or computes it + caches it
-    user_map_position(coords, sims)          user position = barycentre of their k closest books
+The map's 2D coordinates and the user's position come from P3's src/semantic_map.py
+(load_umap / compute_umap / project_query): this module only draws them.
 
 Readability choice: ONE FIXED colour per block in every figure (Genre is always
 blue, Themes always green…), so that the reader can link one chart to the next.
 """
 from __future__ import annotations
 
-import json
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
@@ -338,7 +335,7 @@ def similarity_map(
         genres: main genre of each book (N,); rare genres are grouped into "Other".
         titles: titles (N,) shown on hover.
         highlight: indices of the recommended books (numbered stars).
-        user_xy: position of the user (see user_map_position).
+        user_xy: position of the user (src.semantic_map.project_query).
         neighbours: indices of the query's nearest neighbours (circled).
         max_points: subsampling to keep the app responsive (12,000 points still work,
             but 6,000 are enough to see the structure; highlighted books are always drawn).
@@ -496,86 +493,8 @@ def score_gauge(score: float, label: str = "", height: int = 170) -> go.Figure:
 
 
 # --------------------------------------------------------------------------- #
-# 7. Map data: 2D projection and user position
+# 7. Map helper (the 2D coordinates themselves come from P3's src/semantic_map.py)
 # --------------------------------------------------------------------------- #
-
-def compute_map_coords(matrix: np.ndarray, method: str = "auto", seed: int = config.RANDOM_SEED) -> np.ndarray:
-    """Project the (N, d) embeddings to 2D.
-
-    method = "umap" (keeps neighbourhoods: best map, ~30-60 s for 12,000 books),
-    "pca" (instant, linear: less distinct clusters) or "auto" (UMAP if installed, otherwise PCA).
-    UMAP uses the cosine metric, consistent with the rest of the engine.
-    """
-    matrix = np.asarray(matrix, dtype=np.float32)
-    if method in ("auto", "umap"):
-        try:   # P3's version (frozen UMAP layout: same map for every team member)
-            from src.semantic_map import compute_umap  # type: ignore
-
-            return compute_umap(matrix, seed=seed)
-        except ImportError:
-            pass
-        except Exception:  # noqa: BLE001 - e.g. spaCy blocked by Windows when src.embeddings is imported
-            pass
-        try:
-            import umap  # type: ignore
-
-            reducer = umap.UMAP(n_neighbors=15, min_dist=0.1, metric="cosine", random_state=seed)
-            return reducer.fit_transform(matrix).astype(np.float32)
-        except ImportError:
-            if method == "umap":
-                raise
-    # PCA through SVD (numpy only, no extra dependency)
-    centered = matrix - matrix.mean(axis=0, keepdims=True)
-    _, _, vt = np.linalg.svd(centered, full_matrices=False)
-    return (centered @ vt[:2].T).astype(np.float32)
-
-
-def load_or_compute_map_coords(
-    matrix: np.ndarray,
-    book_ids: Sequence[str],
-    path: Path | str = config.DATA_EMBEDDINGS / "umap_2d.npy",
-    method: str = "auto",
-) -> np.ndarray:
-    """2D coordinates aligned with the catalogue: read from disk if valid, otherwise computed and cached.
-
-    umap_2d.npy is normally produced by P3 (notebook 03, src/semantic_map.save_umap). To guarantee
-    that row i ↔ book i, we check the companion file umap_book_ids.json written next to it
-    (same convention as P3) or, if it does not exist, that the number of rows matches.
-    """
-    path = Path(path)
-    ids_path = path.parent / "umap_book_ids.json"          # same file name as src/semantic_map.py (P3)
-    ids = [str(b) for b in book_ids]
-    if path.exists():
-        coords = np.load(path)
-        aligned = coords.shape == (len(ids), 2)
-        if aligned and ids_path.exists():
-            aligned = json.loads(ids_path.read_text(encoding="utf-8")) == ids
-        if aligned:
-            return coords
-    coords = compute_map_coords(matrix, method=method)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    np.save(path, coords)
-    ids_path.write_text(json.dumps(ids), encoding="utf-8")
-    return coords
-
-
-def user_map_position(coords: np.ndarray, sims: np.ndarray, k: int = 15) -> tuple[tuple[float, float], np.ndarray]:
-    """Place the user on the map = cosine-weighted barycentre of their k closest books.
-
-    Why not umap.transform: we would have to keep the fitted UMAP object (heavy, not saved
-    by P3) and the result would be unstable. The nearest-neighbour barycentre is simple,
-    deterministic and faithful to the idea "you are where the books that resemble you are".
-
-    Returns:
-        ((x, y), indices of the k neighbours)
-    """
-    sims = np.asarray(sims, dtype=float)
-    k = int(min(k, len(sims)))
-    nn = np.argsort(-sims)[:k]
-    w = np.clip(sims[nn], 1e-6, None) ** 2      # emphasise the closest ones
-    xy = (coords[nn] * w[:, None]).sum(axis=0) / w.sum()
-    return (float(xy[0]), float(xy[1])), nn
-
 
 def primary_genre(genres: Any) -> str:
     """First genre of a list (P2's `genres` column), 'Unknown' if empty."""
@@ -618,6 +537,5 @@ def export_all(figures: Mapping[str, go.Figure], **kwargs: Any) -> list[Path]:
 __all__: Iterable[str] = [
     "COMPONENT_COLORS", "BOOK_COLORS", "normalize_key", "normalize_scores",
     "radar_profile", "radar_compare", "score_breakdown", "similarity_map", "similarity_heatmap",
-    "weights_bar", "score_gauge", "compute_map_coords", "load_or_compute_map_coords",
-    "user_map_position", "primary_genre", "save_figure", "export_all",
+    "weights_bar", "score_gauge", "primary_genre", "save_figure", "export_all",
 ]
