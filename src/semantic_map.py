@@ -71,9 +71,18 @@ def compute_umap(book_matrix: np.ndarray, n_neighbors: int = 15, min_dist: float
     ce voisinage. min_dist règle l'écartement des points dans les groupes.
     random_state fixe le résultat (même carte à chaque exécution, au prix du parallélisme).
     """
+    import inspect
+
     import umap  # import lourd (numba) : seulement ici
-    reducer = umap.UMAP(n_neighbors=n_neighbors, min_dist=min_dist, metric="cosine",
-                        n_components=2, random_state=seed)
+    params = dict(n_neighbors=n_neighbors, min_dist=min_dist, metric="cosine",
+                  n_components=2, random_state=seed)
+    # umap-learn >= 0.6 annonce un changement d'algorithme par défaut dans une future version.
+    # On FIGE l'algorithme actuel pour que la carte reste identique quelle que soit la version
+    # installée par un membre de l'équipe (reproductibilité). Les versions plus anciennes
+    # n'ont pas ce paramètre et utilisent déjà cet algorithme.
+    if "compatibility_layout" in inspect.signature(umap.UMAP.__init__).parameters:
+        params["compatibility_layout"] = True
+    reducer = umap.UMAP(**params)
     return reducer.fit_transform(book_matrix).astype(np.float32)
 
 
@@ -137,3 +146,43 @@ def genre_silhouette(book_matrix: np.ndarray, labels: Sequence[str], sample: int
     if len(np.unique(labels[idx])) < 2:
         return float("nan")
     return float(silhouette_score(book_matrix[idx], labels[idx], metric="cosine"))
+
+
+def genre_neighbor_agreement(book_matrix: np.ndarray, genres: Sequence[Sequence[str]], k: int = 10,
+                             sample: int = 2000, seed: int = config.RANDOM_SEED) -> dict:
+    """Part des k plus proches voisins d'un livre qui partagent AU MOINS UN de ses genres,
+    comparée à k livres tirés au hasard.
+
+    Plus adaptée que la silhouette à des genres MULTIPLES et qui se CHEVAUCHENT (un livre peut
+    être à la fois « Thriller » et « Historical Fiction ») : on ne demande pas des frontières
+    nettes, seulement que les voisins sémantiques aient plus souvent un genre en commun que
+    des livres pris au hasard.
+
+    Retourne {"knn": part chez les voisins, "random": part au hasard, "lift": knn / random,
+              "per_genre": {genre: part chez les voisins des livres de ce genre}}.
+    """
+    rng = np.random.default_rng(seed)
+    sets = [set(g) if g is not None else set() for g in genres]
+    has_genre = np.flatnonzero([len(s) > 0 for s in sets])
+    idx = rng.choice(has_genre, min(sample, len(has_genre)), replace=False)
+
+    sims = book_matrix[idx] @ book_matrix.T                   # (échantillon, N)
+    sims[np.arange(len(idx)), idx] = -np.inf                  # un livre n'est pas son propre voisin
+    nn = np.argpartition(-sims, k, axis=1)[:, :k]             # k plus proches voisins
+
+    knn_share, rand_share = [], []
+    per_genre: dict[str, list[float]] = {}
+    for row, i in enumerate(idx):
+        mine = sets[i]
+        share = np.mean([len(mine & sets[j]) > 0 for j in nn[row]])
+        rand = rng.choice(len(sets), k, replace=False)
+        knn_share.append(share)
+        rand_share.append(np.mean([len(mine & sets[j]) > 0 for j in rand]))
+        for g in mine:
+            per_genre.setdefault(g, []).append(share)
+    knn, rnd = float(np.mean(knn_share)), float(np.mean(rand_share))
+    return {"k": k, "n_books": int(len(idx)), "knn": round(knn, 3), "random": round(rnd, 3),
+            "lift": round(knn / max(rnd, 1e-9), 2),
+            "per_genre": {g: round(float(np.mean(v)), 3)
+                          for g, v in sorted(per_genre.items(), key=lambda kv: -np.mean(kv[1]))
+                          if len(v) >= 30}}

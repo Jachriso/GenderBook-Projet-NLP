@@ -3,7 +3,8 @@ Analyses de l'espace sémantique sur le catalogue complet (MiniLM, cache des 12 
 
     A. Distribution des cosinus : catalogue entier vs 300 candidats (justifie la calibration de P4).
     B. Carte UMAP 2D, colorée par genre (pour la « carte de similarité » de P5).
-    C. Score silhouette par genre (les genres forment-ils des régions distinctes ?).
+    C. Score silhouette par genre (les genres forment-ils des régions séparées ?).
+    D. Voisins qui partagent un genre (mesure adaptée à des genres multiples qui se chevauchent).
 
 Lancer depuis la racine du repo (environ 1 à 2 minutes ; le cache MiniLM doit exister,
 sinon il est recalculé, ~7 min) :
@@ -13,6 +14,7 @@ Sorties :
     data/embeddings/umap_2d.npy + umap_book_ids.json   (réutilisés par l'app de P5)
     docs/figures/p3_cosine_distribution.png + .json
     docs/figures/p3_umap_genres.png
+    docs/figures/p3_genre_neighbors.json
 """
 from __future__ import annotations
 
@@ -23,8 +25,8 @@ import numpy as np
 
 from src import config
 from src.embeddings import EmbeddingEngine
-from src.semantic_map import (compute_umap, cosine_distribution, genre_silhouette, load_umap,
-                              project_query, save_umap)
+from src.semantic_map import (compute_umap, cosine_distribution, genre_neighbor_agreement,
+                              genre_silhouette, load_umap, project_query, save_umap)
 from scripts.p3_build_embeddings import FAMOUS_QUERIES
 from scripts.p3_compare_encoders import QUERIES
 
@@ -126,8 +128,23 @@ def main(engine: EmbeddingEngine | None = None, force_umap: bool = False) -> dic
     print(f"\nC. SILHOUETTE PAR GENRE (cosinus, 3 000 livres) : {sil:.3f}")
     print("   (1 = genres parfaitement séparés, 0 = genres qui se chevauchent)")
 
+
+    # Mesure adaptée à des genres multiples qui se chevauchent : les voisins partagent-ils un genre ?
+    all_genres = [list(g) if g is not None else [] for g in
+                  (genres if genres is not None else [None] * len(books))]
+    agree = genre_neighbor_agreement(M, all_genres)
+    print(f"\nD. VOISINS QUI PARTAGENT UN GENRE ({agree['n_books']} livres, k = {agree['k']}, tous les genres de P2)")
+    print(f"   10 plus proches voisins : {100 * agree['knn']:.1f} % partagent au moins un genre")
+    print(f"   10 livres au hasard     : {100 * agree['random']:.1f} %  -> {agree['lift']:.1f} fois plus que le hasard")
+    print("   Par genre (part des voisins qui partagent un genre) :")
+    for g, v in list(agree["per_genre"].items()):
+        print(f"     {g:<28} {100 * v:5.1f} %")
+    (config.FIGURES_DIR / "p3_genre_neighbors.json").write_text(
+        json.dumps({**agree, "silhouette": round(sil, 4), "model": engine.model_name}, indent=2),
+        encoding="utf-8")
+
     print("\nFigures : docs/figures/p3_cosine_distribution.png, docs/figures/p3_umap_genres.png")
-    return {"distribution": stats, "silhouette": sil, "top_genres": top_genres}
+    return {"distribution": stats, "silhouette": sil, "top_genres": top_genres, "neighbors": agree}
 
 
 if __name__ == "__main__":

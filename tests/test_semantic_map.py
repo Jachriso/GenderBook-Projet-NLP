@@ -2,8 +2,8 @@
 import numpy as np
 
 from src.embeddings import l2_normalize
-from src.semantic_map import (cosine_distribution, genre_silhouette, load_umap, project_query,
-                              save_umap)
+from src.semantic_map import (cosine_distribution, genre_neighbor_agreement, genre_silhouette, load_umap,
+                              project_query, save_umap)
 
 RNG = np.random.default_rng(0)
 M = l2_normalize(RNG.normal(size=(1000, 16)))
@@ -44,3 +44,14 @@ def test_genre_silhouette_separated_vs_random():
     X, labels = np.vstack([a, b]), ["A"] * 50 + ["B"] * 50
     assert genre_silhouette(X, labels, min_count=10) > 0.8           # deux genres bien séparés
     assert abs(genre_silhouette(M[:200], ["A", "B"] * 100, min_count=10)) < 0.1  # au hasard
+
+
+def test_genre_neighbor_agreement_clustered_vs_random():
+    # deux genres placés dans deux directions opposées : les voisins partagent toujours le genre
+    a = l2_normalize(np.c_[np.ones(100), RNG.normal(0, 0.05, (100, 3))])
+    b = l2_normalize(np.c_[-np.ones(100), RNG.normal(0, 0.05, (100, 3))])
+    X = np.vstack([a, b])
+    genres = [["A"]] * 100 + [["B", "C"]] * 100
+    r = genre_neighbor_agreement(X, genres, k=5, sample=200)
+    assert r["knn"] == 1.0 and 0.3 < r["random"] < 0.7 and r["lift"] > 1.4
+    assert set(r["per_genre"]) == {"A", "B", "C"}

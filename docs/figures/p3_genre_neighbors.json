@@ -1,0 +1,32 @@
+{
+  "k": 10,
+  "n_books": 2000,
+  "knn": 0.793,
+  "random": 0.379,
+  "lift": 2.09,
+  "per_genre": {
+    "Romance": 0.876,
+    "Thriller & Suspense": 0.849,
+    "Business & Economics": 0.844,
+    "Fantasy": 0.844,
+    "Literary Fiction": 0.842,
+    "Mystery & Detective": 0.835,
+    "Horror": 0.821,
+    "Philosophy & Religion": 0.801,
+    "Classics": 0.791,
+    "Historical Fiction": 0.783,
+    "Self-help & Psychology": 0.779,
+    "Science Fiction": 0.775,
+    "Poetry & Drama": 0.774,
+    "Children's": 0.774,
+    "Graphic Novels & Comics": 0.764,
+    "Young Adult": 0.76,
+    "Humour": 0.751,
+    "History": 0.694,
+    "Science & Nature": 0.685,
+    "Biography & Memoir": 0.641,
+    "Cooking & Lifestyle": 0.596
+  },
+  "silhouette": -0.0067,
+  "model": "sentence-transformers/all-MiniLM-L6-v2"
+}
