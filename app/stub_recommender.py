@@ -1,7 +1,7 @@
 """
 stub_recommender.py: TEMPORARY stand-in for src/recommender.recommend (Person 5).
 
-⚠️ This is NOT the project's recommendation engine (that is P4's work).
+This is NOT the project's recommendation engine (that is P4's work).
 It is only used to develop and test the app while src/recommender.py does not exist.
 As soon as P4's `recommend(answers, top_k)` is available, the app uses it
 automatically (see get_recommend_fn in streamlit_app.py) and this file is no longer used.

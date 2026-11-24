@@ -34,8 +34,8 @@ async def capture(url: str, persona: str, height: int) -> None:
             if i < len(steps) - 1:
                 await page.get_by_role("button", name="Next →").click()
                 await page.wait_for_timeout(1500)
-        await page.get_by_role("button", name="See my recommendations ✨").click()
-        await page.wait_for_selector("text=Your recommendations", timeout=600_000)
+        await page.get_by_role("button", name="See my recommendations").click()
+        await page.wait_for_selector("text=Three books picked for you", timeout=600_000)
         await page.wait_for_timeout(6000)
         await page.screenshot(path=str(OUT / "05_screen_6_top3.png"))
         for tab in TABS:

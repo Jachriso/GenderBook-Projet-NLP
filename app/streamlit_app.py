@@ -48,21 +48,100 @@ STRETCH: dict[str, Any] = {"width": "stretch"} if _ST_VERSION >= (1, 50) else {"
 # legends and changes the colours, which would break the colour scheme shared by the figures).
 CHART: dict[str, Any] = {**STRETCH, "theme": None}
 
-st.set_page_config(page_title="GenderBook · semantic book recommender", page_icon="📚",
+# App name chosen by the team (the repository keeps its original name, GenderBook)
+APP_NAME = "The Bibliophile's Quest"
+
+# Logo (gold "Bibliophile" crest, background made transparent) and browser-tab icon
+ASSETS = Path(__file__).resolve().parent / "assets"
+LOGO_PATH = ASSETS / "bibliophile_logo.png"
+FAVICON_PATH = ASSETS / "favicon.png"
+
+
+def _page_icon() -> Any:
+    """The favicon image if it is there, otherwise a book emoji (never crash on a missing file)."""
+    try:
+        from PIL import Image
+        return Image.open(FAVICON_PATH)
+    except (ImportError, OSError):
+        return "📚"
+
+
+st.set_page_config(page_title=f"{APP_NAME}: find your next book", page_icon=_page_icon(),
                    layout="wide", initial_sidebar_state="expanded")
 
-# Small stylesheet: badges, label chips, quote of the closest sentence
+# "Reading room" stylesheet: banker's-lamp green, brass and paper, with a soft lamp glow at
+# the top of the page. Literata (a serif designed for reading books) for headings, titles and
+# quotes; Nunito (rounded, friendly) for the interface. Same palette as src/viz.py.
+# If Google Fonts cannot be reached, the browser falls back to Georgia / Segoe UI.
 st.markdown("""
 <style>
-.gb-chip{display:inline-block;padding:2px 10px;margin:2px 6px 2px 0;border-radius:12px;
-         font-size:.78rem;color:#fff;white-space:nowrap}
-.gb-badge{display:inline-block;padding:3px 12px;border-radius:6px;font-weight:600;color:#fff;font-size:.85rem}
-.gb-quote{border-left:4px solid #2F6FDE;padding:.45rem .9rem;margin:.4rem 0 .6rem 0;
-          background:rgba(47,111,222,.07);font-style:italic;border-radius:0 6px 6px 0}
-.gb-cover{width:100%;max-width:170px;border-radius:6px;box-shadow:0 2px 10px rgba(0,0,0,.18)}
-.gb-nocover{width:100%;max-width:170px;aspect-ratio:2/3;border-radius:6px;background:#E9ECEF;
-            display:flex;align-items:center;justify-content:center;font-size:3rem}
-.gb-synopsis mark{background:#FFE58A;padding:0 2px;border-radius:3px}
+@import url('https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;0,7..72,700;1,7..72,400&family=Nunito:wght@400;600;700&display=swap');
+:root{--gb-paper:#FBF8F1;--gb-green:#23493A;--gb-glass:#E3EBE1;--gb-brass:#B8892E;
+      --gb-ink:#2B2620;--gb-line:#E6DDCB;--gb-oxblood:#9E3B32}
+
+/* Base: paper background lit by a reading lamp */
+[data-testid="stAppViewContainer"]{
+  background:radial-gradient(ellipse 70% 38% at 50% -6%, rgba(232,196,120,.30), transparent 70%), var(--gb-paper)}
+[data-testid="stHeader"]{background:transparent}
+html, body, [data-testid="stAppViewContainer"] p, [data-testid="stAppViewContainer"] li,
+[data-testid="stAppViewContainer"] label, [data-testid="stSidebar"] p, button, input, textarea{
+  font-family:'Nunito','Segoe UI',sans-serif}
+h1, h2, h3, h4{font-family:'Literata',Georgia,serif !important;color:var(--gb-green) !important;
+  letter-spacing:-.01em}
+h1{font-weight:700 !important}
+
+/* Sidebar: green glass of a banker's lamp */
+[data-testid="stSidebar"]{background:var(--gb-glass);border-right:1px solid #CFDCCB}
+
+/* Tighter top spacing: Streamlit leaves ~6rem above the page and a tall header above the sidebar */
+.block-container, [data-testid="stMainBlockContainer"]{padding-top:2.2rem !important}
+[data-testid="stSidebarUserContent"]{padding-top:0 !important}
+[data-testid="stSidebarHeader"]{height:2.5rem !important;min-height:0 !important;padding-top:.5rem !important;
+  padding-bottom:0 !important}
+[data-testid="stSidebar"] .stButton button{justify-content:flex-start}
+[data-testid="stSidebar"] .stButton button div{text-align:left}
+
+/* Text fields look like writing paper */
+textarea, input[type="text"]{background:#FFFDF8 !important;border-color:var(--gb-line) !important}
+textarea:focus, input[type="text"]:focus{border-color:var(--gb-brass) !important;
+  box-shadow:0 0 0 2px rgba(184,137,46,.25) !important}
+
+/* Cards (st.container(border=True)) */
+[data-testid="stVerticalBlockBorderWrapper"]{border-color:var(--gb-line) !important;border-radius:10px;
+  background:#FFFDF8}
+
+/* Welcome headline */
+.gb-hero{margin:0 0 1.6rem 0}
+.gb-hero h1{font-size:2.7rem;line-height:1.12;margin:0 0 .6rem 0;padding-top:0}
+.gb-hero p{font-size:1.08rem;line-height:1.6;color:var(--gb-ink);max-width:42rem}  /* readable line length */
+.gb-step{color:var(--gb-brass);font-weight:700;font-size:.9rem;margin-bottom:-.6rem}
+
+/* Match level as a library stamp: the one playful element of the page */
+.gb-stamp{display:inline-block;font-family:'Literata',Georgia,serif;font-weight:700;font-size:.82rem;
+  padding:1px 10px;border:2px solid currentColor;border-radius:4px;transform:rotate(-4deg);
+  margin-left:.4rem;background:rgba(255,253,248,.7)}
+
+/* Label chips: tinted, in the colour of their block */
+.gb-chip{display:inline-block;padding:2px 10px;margin:3px 6px 3px 0;border-radius:12px;
+  font-size:.8rem;font-weight:600;white-space:nowrap;border:1px solid}
+
+/* Closest sentence, set like a quotation in a book */
+.gb-quote{border-left:3px solid var(--gb-brass);padding:.5rem 1rem;margin:.5rem 0 .8rem 0;
+  background:rgba(184,137,46,.08);border-radius:0 8px 8px 0;font-family:'Literata',Georgia,serif;
+  font-style:italic;line-height:1.6}
+.gb-quote small{font-family:'Nunito','Segoe UI',sans-serif;font-style:normal;color:#7A7064}
+
+/* Covers sit like books on a shelf */
+.gb-cover{width:100%;max-width:170px;aspect-ratio:2/3;object-fit:cover;border-radius:2px 6px 6px 2px;
+  box-shadow:0 8px 18px rgba(60,40,20,.28);
+  background:linear-gradient(90deg,#1C3A2E 0 8%,#23493A 8%)}  /* green cloth binding if the image fails */
+.gb-nocover{width:100%;max-width:170px;aspect-ratio:2/3;border-radius:2px 6px 6px 2px;
+  background:linear-gradient(90deg,#1C3A2E 0 8%,#23493A 8%);color:#E8D9B0;display:flex;
+  align-items:center;justify-content:center;font-size:2.6rem;box-shadow:0 8px 18px rgba(60,40,20,.28)}
+.gb-synopsis{font-family:'Literata',Georgia,serif;line-height:1.7}
+.gb-synopsis mark{background:#F1DFA8;padding:0 2px;border-radius:3px}
+
+@media (max-width:640px){.gb-hero h1{font-size:2rem}}
 </style>
 """, unsafe_allow_html=True)
 
@@ -181,6 +260,12 @@ if _qp in Q.DEMO_PERSONAS and not st.session_state.get("_persona_from_url"):
     for _k, _v in Q.persona_state(_qp, BLOCKS).items():
         st.session_state[_k] = _v
 
+# The demo tools are only shown with ?demo=1 in the link (e.g. http://localhost:8501/?demo=1).
+# The flag is kept in the session so the menu stays visible while navigating between steps.
+if str(st.query_params.get("demo", "")).lower() in ("1", "true", "yes"):
+    st.session_state._demo_enabled = True
+DEMO_ENABLED = bool(st.session_state.get("_demo_enabled", False))
+
 
 def form_state() -> dict[str, Any]:
     return {k: st.session_state.get(k, v) for k, v in DEFAULTS.items()}
@@ -249,39 +334,40 @@ def relax_filters() -> None:
 # 3. Sidebar: progress, demo mode, engine status
 # --------------------------------------------------------------------------- #
 with st.sidebar:
-    st.markdown("## 📚 GenderBook")
-    st.caption("Semantic book recommendation · NLP project ECE ING5")
+    if LOGO_PATH.exists():
+        _, logo_col, _ = st.columns([1, 1.6, 1])          # small crest, centred
+        logo_col.image(str(LOGO_PATH), **STRETCH)
+    st.markdown(f"## {APP_NAME}")
+    st.caption("A semantic book recommender, ECE ING5 NLP project")
     step = st.session_state.step
     st.progress(min(step, RESULTS_STEP) / RESULTS_STEP,
                 text="Results" if step == RESULTS_STEP else f"Step {step + 1} / {RESULTS_STEP}")
     for i, name in enumerate(Q.STEPS):
-        icon = "✅" if i < step else ("👉" if i == step else "▫️")
-        st.button(f"{icon} {name}", key=f"nav_{i}", on_click=go_to, args=(i,),
-                  **STRETCH, type="tertiary" if hasattr(st, "badge") else "secondary")
+        # Done steps get a plain tick, the current step is the highlighted (primary) button
+        quiet = "tertiary" if hasattr(st, "badge") else "secondary"
+        st.button(f"✓ {name}" if i < step else name, key=f"nav_{i}", on_click=go_to, args=(i,),
+                  **STRETCH, type="primary" if i == step else quiet)
 
-    st.divider()
-    st.markdown("**Demo mode**")
-    persona = st.selectbox("Persona", list(Q.DEMO_PERSONAS), key="demo_persona",
-                           label_visibility="collapsed")
-    c1, c2 = st.columns(2)
-    c1.button("Fill form", on_click=lambda: load_state(Q.persona_state(persona, BLOCKS)),
-              **STRETCH, help="Pre-fill the questionnaire with this persona.")
-    c2.button("Results ▶", on_click=lambda: load_state(Q.persona_state(persona, BLOCKS), True),
-              **STRETCH, type="primary", help="Fill and go straight to the results.")
+    # Demo tools, folded away at the bottom of the sidebar and only shown with ?demo=1:
+    # a user goes straight to the questions, the presenter can still pre-fill a persona
+    # or reload a saved answers.json.
+    if DEMO_ENABLED:
+        st.divider()
+        with st.expander("Demo mode"):
+            persona = st.selectbox("Persona", list(Q.DEMO_PERSONAS), key="demo_persona")
+            c1, c2 = st.columns(2)
+            c1.button("Fill form", on_click=lambda: load_state(Q.persona_state(persona, BLOCKS)),
+                      **STRETCH, help="Pre-fill the questionnaire with this persona.")
+            c2.button("Results ▶", on_click=lambda: load_state(Q.persona_state(persona, BLOCKS), True),
+                      **STRETCH, help="Fill and go straight to the results.")
 
-    uploaded = st.file_uploader("Load an answers.json", type="json")
-    if uploaded is not None and st.button("Load these answers", **STRETCH):
-        try:
-            load_state(Q.state_from_answers(json.load(uploaded), BLOCKS))
-            st.rerun()
-        except (ValueError, KeyError, TypeError) as err:
-            st.error(f"Invalid file: {err}")
-
-    st.divider()
-    _, mode_name = get_recommend_fn()
-    st.caption(f"Recommender: **{mode_name}**"
-               + (" ⚠️ (temporary, waiting for P4)" if mode_name == "stub" else ""))
-    st.caption(f"Embedding model: `{config.EMBEDDING_MODEL.split('/')[-1]}`")
+            uploaded = st.file_uploader("Load an answers.json", type="json")
+            if uploaded is not None and st.button("Load these answers", **STRETCH):
+                try:
+                    load_state(Q.state_from_answers(json.load(uploaded), BLOCKS))
+                    st.rerun()
+                except (ValueError, KeyError, TypeError) as err:
+                    st.error(f"Invalid file: {err}")
 
 
 # --------------------------------------------------------------------------- #
@@ -290,7 +376,7 @@ with st.sidebar:
 
 def show_errors() -> None:
     for e in st.session_state.errors:
-        st.error(e, icon="⚠️")
+        st.error(e)
 
 
 def nav_buttons(last: bool = False) -> None:
@@ -299,22 +385,28 @@ def nav_buttons(last: bool = False) -> None:
     if st.session_state.step > 0:
         c1.button("← Back", on_click=go_back, **STRETCH)
     if last:
-        c3.button("See my recommendations ✨", on_click=submit, type="primary", **STRETCH)
+        c3.button("See my recommendations", on_click=submit, type="primary", **STRETCH)
     else:
         c3.button("Next →", on_click=go_next, type="primary", **STRETCH)
+
+
+def step_heading(i: int) -> None:
+    """Small "Step i of 5" line in brass, then the step title in Literata."""
+    st.markdown(f'<p class="gb-step">Step {i + 1} of {len(Q.STEPS)}</p>', unsafe_allow_html=True)
+    st.subheader(Q.STEPS[i])
 
 
 def likert(key: str, question: str, left: str, right: str) -> None:
     """Likert scale 1-5 with labels at both ends (required question type)."""
     st.markdown(f"**{question}**")
     c1, c2, c3 = st.columns([1.7, 3.6, 1.7], vertical_alignment="center")
-    c1.caption(f"1 · {left}")
+    c1.caption(f"1: {left}")
     c2.slider(question, 1, 5, key=key, label_visibility="collapsed")
-    c3.caption(f"5 · {right}")
+    c3.caption(f"5: {right}")
 
 
 def step_free_text() -> None:
-    st.subheader("1 · Tell us about your reading")
+    step_heading(0)
     st.caption("Write freely, in English: your words are analysed **semantically** (by meaning, not by "
                "keywords), so a description like *“an old university in the rain”* can match a book "
                "that never uses those words.")
@@ -336,7 +428,7 @@ def checkbox_grid(labels: dict[str, str], key_fn: Callable[[str], str], n_cols: 
 
 
 def step_genres_themes() -> None:
-    st.subheader("2 · Genres & themes")
+    step_heading(1)
     st.caption("Tick as many as you like. Hover the ⓘ to see the sentence the semantic engine uses for "
                "each label.")
     st.markdown("**Q5. Which genres do you enjoy?**")
@@ -348,7 +440,7 @@ def step_genres_themes() -> None:
 
 
 def step_context() -> None:
-    st.subheader("3 · Context")
+    step_heading(2)
     c1, c2 = st.columns([1.2, 1])
     with c1:
         era_options = [Q.NO_PREFERENCE] + [e for e in Q.ERA_LABELS if e in BLOCKS["Atmosphere"]]
@@ -363,7 +455,7 @@ def step_context() -> None:
 
 
 def step_likert() -> None:
-    st.subheader("4 · Your taste")
+    step_heading(3)
     st.caption("Your answers are turned into sentences (e.g. 5/5 complexity → *“a complex, dense, literary "
                "narrative”*) and compared semantically with the books, not used as raw numbers.")
     c1, c2 = st.columns(2, gap="large")
@@ -380,7 +472,7 @@ def step_likert() -> None:
 
 
 def step_guided() -> None:
-    st.subheader("5 · A few guided questions")
+    step_heading(4)
     st.radio("Q15. Do you have a favourite author?", ("Yes", "No"), key="q15_has_author", horizontal=True)
     if st.session_state.q15_has_author == "Yes":
         st.text_input("Who is it?", key="q15_author", placeholder="e.g. Donna Tartt")
@@ -390,7 +482,7 @@ def step_guided() -> None:
             found = find_author(get_books(), name)
             if found:
                 n = len(get_books_by_author(get_books(), found))
-                st.success(f"Found in the catalogue: **{found}** ({n} book{'s' * (n > 1)}).", icon="✅")
+                st.success(f"Found in the catalogue: **{found}** ({n} book{'s' * (n > 1)}).")
             else:
                 st.info("This author is not in our catalogue: we will rely on your descriptions only.")
         st.checkbox("Q17. Exclude books by this author (I want to discover someone new)", key="q17_exclude")
@@ -411,8 +503,9 @@ def chips(labels: dict[str, list[tuple[str, float]]]) -> str:
     for block in viz.BLOCK_ORDER:
         for label, score in labels.get(block, []) or []:
             color = viz.COMPONENT_COLORS.get(block, "#666")
-            out.append(f'<span class="gb-chip" style="background:{color}" title="{block}">'
-                       f"{html.escape(str(label))} · {float(score):.2f}</span>")
+            out.append(f'<span class="gb-chip" style="background:{color}1A;color:{color};'
+                       f'border-color:{color}55" title="{block} label, similarity {float(score):.2f}">'
+                       f"{html.escape(str(label))} {float(score):.2f}</span>")
     return "".join(out)
 
 
@@ -420,14 +513,14 @@ def badge(match_label: str) -> str:
     label = str(match_label)
     if "match" not in label.lower():               # P4: "Excellent" -> "Excellent match"
         label += " match"
-    color = viz.MATCH_COLORS.get(label.split()[0], "#8A8F98")
-    return f'<span class="gb-badge" style="background:{color}">{html.escape(label)}</span>'
+    color = viz.MATCH_COLORS.get(label.split()[0], "#8A8178")
+    return f'<span class="gb-stamp" style="color:{color}">{html.escape(label)}</span>'
 
 
 def cover(url: str) -> str:
     if url and url.startswith("http"):
         return f'<img class="gb-cover" src="{html.escape(url)}" alt="" referrerpolicy="no-referrer">'
-    return '<div class="gb-nocover">📖</div>'
+    return '<div class="gb-nocover"></div>'
 
 
 def highlighted_synopsis(text: str, sentence: str) -> str:
@@ -478,12 +571,12 @@ def render_recommendation(rec: Any, profile: Any, book_row: pd.Series | None) ->
         c1, c2, c3 = st.columns([1, 3.2, 1.3], gap="medium")
         c1.markdown(cover(rec.image_url), unsafe_allow_html=True)
         with c2:
-            st.markdown(f"### #{rec.rank} · {rec.title}")
+            st.markdown(f"### {rec.rank}. {rec.title}")
             st.markdown(f"*{rec.authors}* &nbsp; {badge(rec.match_label)}", unsafe_allow_html=True)
             if rec.best_sentence:
                 st.markdown(f'<div class="gb-quote">“{html.escape(rec.best_sentence)}”<br>'
-                            f'<small>closest sentence to your request · cosine '
-                            f'{rec.best_sentence_score:.2f}</small></div>', unsafe_allow_html=True)
+                            f'<small>The sentence of the synopsis closest to your request '
+                            f'(cosine {rec.best_sentence_score:.2f})</small></div>', unsafe_allow_html=True)
             st.write(rec.explanation)
             st.markdown(chips(rec.matched_labels), unsafe_allow_html=True)
         with c3:
@@ -496,7 +589,7 @@ def render_recommendation(rec: Any, profile: Any, book_row: pd.Series | None) ->
                                           height=340), **CHART, key=f"radar_{rec.rank}")
         g2.plotly_chart(viz.score_breakdown([rec], title="Score decomposition", height=230, show_legend=False),
                         **CHART, key=f"bar_{rec.rank}")
-        with st.expander("🔎 How was this score computed?"):
+        with st.expander("How was this score computed?"):
             st.latex(FORMULA)
             st.dataframe(score_table(rec, profile.weights), hide_index=True, **STRETCH,
                          column_config={"Score": st.column_config.NumberColumn(format="%.2f"),
@@ -508,14 +601,14 @@ def render_recommendation(rec: Any, profile: Any, book_row: pd.Series | None) ->
                        + ". Contributions already include the division by α + β + λ, so they add up "
                        "to the final score.")
         if book_row is not None:
-            with st.expander("📖 Synopsis (closest sentence highlighted)"):
+            with st.expander("Synopsis (closest sentence highlighted)"):
                 st.markdown(highlighted_synopsis(book_row.get("description", ""), rec.best_sentence),
                             unsafe_allow_html=True)
                 meta = [f"{book_row.get('format', '')}", f"audience: {book_row.get('audience', '')}"]
                 if pd.notna(book_row.get("pub_year")):
                     meta.append(f"published {int(book_row['pub_year'])}")
                 if pd.notna(book_row.get("rating_avg")):
-                    meta.append(f"⭐ {book_row['rating_avg']:.2f} ({int(book_row['rating_count']):,} ratings)")
+                    meta.append(f"rated {book_row['rating_avg']:.2f}/5 ({int(book_row['rating_count']):,} ratings)")
                 st.caption(" · ".join(meta))
                 if book_row.get("url"):
                     st.markdown(f"[See on Book Depository]({book_row['url']})")
@@ -554,6 +647,25 @@ def heatmap_data(engine: Any, profile: Any, answers: dict, rec: Any, book_row: p
     row_vecs = engine.encode([t for _, t in rows])
     sim = row_vecs @ np.vstack(col_vecs).T
     return sim, [r for r, _ in rows], cols_lbl
+
+
+def filters_summary(constraints: dict[str, Any]) -> str:
+    """Hard filters in plain words (one bullet per filter) instead of raw JSON."""
+    lines = []
+    audience = constraints.get("audience")
+    if audience and audience != "Any":
+        lines.append(f"- Audience: {audience}")
+    formats = constraints.get("formats")
+    if formats:
+        lines.append(f"- Formats: {', '.join(formats)}")
+    excluded = constraints.get("excluded_authors") or []
+    if excluded:
+        lines.append(f"- Leaving out books by {', '.join(excluded)}")
+    if constraints.get("fiction_only"):
+        lines.append("- Fiction only")
+    if constraints.get("standalone_only"):
+        lines.append("- Standalone books preferred")
+    return "\n".join(lines) or "No hard filter: every book in the catalogue was considered."
 
 
 def results_to_json(result: dict) -> str:
@@ -595,18 +707,17 @@ def page_results() -> None:
     profile, recs = result["profile"], result["recs"]
     engine, engine_err = get_engine()
 
-    st.title("Your recommendations")
+    st.title("Three books picked for you")
     if result["mode"].startswith("stub"):
         st.warning("Temporary recommender (stub): the interface is final, but the scores will change once "
-                   "the real scoring engine (P4) is plugged in.", icon="🚧")
+                   "the real scoring engine (P4) is plugged in.")
     if result["warning"]:
         st.error(result["warning"])
     if engine_err:
         st.info(f"Semantic engine unavailable ({engine_err}): map and similarity heatmap are disabled.")
-    st.caption(f"Answers saved to `{st.session_state.get('answers_path', '?')}`")
 
     if not recs:
-        st.error("No book satisfies all your hard filters (audience, formats, excluded author).", icon="🙁")
+        st.error("No book satisfies all your hard filters (audience, formats, excluded author).")
         st.button("Relax the filters and try again", on_click=relax_filters, type="primary")
         st.button("Edit my answers", on_click=go_to, args=(2,))
         return
@@ -616,7 +727,7 @@ def page_results() -> None:
     rows = {r.book_id: (books.iloc[by_id[str(r.book_id)]] if str(r.book_id) in by_id else None) for r in recs}
 
     tab_top, tab_profile, tab_compare, tab_map, tab_hood = st.tabs(
-        ["📚 Top 3", "👤 Your profile", "📊 Compare", "🗺️ Semantic map", "🔬 Under the hood"])
+        ["Top 3", "Your profile", "Compare", "Semantic map", "Under the hood"])
 
     with tab_top:
         for rec in recs:
@@ -628,9 +739,10 @@ def page_results() -> None:
         c1.plotly_chart(viz.radar_profile(profile.block_affinities), **CHART)
         with c2:
             st.plotly_chart(viz.weights_bar(profile.weights), **CHART)
-            cons = {k: v for k, v in (profile.constraints or {}).items() if v not in (None, [], "")}
             st.markdown("**Hard filters applied**")
-            st.json(cons, expanded=True)
+            st.markdown(filters_summary(profile.constraints or {}))
+            with st.expander("Raw filter values"):
+                st.json(profile.constraints or {}, expanded=True)
         st.caption("Each radar shows the labels of one block that are semantically closest to your answers "
                    "(cosine between your text and the label's descriptive sentence, rescaled per block).")
 
@@ -679,17 +791,18 @@ def page_results() -> None:
                 st.caption("Cosine similarity between your own words (rows) and the labels the NLP enrichment "
                            "assigned to this book (columns). Dark cells link ideas that mean the same thing, "
                            "even without any word in common.")
+        st.caption(f"Answers saved to `{st.session_state.get('answers_path', '?')}`")
         with st.expander("Raw answers.json"):
             st.json(answers)
 
     st.divider()
     c1, c2, c3, c4 = st.columns(4)
-    c1.download_button("⬇️ My answers (JSON)", json.dumps(answers, indent=2, ensure_ascii=False),
+    c1.download_button("Download my answers (JSON)", json.dumps(answers, indent=2, ensure_ascii=False),
                        file_name="answers.json", mime="application/json", **STRETCH)
-    c2.download_button("⬇️ Results (JSON)", results_to_json(result), file_name="recommendations.json",
+    c2.download_button("Download the results (JSON)", results_to_json(result), file_name="recommendations.json",
                        mime="application/json", **STRETCH)
-    c3.button("✏️ Edit my answers", on_click=go_to, args=(0,), **STRETCH)
-    c4.button("🔄 Start again", on_click=reset_all, type="primary", **STRETCH)
+    c3.button("Edit my answers", on_click=go_to, args=(0,), **STRETCH)
+    c4.button("Start again", on_click=reset_all, type="primary", **STRETCH)
 
 
 # --------------------------------------------------------------------------- #
@@ -700,8 +813,9 @@ if st.session_state.step >= RESULTS_STEP:
     page_results()
 else:
     if st.session_state.step == 0 and not st.session_state.q1_ideal:
-        st.title("Find your next book 📚")
-        st.write("Answer a few questions (about 3 minutes). Our system analyses the **meaning** of your answers "
-                 "with sentence embeddings (SBERT) and compares them with 12,000 book synopses to recommend "
-                 "the 3 books that fit you best, with a transparent explanation of every score.")
+        st.markdown(
+            '<div class="gb-hero"><h1>What would you like to read next?</h1>'
+            "<p>Tell us about the books you love and the mood you are in. We read the meaning of your "
+            "answers, compare it with 12,000 book summaries and suggest three books, with the reasons "
+            "behind each choice. It takes about three minutes.</p></div>", unsafe_allow_html=True)
     PAGES[st.session_state.step]()

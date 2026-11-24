@@ -42,20 +42,24 @@ from src import config
 BLOCK_ORDER: tuple[str, ...] = tuple(config.BLOCKS)  # ("Genre", "Themes", "Style", "Atmosphere")
 
 # One colour per score component, reused EVERYWHERE (radars, bars, heatmap).
+# "Reading room" palette, shared with the app's stylesheet (app/streamlit_app.py):
+# banker's-lamp green, brass, plum, dusk blue, oxblood, on paper.
 COMPONENT_COLORS: dict[str, str] = {
-    "Description": "#5B6770",   # query ↔ synopsis similarity: slate grey (the "base")
-    "Genre": "#2F6FDE",
-    "Themes": "#1A9E77",
-    "Style": "#E08A1E",
-    "Atmosphere": "#9B4DCA",
-    "Popularity": "#C9A227",
-    "Avoid": "#D64545",         # "avoid" penalty (negative value)
+    "Description": "#7A7064",   # query ↔ synopsis similarity: warm grey (the "base")
+    "Genre": "#2F5D4A",         # reading-lamp green
+    "Themes": "#B8892E",        # brass
+    "Style": "#7A4E7E",         # plum
+    "Atmosphere": "#3F6E8C",    # dusk blue
+    "Popularity": "#C9A66B",    # light tan
+    "Avoid": "#9E3B32",         # "avoid" penalty (negative value): oxblood
 }
-USER_COLOR = "#111827"           # the user is always black
-BOOK_COLORS = ("#E4572E", "#17BEBB", "#FFC914")  # books #1, 2, 3 (high contrast)
-MATCH_COLORS = {"Excellent": "#1A9E77", "Good": "#E08A1E", "Partial": "#8A8F98"}
+USER_COLOR = "#2B2620"           # the user is always drawn in ink colour
+BOOK_COLORS = ("#9E3B32", "#3F6E8C", "#B8892E")  # books #1, 2, 3 (distinct, warm)
+MATCH_COLORS = {"Excellent": "#2F5D4A", "Good": "#B8892E", "Partial": "#8A8178"}
+GRID_COLOR = "#E6DDCB"           # warm light grid lines
 
-FONT = dict(family="Inter, Segoe UI, Helvetica, Arial, sans-serif", size=13)
+FONT = dict(family="Nunito, 'Segoe UI', Helvetica, Arial, sans-serif", size=13, color="#2B2620")
+TITLE_FONT = dict(family="Literata, Georgia, serif", size=17, color="#23493A")
 
 # Accepted synonyms for the keys of block_scores / contributions: the contract (§4.4)
 # says "S_desc, S_Genre…" but P4 may use "desc", "Genre", "pop"… Everything is mapped
@@ -87,7 +91,7 @@ def normalize_scores(scores: Mapping[str, float] | None) -> dict[str, float]:
 def _base_layout(fig: go.Figure, title: str | None = None, height: int | None = None) -> go.Figure:
     """Shared layout: font, margins, transparent background (adapts to the Streamlit theme)."""
     fig.update_layout(
-        title=dict(text=title, x=0.0, xanchor="left", font=dict(size=16)) if title else None,
+        title=dict(text=title, x=0.0, xanchor="left", font=TITLE_FONT) if title else None,
         font=FONT,
         margin=dict(l=40, r=30, t=60 if title else 30, b=40),
         paper_bgcolor="rgba(0,0,0,0)",
@@ -148,7 +152,7 @@ def radar_profile(
         rows=rows, cols=cols,
         specs=[[{"type": "polar"}] * cols for _ in range(rows)],
         subplot_titles=[b for b in blocks[: rows * cols]],
-        horizontal_spacing=0.30, vertical_spacing=0.22,
+        horizontal_spacing=0.36, vertical_spacing=0.24,
     )
     for i, block in enumerate(blocks[: rows * cols]):
         aff = {k: float(v) for k, v in block_affinities[block].items()}
@@ -156,7 +160,7 @@ def radar_profile(
             continue
         # Step 1: keep the top_n labels (decreasing affinity)
         top = sorted(aff.items(), key=lambda kv: kv[1], reverse=True)[:top_n]
-        labels = [_short(k, 18) for k, _ in top]
+        labels = [_short(k, 16) for k, _ in top]
         vals = np.array([v for _, v in top], dtype=float)
         # Step 2: rescale to [0, 1] WITHIN the block (min of the whole block -> 0, max -> 1)
         all_vals = np.array(list(aff.values()), dtype=float)
@@ -179,15 +183,15 @@ def radar_profile(
             row=i // cols + 1, col=i % cols + 1,
         )
     fig.update_polars(
-        radialaxis=dict(range=[0, 1], showticklabels=False, ticks="", gridcolor="#DDD"),
-        angularaxis=dict(tickfont=dict(size=10), gridcolor="#DDD"),
+        radialaxis=dict(range=[0, 1], showticklabels=False, ticks="", gridcolor=GRID_COLOR),
+        angularaxis=dict(tickfont=dict(size=10), gridcolor=GRID_COLOR),
         bgcolor="rgba(0,0,0,0)",
     )
     # Subplot titles moved up a little so they do not touch the radar labels
     for ann in fig.layout.annotations:
-        ann.update(yshift=18, font=dict(size=14))
+        ann.update(yshift=18, font=dict(family=TITLE_FONT["family"], size=14, color=COMPONENT_COLORS.get(ann.text, "#2B2620")))
     fig = _base_layout(fig, title, height)
-    fig.update_layout(margin=dict(l=90, r=90, t=90 if title else 60, b=40))
+    fig.update_layout(margin=dict(l=110, r=110, t=90 if title else 60, b=40))
     return fig
 
 
@@ -226,7 +230,7 @@ def radar_compare(
     fig.add_trace(go.Scatterpolar(
         r=user_r + [user_r[0]], theta=axes + [axes[0]],
         name="Your priorities", line=dict(color=USER_COLOR, width=2, dash="dash"),
-        fill="toself", fillcolor="rgba(17,24,39,0.06)",
+        fill="toself", fillcolor="rgba(43,38,32,0.06)",
         hovertemplate="%{theta}: importance %{r:.2f}<extra>You</extra>",
     ))
     # One polygon per book: what the book offers (scores calibrated to [0, 1])
@@ -241,8 +245,8 @@ def radar_compare(
         ))
     fig.update_polars(
         radialaxis=dict(range=[0, 1], tickvals=[0.25, 0.5, 0.75, 1], tickfont=dict(size=9),
-                        gridcolor="#DDD", angle=90),
-        angularaxis=dict(gridcolor="#DDD"), bgcolor="rgba(0,0,0,0)",
+                        gridcolor=GRID_COLOR, angle=90),
+        angularaxis=dict(gridcolor=GRID_COLOR), bgcolor="rgba(0,0,0,0)",
     )
     return _base_layout(fig, title, height)
 
@@ -297,8 +301,8 @@ def score_breakdown(
         hovertemplate="Final score %{x:.3f}<extra></extra>",
     ))
     fig.update_layout(barmode="relative", bargap=0.35)
-    fig.update_xaxes(title="contribution to the final score", zeroline=True, zerolinecolor="#888",
-                     gridcolor="#EEE", range=[min(0, min((sum(min(v, 0) for v in c.values())
+    fig.update_xaxes(title="contribution to the final score", zeroline=True, zerolinecolor="#A89F8F",
+                     gridcolor=GRID_COLOR, range=[min(0, min((sum(min(v, 0) for v in c.values())
                                                           for c in contribs), default=0)) - 0.02,
                                               max(1.0, max(finals, default=1.0)) + 0.18])
     fig = _base_layout(fig, title, height or 160 + 70 * len(recs))
@@ -357,8 +361,9 @@ def similarity_map(
     main = set(uniq[np.argsort(-counts)][:top_genres])
     shown_genre = np.where(np.isin(genres, list(main)), genres, "Other")
 
-    palette = ["#4E79A7", "#F28E2B", "#59A14F", "#E15759", "#76B7B2", "#EDC948",
-               "#B07AA1", "#FF9DA7", "#9C755F", "#86BCB6", "#D37295", "#A0CBE8"]
+    # Muted "book cloth" colours: distinct enough for 10 genres, but in the same warm family
+    palette = ["#2F5D4A", "#B8892E", "#3F6E8C", "#9E3B32", "#7A4E7E", "#6F8F5B",
+               "#C27C4E", "#4F7A87", "#A0685F", "#8C8A4B", "#5C5A8F", "#B5838D"]
     fig = go.Figure()
     order = sorted(main, key=lambda g: -int(counts[list(uniq).index(g)])) + ["Other"]
     for i, g in enumerate(order):
@@ -368,7 +373,7 @@ def similarity_map(
         fig.add_trace(go.Scattergl(
             x=coords[idx, 0], y=coords[idx, 1], mode="markers", name=g,
             marker=dict(size=4, opacity=0.45 if g != "Other" else 0.2,
-                        color=palette[i % len(palette)] if g != "Other" else "#BBBBBB"),
+                        color=palette[i % len(palette)] if g != "Other" else "#C9C0B0"),
             text=titles[idx], hovertemplate="%{text}<extra>" + g + "</extra>",
         ))
 
@@ -387,14 +392,14 @@ def similarity_map(
         fig.add_trace(go.Scatter(
             x=[coords[i, 0]], y=[coords[i, 1]], mode="markers+text", name=f"#{k + 1} {_short(label, 30)}",
             marker=dict(symbol="star", size=20, color=BOOK_COLORS[k % len(BOOK_COLORS)],
-                        line=dict(color="white", width=1.5)),
+                        line=dict(color="#FBF8F1", width=1.5)),
             text=[f"#{k + 1}"], textposition="top center", textfont=dict(size=13, color=USER_COLOR),
             hovertext=[str(label)], hovertemplate="%{hovertext}<extra>recommended</extra>",
         ))
     if user_xy is not None:
         fig.add_trace(go.Scatter(
             x=[user_xy[0]], y=[user_xy[1]], mode="markers+text", name="You",
-            marker=dict(symbol="x", size=16, color=USER_COLOR, line=dict(width=2, color="white")),
+            marker=dict(symbol="x", size=16, color=USER_COLOR, line=dict(width=2, color="#FBF8F1")),
             text=["YOU"], textposition="bottom center", textfont=dict(size=13, color=USER_COLOR),
             hovertemplate="Your position (weighted barycentre of your closest books)<extra></extra>",
         ))
@@ -443,7 +448,7 @@ def similarity_heatmap(
         x=[_short(c, 30) for c in col_labels],
         y=[_short(r, 45) for r in row_labels],
         customdata=np.array([[f"{r}  ↔  {c}" for c in col_labels] for r in row_labels], dtype=object),
-        colorscale="Blues", zmin=zmin, zmax=zmax,
+        colorscale=[[0, "#FBF8F1"], [0.5, "#C9A66B"], [1, "#23493A"]], zmin=zmin, zmax=zmax,
         text=np.round(sim, 2), texttemplate="%{text:.2f}", textfont=dict(size=10),
         hovertemplate="%{customdata}<br>cosine %{z:.3f}<extra></extra>",
         colorbar=dict(title="cos", thickness=12),
@@ -476,14 +481,14 @@ def weights_bar(weights: Mapping[str, float], title: str | None = "Importance yo
 
 def score_gauge(score: float, label: str = "", height: int = 170) -> go.Figure:
     """Compact gauge of the final score (for a recommendation card)."""
-    color = MATCH_COLORS.get(label.split()[0] if label else "", "#2F6FDE")
+    color = MATCH_COLORS.get(label.split()[0] if label else "", COMPONENT_COLORS["Genre"])
     fig = go.Figure(go.Indicator(
         mode="gauge+number", value=round(100 * float(score), 1),
-        number=dict(suffix="%", font=dict(size=28)),
+        number=dict(suffix="%", font=dict(family=TITLE_FONT["family"], size=28, color="#23493A")),
         gauge=dict(axis=dict(range=[0, 100], tickvals=[55, 75], ticktext=["55", "75"]),
                    bar=dict(color=color),
-                   steps=[dict(range=[0, 55], color="#F1F1F1"), dict(range=[55, 75], color="#E6E6E6"),
-                          dict(range=[75, 100], color="#D9D9D9")]),
+                   steps=[dict(range=[0, 55], color="#F3EEE4"), dict(range=[55, 75], color="#EAE2D2"),
+                          dict(range=[75, 100], color="#DFD4BF")]),
     ))
     fig.update_layout(margin=dict(l=20, r=20, t=10, b=0), height=height, font=FONT,
                       paper_bgcolor="rgba(0,0,0,0)")
