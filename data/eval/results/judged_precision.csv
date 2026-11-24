@@ -1,0 +1,5 @@
+system,judged_precision@3,n_unjudged
+glove-tfidf,,30
+minilm,,30
+mpnet,,30
+tfidf-lsa,,30

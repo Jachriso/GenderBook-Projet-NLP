@@ -1,0 +1,11 @@
+,persona,genre_precision@3,theme_overlap@3,hit@3,first_relevant_rank,reciprocal_rank,constraints_ok,loved_book_in_top3,n_candidates,seconds,top3,top_ids
+0,E01_children_fantasy,1.0,1.0,0.0,,0.0,True,False,300,0.038,The Tail of Emily Windsnap | Auggie & Me : Three Wonder Stories | MY NAME IS STILTON GS#19,"['9780763660208', '9781101934852', '9780439691420']"
+1,E02_nordic_noir,1.0,0.5,0.0,,0.0,True,False,300,0.039,Beyond Reach | Live to Tell : A Detective D. D. Warren Novel | An Incomplete Revenge,"['9780804180290', '9780525486473', '9780312428181']"
+2,E03_historical_romance,1.0,0.5,0.0,247.0,0.004048582995951417,True,False,300,0.033,A Knight in Shining Armor | Forever Amber | Middlemarch : A Study of Provincial Life,"['9781451665635', '9781556524042', '9780679405672']"
+3,E04_ya_dystopia,1.0,1.0,1.0,3.0,0.3333333333333333,True,False,300,0.033,Birthmarked | Eve | The Hunger Games,"['9780312674724', '9780062048516', '9780439023528']"
+4,E05_psychological_literary,1.0,1.0,0.0,,0.0,True,False,300,0.033,After Dark | Beneath This Ink | Giovanni's Room,"['9780307278739', '9780990404835', '9781101907740']"
+5,E06_cozy_mystery,1.0,1.0,0.0,27.0,0.037037037037037035,True,False,300,0.032,Due or Die | An Incomplete Revenge | Death By Darjeeling : A Tea Shop Mystery Book,"['9780425246689', '9780312428181', '9780425179451']"
+6,E07_memoir,1.0,1.0,0.0,35.0,0.02857142857142857,True,False,300,0.035,A Lucky Child : A Memoir of Surviving Auschwi | Shrill | In Real Life : My Journey to a Pixelated Worl,"['9781781254004', '9780316348461', '9781476794303']"
+7,E08_horror_no_king,1.0,1.0,0.0,42.0,0.023809523809523808,True,False,300,0.085,"The Other | The Elementals | ""At the Mountains of Madness"" and Other Stori","['9781590175835', '9781941147177', '9780345329455']"
+8,E09_victorian_classics,1.0,1.0,0.0,6.0,0.16666666666666666,True,True,300,0.033,Howards End | Middlemarch : A Study of Provincial Life | Main Street,"['9780553212082', '9780679405672', '9780451530981']"
+9,E10_feel_good,1.0,1.0,1.0,2.0,0.5,True,True,300,0.032,A Man Called Ove | The Rosie Project | The Secret Daughter,"['9781476738017', '9781405912792', '9781910751084']"

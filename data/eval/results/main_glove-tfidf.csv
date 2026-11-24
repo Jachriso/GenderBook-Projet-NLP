@@ -1,0 +1,11 @@
+,persona,genre_precision@3,theme_overlap@3,hit@3,first_relevant_rank,reciprocal_rank,constraints_ok,loved_book_in_top3,n_candidates,seconds,top3,top_ids
+0,E01_children_fantasy,1.0,0.6666666666666666,0.0,28.0,0.03571428571428571,True,False,300,0.045,Little Critter When I Get Bigger | Small Spaces | Counting by 7s,"['9780307119438', '9780525515043', '9780803738553']"
+1,E02_nordic_noir,1.0,0.5,0.0,,0.0,True,False,300,0.023,Undone | After the Storm | Deeper Than the Dead,"['9781101887479', '9781250078322', '9780451230539']"
+2,E03_historical_romance,1.0,1.0,0.0,,0.0,True,False,300,0.022,Into the Wilderness | The Gift | Somewhere in France : A Novel of the Great Wa,"['9780385342575', '9780440221319', '9780062273451']"
+3,E04_ya_dystopia,1.0,1.0,0.0,109.0,0.009174311926605505,True,False,300,0.022,The Forsaken | Rebellion | Falling Kingdoms,"['9781442432666', '9780316503037', '9781595145857']"
+4,E05_psychological_literary,0.6666666666666666,1.0,0.0,,0.0,True,False,300,0.021,One Night : Promised | The Need | Shades of Midnight : A Midnight Breed Novel,"['9781455559312', '9781982113162', '9780440245261']"
+5,E06_cozy_mystery,1.0,1.0,0.0,,0.0,True,False,300,0.02,"Skinny Legs And All | Secret, Book and Scone Society | On What Grounds : A CoffeeHouse Mystery Book ","['9781842430347', '9781496712387', '9780425192139']"
+6,E07_memoir,1.0,0.5,0.0,82.0,0.012195121951219513,True,False,300,0.02,You Dont'T Have to Say You Love Me : A Memoir | In Real Life : My Journey to a Pixelated Worl | Notes to Self : Essays,"['9780316270755', '9781476794303', '9781984855459']"
+7,E08_horror_no_king,1.0,1.0,1.0,2.0,0.5,True,False,300,0.063,The Boy Who Drew Monsters | Ghost Story | Brother Odd,"['9781250074881', '9780575084643', '9780345533029']"
+8,E09_victorian_classics,1.0,1.0,0.0,,0.0,True,False,300,0.02,The Kitchen House | Howards End | Main Street,"['9781439153666', '9780553212082', '9780451530981']"
+9,E10_feel_good,0.6666666666666666,1.0,0.0,14.0,0.07142857142857142,True,True,300,0.02,A Man Called Ove | It Seemed Like a Good Idea at the Time | Hotel World,"['9781476738017', '9781985848559', '9780385722100']"

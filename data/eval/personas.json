@@ -1,0 +1,886 @@
+{
+  "_comment": "P6 evaluation personas (answers.json format). Expected genres, themes and relevant books were fixed BEFORE running the recommender. Free texts avoid titles and obvious keywords of the expected books. Distinct from the 8 tuning personas of data/reference/personas_p4.json. A relevant work may have several book_ids (editions left in the catalogue): any of them counts. The work described in free_text.loved_book (a book the user has ALREADY read) is stored in expected.loved_book_work and is NOT counted as relevant: this rule was fixed from the loved_book texts only, after a first run showed that these descriptions favoured lexical methods.",
+  "personas": [
+    {
+      "id": "E01_children_fantasy",
+      "name": "Children's fantasy adventure",
+      "answers": {
+        "free_text": {
+          "ideal_book": "An exciting adventure for a ten-year-old where an ordinary kid suddenly learns they have hidden powers and is taken to a secret world full of mythical creatures, friendship and danger.",
+          "loved_book": "My son loved a story about a boy who did not fit in at school until he discovered who his real parents were and went on a quest with two loyal friends.",
+          "atmosphere": "Magical, funny and full of wonder, with a bit of danger but nothing too scary.",
+          "avoid": "Nothing violent or sad, no romance."
+        },
+        "genres": [
+          "Fantasy",
+          "Children's"
+        ],
+        "themes": [
+          "Friendship",
+          "Adventure & exploration",
+          "Coming of age"
+        ],
+        "period": "No preference",
+        "audience": "Children",
+        "formats": [],
+        "favorite_author": "",
+        "guided": {
+          "focus": "Both",
+          "standalone_only": false,
+          "exclude_favorite_author": false
+        },
+        "likert": {
+          "complexity": 1,
+          "pace": 5,
+          "darkness": 1,
+          "popularity": 5,
+          "w_genre": 5,
+          "w_themes": 3,
+          "w_style": 2,
+          "w_atmosphere": 4
+        }
+      },
+      "paraphrases": [
+        "A thrilling story for a young reader in which a normal child discovers secret magical abilities and enters a hidden world of legendary beasts, loyal friends and peril.",
+        "A kid who thought they were nobody special finds out they have extraordinary gifts and is drawn into an enchanted realm of mythical monsters and brave companions.",
+        "An action-packed tale for children: an everyday boy or girl uncovers unknown powers and travels to a concealed land of fabulous creatures, friendship and risk."
+      ],
+      "expected": {
+        "genres": [
+          "Fantasy",
+          "Children's"
+        ],
+        "themes": [
+          "Friendship",
+          "Adventure & exploration",
+          "Coming of age"
+        ],
+        "relevant": [
+          {
+            "title": "The Titan's Curse",
+            "book_ids": [
+              "9780606021500"
+            ]
+          },
+          {
+            "title": "Harry Potter and the Sorcerer's Stone",
+            "book_ids": [
+              "9780590353427"
+            ]
+          }
+        ],
+        "loved_book_work": {
+          "title": "The Lightning Thief",
+          "book_ids": [
+            "9780786856299"
+          ]
+        }
+      }
+    },
+    {
+      "id": "E02_nordic_noir",
+      "name": "Dark Nordic crime thriller",
+      "answers": {
+        "free_text": {
+          "ideal_book": "A cold, slow-burning investigation where a tired, troubled detective uncovers corruption and violence hidden behind a quiet and orderly society.",
+          "loved_book": "I loved a story about a damaged hacker and a journalist digging into a powerful family's buried crimes.",
+          "atmosphere": "Freezing winters, long dark nights and small isolated towns in the far north of Europe.",
+          "avoid": "Nothing cosy or comedic, no romance at the centre."
+        },
+        "genres": [
+          "Mystery & Detective",
+          "Thriller & Suspense"
+        ],
+        "themes": [
+          "Crime & justice",
+          "Power & politics"
+        ],
+        "period": "Contemporary",
+        "audience": "Adult",
+        "formats": [],
+        "favorite_author": "",
+        "guided": {
+          "focus": "Plot",
+          "standalone_only": false,
+          "exclude_favorite_author": false
+        },
+        "likert": {
+          "complexity": 3,
+          "pace": 4,
+          "darkness": 5,
+          "popularity": 3,
+          "w_genre": 4,
+          "w_themes": 3,
+          "w_style": 3,
+          "w_atmosphere": 5
+        }
+      },
+      "paraphrases": [
+        "A bleak police procedural in which a weary, haunted inspector exposes brutality and corruption beneath the calm surface of a well-ordered country.",
+        "A grim, patient mystery where a worn-out officer with personal demons reveals the rot and cruelty concealed inside a peaceful, tidy nation.",
+        "A chilly, methodical detective story: an exhausted investigator with a dark past brings to light the violence and abuse of power behind a respectable society."
+      ],
+      "expected": {
+        "genres": [
+          "Mystery & Detective",
+          "Thriller & Suspense"
+        ],
+        "themes": [
+          "Crime & justice",
+          "Power & politics"
+        ],
+        "relevant": [
+          {
+            "title": "Faceless Killers",
+            "book_ids": [
+              "9781400031573"
+            ]
+          },
+          {
+            "title": "The Keeper of Lost Causes",
+            "book_ids": [
+              "9780452297906"
+            ]
+          },
+          {
+            "title": "The Devil's Star",
+            "book_ids": [
+              "9780099546764"
+            ]
+          },
+          {
+            "title": "Smilla's Sense of Snow",
+            "book_ids": [
+              "9781250002556"
+            ]
+          }
+        ],
+        "loved_book_work": {
+          "title": "The Girl with the Dragon Tattoo",
+          "book_ids": [
+            "9781847246929"
+          ]
+        }
+      }
+    },
+    {
+      "id": "E03_historical_romance",
+      "name": "Sweeping historical romance",
+      "answers": {
+        "free_text": {
+          "ideal_book": "A passionate love story between a strong-willed woman and a man from a very different world, set two or three centuries ago, with rebellion, danger and family loyalties tearing them apart.",
+          "loved_book": "I adored a novel where a proud young woman slowly falls for a man she first despised, against the background of class differences and social change.",
+          "atmosphere": "Romantic and sweeping, with old manors, wild landscapes and the weight of history.",
+          "avoid": "No explicit violence, nothing futuristic."
+        },
+        "genres": [
+          "Romance",
+          "Historical Fiction"
+        ],
+        "themes": [
+          "Love & heartbreak",
+          "Family relationships",
+          "War & conflict"
+        ],
+        "period": "18th-19th century",
+        "audience": "Adult",
+        "formats": [],
+        "favorite_author": "",
+        "guided": {
+          "focus": "Characters",
+          "standalone_only": false,
+          "exclude_favorite_author": false
+        },
+        "likert": {
+          "complexity": 3,
+          "pace": 3,
+          "darkness": 2,
+          "popularity": 4,
+          "w_genre": 4,
+          "w_themes": 4,
+          "w_style": 2,
+          "w_atmosphere": 4
+        }
+      },
+      "paraphrases": [
+        "An epic romance set long ago between a fiery, independent heroine and a man from another background, caught up in uprisings, peril and divided families.",
+        "A period love story where a determined woman and a man from a completely different life are pulled apart by revolt, threats and clan loyalties.",
+        "A grand tale of love in a past century: a headstrong lady and an outsider struggle against rebellion, risk and the demands of their kin."
+      ],
+      "expected": {
+        "genres": [
+          "Romance",
+          "Historical Fiction"
+        ],
+        "themes": [
+          "Love & heartbreak",
+          "Family relationships"
+        ],
+        "relevant": [
+          {
+            "title": "Outlander",
+            "book_ids": [
+              "9780440423201"
+            ]
+          },
+          {
+            "title": "Dragonfly in Amber",
+            "book_ids": [
+              "9781524796884"
+            ]
+          },
+          {
+            "title": "Persuasion",
+            "book_ids": [
+              "9781107620452"
+            ]
+          }
+        ],
+        "loved_book_work": {
+          "title": "North and South",
+          "book_ids": [
+            "9780393979084",
+            "9781541296442"
+          ]
+        }
+      }
+    },
+    {
+      "id": "E04_ya_dystopia",
+      "name": "Young adult dystopia",
+      "answers": {
+        "free_text": {
+          "ideal_book": "A teenage girl lives in a future society where the rulers control every part of people's lives, until she is forced into a deadly test and decides to fight back.",
+          "loved_book": "I loved a book about a sixteen-year-old who discovers that her perfect, peaceful community hides a terrible secret about how it keeps everyone in line.",
+          "atmosphere": "Tense, oppressive, a ruined or rigidly controlled world in the future.",
+          "avoid": "No slow philosophical books, no adult romance."
+        },
+        "genres": [
+          "Science Fiction",
+          "Young Adult"
+        ],
+        "themes": [
+          "Freedom & oppression",
+          "Survival",
+          "Coming of age"
+        ],
+        "period": "Future",
+        "audience": "Young Adult",
+        "formats": [
+          "Paperback"
+        ],
+        "favorite_author": "",
+        "guided": {
+          "focus": "Plot",
+          "standalone_only": false,
+          "exclude_favorite_author": false
+        },
+        "likert": {
+          "complexity": 2,
+          "pace": 5,
+          "darkness": 4,
+          "popularity": 5,
+          "w_genre": 3,
+          "w_themes": 5,
+          "w_style": 2,
+          "w_atmosphere": 3
+        }
+      },
+      "paraphrases": [
+        "In a coming world ruled by an all-controlling regime, a young girl is thrown into a lethal trial and chooses to rebel.",
+        "A teenager growing up under a tyrannical government that dictates everything is made to compete for her life and starts a revolt.",
+        "Set in a future where those in power regulate every aspect of existence, an adolescent heroine faces a murderous challenge and resists."
+      ],
+      "expected": {
+        "genres": [
+          "Science Fiction",
+          "Young Adult"
+        ],
+        "themes": [
+          "Freedom & oppression",
+          "Survival",
+          "Coming of age"
+        ],
+        "relevant": [
+          {
+            "title": "The Hunger Games",
+            "book_ids": [
+              "9780439023528"
+            ]
+          },
+          {
+            "title": "Divergent",
+            "book_ids": [
+              "9780062387240"
+            ]
+          },
+          {
+            "title": "The Giver",
+            "book_ids": [
+              "9780544336261"
+            ]
+          },
+          {
+            "title": "The Maze Runner",
+            "book_ids": [
+              "9780385737951"
+            ]
+          }
+        ],
+        "must_not_appear": [
+          {
+            "title": "Legend",
+            "book_ids": [
+              "9780399256752"
+            ],
+            "reason": "relevant topic but Hardback only, user accepts Paperback only (format filter test)"
+          },
+          {
+            "title": "Matched",
+            "book_ids": [
+              "9780525423645"
+            ],
+            "reason": "relevant topic but Hardback only, user accepts Paperback only (format filter test)"
+          }
+        ],
+        "loved_book_work": {
+          "title": "Uglies",
+          "book_ids": [
+            "9781442419810"
+          ]
+        }
+      }
+    },
+    {
+      "id": "E05_psychological_literary",
+      "name": "Literary psychological novel",
+      "answers": {
+        "free_text": {
+          "ideal_book": "A disturbing inner portrait of someone who commits a terrible act and is slowly eaten up by guilt and paranoia; I want to live inside a troubled mind.",
+          "loved_book": "I was fascinated by a novel narrated by a bitter, isolated man who spends the whole book justifying himself and attacking society.",
+          "atmosphere": "Claustrophobic, feverish, a grey city and sleepless nights.",
+          "avoid": "No light entertainment, no happy endings, no romance."
+        },
+        "genres": [
+          "Literary Fiction",
+          "Classics"
+        ],
+        "themes": [
+          "Morality & guilt",
+          "Madness & the mind",
+          "Crime & justice"
+        ],
+        "period": "No preference",
+        "audience": "Adult",
+        "formats": [],
+        "favorite_author": "",
+        "guided": {
+          "focus": "Characters",
+          "standalone_only": true,
+          "exclude_favorite_author": false
+        },
+        "likert": {
+          "complexity": 5,
+          "pace": 1,
+          "darkness": 5,
+          "popularity": 2,
+          "w_genre": 2,
+          "w_themes": 5,
+          "w_style": 4,
+          "w_atmosphere": 3
+        }
+      },
+      "paraphrases": [
+        "A troubling psychological study of a person who does something unforgivable and is gradually consumed by remorse and suspicion, seen from inside their head.",
+        "An unsettling journey into the mind of a character who has done something monstrous and cannot escape the torment of conscience and fear.",
+        "A dark introspective novel following someone who commits a dreadful deed, then sinks into guilt, anxiety and obsession."
+      ],
+      "expected": {
+        "genres": [
+          "Literary Fiction",
+          "Classics"
+        ],
+        "themes": [
+          "Morality & guilt",
+          "Madness & the mind"
+        ],
+        "relevant": [
+          {
+            "title": "Crime and Punishment",
+            "book_ids": [
+              "9780679734505"
+            ]
+          },
+          {
+            "title": "The Stranger",
+            "book_ids": [
+              "9780679720201"
+            ]
+          },
+          {
+            "title": "We Need to Talk about Kevin",
+            "book_ids": [
+              "9780061124297"
+            ]
+          },
+          {
+            "title": "The Secret History",
+            "book_ids": [
+              "9781400031702"
+            ]
+          }
+        ],
+        "loved_book_work": {
+          "title": "Notes from Underground",
+          "book_ids": [
+            "9780393976120"
+          ]
+        }
+      }
+    },
+    {
+      "id": "E06_cozy_mystery",
+      "name": "Cosy mystery",
+      "answers": {
+        "free_text": {
+          "ideal_book": "A gentle whodunit in a peaceful village where a curious, kind-hearted amateur sleuth solves a murder through clever observation, more puzzle than bloodshed.",
+          "loved_book": "I loved a story about a warm, wise woman who sets up her own little investigation business and sorts out her neighbours' problems with common sense.",
+          "atmosphere": "Comforting and charming, a small community, cups of tea and friendly gossip.",
+          "avoid": "No graphic violence, no gore, nothing too dark."
+        },
+        "genres": [
+          "Mystery & Detective"
+        ],
+        "themes": [
+          "Crime & justice",
+          "Friendship"
+        ],
+        "period": "No preference",
+        "audience": "Adult",
+        "formats": [],
+        "favorite_author": "",
+        "guided": {
+          "focus": "Both",
+          "standalone_only": false,
+          "exclude_favorite_author": false
+        },
+        "likert": {
+          "complexity": 2,
+          "pace": 3,
+          "darkness": 1,
+          "popularity": 4,
+          "w_genre": 5,
+          "w_themes": 2,
+          "w_style": 3,
+          "w_atmosphere": 5
+        }
+      },
+      "paraphrases": [
+        "A light-hearted murder puzzle set in a quiet little town, where a friendly, nosy amateur investigator cracks the case through sharp wits rather than violence.",
+        "A soothing detective story in a sleepy village: a good-natured non-professional sleuth unravels a killing with careful deduction and no blood.",
+        "A charming small-town mystery where an inquisitive, gentle hobby detective figures out who did it by noticing small details."
+      ],
+      "expected": {
+        "genres": [
+          "Mystery & Detective"
+        ],
+        "themes": [
+          "Crime & justice"
+        ],
+        "relevant": [
+          {
+            "title": "Tears of the Giraffe",
+            "book_ids": [
+              "9781400031351"
+            ]
+          },
+          {
+            "title": "Still Life",
+            "book_ids": [
+              "9780312541538"
+            ]
+          },
+          {
+            "title": "The Mysterious Affair at Styles",
+            "book_ids": [
+              "9781614277972"
+            ]
+          },
+          {
+            "title": "Chocolate Chip Cookie Murder",
+            "book_ids": [
+              "9780758273291"
+            ]
+          }
+        ],
+        "loved_book_work": {
+          "title": "The No. 1 Ladies' Detective Agency",
+          "book_ids": [
+            "9781400034772"
+          ]
+        }
+      }
+    },
+    {
+      "id": "E07_memoir",
+      "name": "Memoir of hardship",
+      "answers": {
+        "free_text": {
+          "ideal_book": "A true story told by the person who lived it: growing up poor and as an outsider, facing racism and hardship, and telling it with humour despite the pain.",
+          "loved_book": "I was moved by the real-life account of a woman who survived a traumatic childhood in the segregated South and found her voice through books.",
+          "atmosphere": "Honest, intimate, sometimes funny and sometimes heartbreaking.",
+          "avoid": "No fiction, no self-help advice."
+        },
+        "genres": [
+          "Biography & Memoir"
+        ],
+        "themes": [
+          "Social injustice",
+          "Identity & self-discovery",
+          "Family relationships"
+        ],
+        "period": "20th century",
+        "audience": "Adult",
+        "formats": [],
+        "favorite_author": "",
+        "guided": {
+          "focus": "Characters",
+          "standalone_only": true,
+          "exclude_favorite_author": false
+        },
+        "likert": {
+          "complexity": 3,
+          "pace": 3,
+          "darkness": 3,
+          "popularity": 4,
+          "w_genre": 5,
+          "w_themes": 4,
+          "w_style": 2,
+          "w_atmosphere": 2
+        }
+      },
+      "paraphrases": [
+        "An autobiography about a childhood of poverty and exclusion, confronting prejudice and adversity, narrated with wit in spite of the suffering.",
+        "A first-person non-fiction account of growing up deprived and different, battling discrimination and difficulty, told with a sense of humour.",
+        "The author's own life story: a poor, marginalised upbringing, racial injustice and struggle, recounted with jokes as well as grief."
+      ],
+      "expected": {
+        "genres": [
+          "Biography & Memoir"
+        ],
+        "themes": [
+          "Social injustice",
+          "Identity & self-discovery"
+        ],
+        "relevant": [
+          {
+            "title": "Born a Crime",
+            "book_ids": [
+              "9780399588198"
+            ]
+          },
+          {
+            "title": "Angela's Ashes",
+            "book_ids": [
+              "9780684874357"
+            ]
+          },
+          {
+            "title": "Becoming",
+            "book_ids": [
+              "9780525633754"
+            ]
+          }
+        ],
+        "loved_book_work": {
+          "title": "I Know Why the Caged Bird Sings",
+          "book_ids": [
+            "9780375507892"
+          ]
+        }
+      }
+    },
+    {
+      "id": "E08_horror_no_king",
+      "name": "Supernatural horror, favourite author excluded",
+      "answers": {
+        "free_text": {
+          "ideal_book": "A slow-building supernatural terror in an old house where something evil seems to be watching a family, more psychological dread than gore.",
+          "loved_book": "I loved a novel about a writer who takes a winter job looking after an empty mountain hotel with his wife and son and slowly goes mad.",
+          "atmosphere": "Creepy, claustrophobic and unsettling, with whispers in the dark and a growing sense of possession.",
+          "avoid": "No zombies, no splatter, no comedy."
+        },
+        "genres": [
+          "Horror"
+        ],
+        "themes": [
+          "Madness & the mind",
+          "Family relationships",
+          "Faith & spirituality"
+        ],
+        "period": "No preference",
+        "audience": "Adult",
+        "formats": [],
+        "favorite_author": "Stephen King",
+        "guided": {
+          "focus": "Characters",
+          "standalone_only": false,
+          "exclude_favorite_author": true
+        },
+        "likert": {
+          "complexity": 3,
+          "pace": 2,
+          "darkness": 5,
+          "popularity": 2,
+          "w_genre": 5,
+          "w_themes": 3,
+          "w_style": 2,
+          "w_atmosphere": 5
+        }
+      },
+      "paraphrases": [
+        "A creeping ghostly horror story set in an ancient mansion where a malevolent presence stalks a family, relying on fear of the mind rather than blood.",
+        "A gradual, eerie tale of the supernatural: a household is haunted by a sinister force in an old home, building dread instead of gore.",
+        "Quiet but terrifying paranormal fiction about a family menaced by an evil spirit in a decaying house, all atmosphere and psychological fear."
+      ],
+      "expected": {
+        "genres": [
+          "Horror"
+        ],
+        "themes": [
+          "Madness & the mind"
+        ],
+        "excluded_authors": [
+          "Stephen King"
+        ],
+        "relevant": [
+          {
+            "title": "The Haunting of Hill House",
+            "book_ids": [
+              "9780143134770"
+            ]
+          },
+          {
+            "title": "The Exorcist",
+            "book_ids": [
+              "9780061007224"
+            ]
+          },
+          {
+            "title": "Rosemary's Baby",
+            "book_ids": [
+              "9781605981109"
+            ]
+          },
+          {
+            "title": "Ghost Story (Peter Straub)",
+            "book_ids": [
+              "9780575084643"
+            ]
+          },
+          {
+            "title": "The Haunting of Maddy Clare",
+            "book_ids": [
+              "9780451235688"
+            ]
+          },
+          {
+            "title": "Mexican Gothic",
+            "book_ids": [
+              "9780525620785"
+            ]
+          }
+        ],
+        "loved_book_work": {
+          "title": "The Shining",
+          "book_ids": [
+            "9780345806789"
+          ]
+        }
+      }
+    },
+    {
+      "id": "E09_victorian_classics",
+      "name": "19th-century social novel",
+      "answers": {
+        "free_text": {
+          "ideal_book": "A long, rich nineteenth-century English novel about provincial society, social class and money, with many characters whose fates slowly intertwine.",
+          "loved_book": "I loved a classic about an idealistic young woman who makes an unhappy marriage and learns to live with her choices in a small English town.",
+          "atmosphere": "Elegant old-fashioned prose, country towns, drawing rooms and industrial cities in England.",
+          "avoid": "No modern settings, no fast thrillers."
+        },
+        "genres": [
+          "Classics",
+          "Literary Fiction"
+        ],
+        "themes": [
+          "Social injustice",
+          "Love & heartbreak",
+          "Family relationships"
+        ],
+        "period": "18th-19th century",
+        "audience": "Adult",
+        "formats": [],
+        "favorite_author": "",
+        "guided": {
+          "focus": "Characters",
+          "standalone_only": true,
+          "exclude_favorite_author": false
+        },
+        "likert": {
+          "complexity": 5,
+          "pace": 1,
+          "darkness": 3,
+          "popularity": 3,
+          "w_genre": 3,
+          "w_themes": 3,
+          "w_style": 5,
+          "w_atmosphere": 5
+        }
+      },
+      "paraphrases": [
+        "A big, detailed English classic from the 1800s depicting life in a country town, class divisions and fortunes, with a large cast whose stories gradually connect.",
+        "A sprawling Victorian-era novel portraying provincial English communities, rank and wealth through many intertwined lives.",
+        "A thick period novel of nineteenth-century England about the gentry, the poor and money, following numerous characters whose destinies cross."
+      ],
+      "expected": {
+        "genres": [
+          "Classics",
+          "Literary Fiction"
+        ],
+        "themes": [
+          "Social injustice",
+          "Love & heartbreak"
+        ],
+        "relevant": [
+          {
+            "title": "Bleak House",
+            "book_ids": [
+              "9780679405689"
+            ]
+          },
+          {
+            "title": "North and South",
+            "book_ids": [
+              "9780393979084",
+              "9781541296442"
+            ]
+          },
+          {
+            "title": "Cranford",
+            "book_ids": [
+              "9780486426815"
+            ]
+          },
+          {
+            "title": "Far from the Madding Crowd",
+            "book_ids": [
+              "9780679405764"
+            ]
+          },
+          {
+            "title": "Vanity Fair",
+            "book_ids": [
+              "9780956192844"
+            ]
+          }
+        ],
+        "loved_book_work": {
+          "title": "Middlemarch",
+          "book_ids": [
+            "9780679405672",
+            "9780143123811",
+            "9781541186897"
+          ]
+        }
+      }
+    },
+    {
+      "id": "E10_feel_good",
+      "name": "Feel-good novel",
+      "answers": {
+        "free_text": {
+          "ideal_book": "An uplifting, funny and tender story about a grumpy or socially awkward loner whose life is transformed by unexpected friendships with quirky people around them.",
+          "loved_book": "I loved a book about a lonely widower who wants to end it all until a noisy new family moves in next door and keeps interrupting him.",
+          "atmosphere": "Warm, heartwarming and gently humorous, the kind of book that makes you smile and cry.",
+          "avoid": "No violence, no crime, nothing bleak."
+        },
+        "genres": [
+          "Literary Fiction",
+          "Humour"
+        ],
+        "themes": [
+          "Friendship",
+          "Redemption",
+          "Love & heartbreak"
+        ],
+        "period": "Contemporary",
+        "audience": "Adult",
+        "formats": [],
+        "favorite_author": "",
+        "guided": {
+          "focus": "Characters",
+          "standalone_only": true,
+          "exclude_favorite_author": false
+        },
+        "likert": {
+          "complexity": 2,
+          "pace": 3,
+          "darkness": 1,
+          "popularity": 5,
+          "w_genre": 2,
+          "w_themes": 4,
+          "w_style": 3,
+          "w_atmosphere": 5
+        }
+      },
+      "paraphrases": [
+        "A heartwarming comic novel about a cranky, solitary misfit whose world changes thanks to surprising bonds with eccentric neighbours.",
+        "A cheerful, moving tale of an awkward, lonely person who is slowly opened up by an unlikely circle of odd and kind friends.",
+        "A tender, amusing story where a bad-tempered recluse rediscovers joy through the unexpected warmth of a few colourful strangers."
+      ],
+      "expected": {
+        "genres": [
+          "Literary Fiction",
+          "Humour"
+        ],
+        "themes": [
+          "Friendship",
+          "Redemption"
+        ],
+        "relevant": [
+          {
+            "title": "The Rosie Project",
+            "book_ids": [
+              "9781405912792"
+            ]
+          },
+          {
+            "title": "The Little Paris Bookshop",
+            "book_ids": [
+              "9780349140353"
+            ]
+          },
+          {
+            "title": "The Music Shop",
+            "book_ids": [
+              "9781784163839"
+            ]
+          },
+          {
+            "title": "Chocolat",
+            "book_ids": [
+              "9780140282030"
+            ]
+          }
+        ],
+        "loved_book_work": {
+          "title": "A Man Called Ove",
+          "book_ids": [
+            "9781476738017"
+          ]
+        }
+      }
+    }
+  ]
+}

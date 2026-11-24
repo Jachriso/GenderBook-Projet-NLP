@@ -1,0 +1,5 @@
+encoder,genre_precision@3,theme_overlap@3,hit@3,MRR,constraints_ok,loved_book_returned,median_seconds,paraphrase_jaccard,setup_seconds
+tfidf-lsa,1.0,0.9,0.2,0.109,10/10,2/10,0.033,0.283,142
+glove-tfidf,0.933,0.867,0.1,0.063,10/10,1/10,0.022,0.393,89
+minilm,0.967,0.967,0.1,0.065,10/10,0/10,0.048,0.633,0
+mpnet,0.967,0.867,0.1,0.13,10/10,2/10,0.2,0.607,40
