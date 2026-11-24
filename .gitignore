@@ -14,4 +14,6 @@ data/embeddings/*.npy
 # Réponses utilisateurs de l'app
 data/responses/
 
-data/embeddings/
+data/embeddings/*
+!data/embeddings/umap_2d.npy
+!data/embeddings/umap_book_ids.json
