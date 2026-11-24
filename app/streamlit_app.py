@@ -47,12 +47,13 @@ STRETCH: dict[str, Any] = {"width": "stretch"} if _ST_VERSION >= (1, 50) else {"
 # legends and changes the colours, which would break the colour scheme shared by the figures).
 CHART: dict[str, Any] = {**STRETCH, "theme": None}
 
-# App name chosen by the team (the repository keeps its original name, GenderBook)
-APP_NAME = "The Bibliophile's Quest"
+# App name, shown in the browser tab and at the top of the sidebar
+APP_NAME = "GenderBook"
 
-# Logo (gold "Bibliophile" crest, background made transparent) and browser-tab icon
+# Logo: cover of "Pink Is for Boys" (Robb Pearlman, illustrated by Eda Kaban), credited in the sidebar,
+# and the same picture cropped as the browser-tab icon
 ASSETS = Path(__file__).resolve().parent / "assets"
-LOGO_PATH = ASSETS / "bibliophile_logo.png"
+LOGO_PATH = ASSETS / "genderbook_logo.png"
 FAVICON_PATH = ASSETS / "favicon.png"
 
 
@@ -68,29 +69,29 @@ def _page_icon() -> Any:
 st.set_page_config(page_title=f"{APP_NAME}: find your next book", page_icon=_page_icon(),
                    layout="wide", initial_sidebar_state="expanded")
 
-# "Reading room" stylesheet: banker's-lamp green, brass and paper, with a soft lamp glow at
-# the top of the page. Literata (a serif designed for reading books) for headings, titles and
+# "Rose reading nook" stylesheet: raspberry, powder pink and blush paper, with a soft pink glow
+# at the top of the page. Literata (a serif designed for reading books) for headings, titles and
 # quotes; Nunito (rounded, friendly) for the interface. Same palette as src/viz.py.
 # If Google Fonts cannot be reached, the browser falls back to Georgia / Segoe UI.
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;0,7..72,700;1,7..72,400&family=Nunito:wght@400;600;700&display=swap');
-:root{--gb-paper:#FBF8F1;--gb-green:#23493A;--gb-glass:#E3EBE1;--gb-brass:#B8892E;
-      --gb-ink:#2B2620;--gb-line:#E6DDCB;--gb-oxblood:#9E3B32}
+:root{--gb-paper:#FFF8F8;--gb-primary:#8E2F56;--gb-sidebar:#F8E6EC;--gb-accent:#D4708F;
+      --gb-ink:#2E2226;--gb-line:#F0DDE3;--gb-avoid:#7A2E2E}
 
-/* Base: paper background lit by a reading lamp */
+/* Base: blush paper background with a soft pink glow at the top */
 [data-testid="stAppViewContainer"]{
-  background:radial-gradient(ellipse 70% 38% at 50% -6%, rgba(232,196,120,.30), transparent 70%), var(--gb-paper)}
+  background:radial-gradient(ellipse 70% 38% at 50% -6%, rgba(240,170,190,.30), transparent 70%), var(--gb-paper)}
 [data-testid="stHeader"]{background:transparent}
 html, body, [data-testid="stAppViewContainer"] p, [data-testid="stAppViewContainer"] li,
 [data-testid="stAppViewContainer"] label, [data-testid="stSidebar"] p, button, input, textarea{
   font-family:'Nunito','Segoe UI',sans-serif}
-h1, h2, h3, h4{font-family:'Literata',Georgia,serif !important;color:var(--gb-green) !important;
+h1, h2, h3, h4{font-family:'Literata',Georgia,serif !important;color:var(--gb-primary) !important;
   letter-spacing:-.01em}
 h1{font-weight:700 !important}
 
-/* Sidebar: green glass of a banker's lamp */
-[data-testid="stSidebar"]{background:var(--gb-glass);border-right:1px solid #CFDCCB}
+/* Sidebar: powder pink */
+[data-testid="stSidebar"]{background:var(--gb-sidebar);border-right:1px solid #EBCDD8}
 
 /* Tighter top spacing: Streamlit leaves ~6rem above the page and a tall header above the sidebar */
 .block-container, [data-testid="stMainBlockContainer"]{padding-top:2.2rem !important}
@@ -101,37 +102,37 @@ h1{font-weight:700 !important}
 [data-testid="stSidebar"] .stButton button div{text-align:left}
 
 /* Text fields look like writing paper */
-textarea, input[type="text"]{background:#FFFDF8 !important;border-color:var(--gb-line) !important}
-textarea:focus, input[type="text"]:focus{border-color:var(--gb-brass) !important;
-  box-shadow:0 0 0 2px rgba(184,137,46,.25) !important}
+textarea, input[type="text"]{background:#FFFDFD !important;border-color:var(--gb-line) !important}
+textarea:focus, input[type="text"]:focus{border-color:var(--gb-accent) !important;
+  box-shadow:0 0 0 2px rgba(212,112,143,.25) !important}
 
 /* Cards (st.container(border=True)) */
 [data-testid="stVerticalBlockBorderWrapper"]{border-color:var(--gb-line) !important;border-radius:10px;
-  background:#FFFDF8}
+  background:#FFFDFD}
 
 /* Welcome headline */
 .gb-hero{margin:0 0 1.6rem 0}
 .gb-hero h1{font-size:2.7rem;line-height:1.12;margin:0 0 .6rem 0;padding-top:0}
 .gb-hero p{font-size:1.08rem;line-height:1.6;color:var(--gb-ink);max-width:42rem}  /* readable line length */
-.gb-step{color:var(--gb-brass);font-weight:700;font-size:.9rem;margin-bottom:-.6rem}
+.gb-step{color:var(--gb-accent);font-weight:700;font-size:.9rem;margin-bottom:-.6rem}
 
 /* Match level as a library stamp: the one playful element of the page */
 .gb-stamp{display:inline-block;font-family:'Literata',Georgia,serif;font-weight:700;font-size:.82rem;
   padding:1px 10px;border:2px solid currentColor;border-radius:4px;transform:rotate(-4deg);
-  margin-left:.4rem;background:rgba(255,253,248,.7)}
+  margin-left:.4rem;background:rgba(255,253,253,.75)}
 
 /* Label chips: tinted, in the colour of their block */
 .gb-chip{display:inline-block;padding:2px 10px;margin:3px 6px 3px 0;border-radius:12px;
   font-size:.8rem;font-weight:600;white-space:nowrap;border:1px solid}
 
 /* Closest sentence, set like a quotation in a book */
-.gb-quote{border-left:3px solid var(--gb-brass);padding:.5rem 1rem;margin:.5rem 0 .8rem 0;
-  background:rgba(184,137,46,.08);border-radius:0 8px 8px 0;font-family:'Literata',Georgia,serif;
+.gb-quote{border-left:3px solid var(--gb-accent);padding:.5rem 1rem;margin:.5rem 0 .8rem 0;
+  background:rgba(212,112,143,.08);border-radius:0 8px 8px 0;font-family:'Literata',Georgia,serif;
   font-style:italic;line-height:1.6}
-.gb-quote small{font-family:'Nunito','Segoe UI',sans-serif;font-style:normal;color:#7A7064}
+.gb-quote small{font-family:'Nunito','Segoe UI',sans-serif;font-style:normal;color:#7D6E73}
 
 .gb-synopsis{font-family:'Literata',Georgia,serif;line-height:1.7}
-.gb-synopsis mark{background:#F1DFA8;padding:0 2px;border-radius:3px}
+.gb-synopsis mark{background:#F9D3DF;padding:0 2px;border-radius:3px}
 
 @media (max-width:640px){.gb-hero h1{font-size:2rem}}
 </style>
@@ -306,7 +307,7 @@ def relax_filters() -> None:
 # --------------------------------------------------------------------------- #
 with st.sidebar:
     if LOGO_PATH.exists():
-        _, logo_col, _ = st.columns([1, 1.6, 1])          # small crest, centred
+        _, logo_col, _ = st.columns([1, 5, 1])            # cover, centred
         logo_col.image(str(LOGO_PATH), **STRETCH)
     st.markdown(f"## {APP_NAME}")
     st.caption("A semantic book recommender, ECE ING5 NLP project")
@@ -362,7 +363,7 @@ def nav_buttons(last: bool = False) -> None:
 
 
 def step_heading(i: int) -> None:
-    """Small "Step i of 5" line in brass, then the step title in Literata."""
+    """Small "Step i of 5" line in the accent pink, then the step title in Literata."""
     st.markdown(f'<p class="gb-step">Step {i + 1} of {len(Q.STEPS)}</p>', unsafe_allow_html=True)
     st.subheader(Q.STEPS[i])
 
@@ -484,7 +485,7 @@ def badge(match_label: str) -> str:
     label = str(match_label)
     if "match" not in label.lower():               # P4: "Excellent" -> "Excellent match"
         label += " match"
-    color = viz.MATCH_COLORS.get(label.split()[0], "#8A8178")
+    color = viz.MATCH_COLORS.get(label.split()[0], "#9A8C91")
     return f'<span class="gb-stamp" style="color:{color}">{html.escape(label)}</span>'
 
 

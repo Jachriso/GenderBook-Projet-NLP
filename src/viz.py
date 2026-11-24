@@ -19,7 +19,7 @@ The map's 2D coordinates and the user's position come from P3's src/semantic_map
 (load_umap / compute_umap / project_query): this module only draws them.
 
 Readability choice: ONE FIXED colour per block in every figure (Genre is always
-blue, Themes always green…), so that the reader can link one chart to the next.
+raspberry, Themes always rose…), so that the reader can link one chart to the next.
 """
 from __future__ import annotations
 
@@ -39,24 +39,24 @@ from src import config
 BLOCK_ORDER: tuple[str, ...] = tuple(config.BLOCKS)  # ("Genre", "Themes", "Style", "Atmosphere")
 
 # One colour per score component, reused EVERYWHERE (radars, bars, heatmap).
-# "Reading room" palette, shared with the app's stylesheet (app/streamlit_app.py):
-# banker's-lamp green, brass, plum, dusk blue, oxblood, on paper.
+# "Rose reading nook" palette, shared with the app's stylesheet (app/streamlit_app.py):
+# raspberry, rose, violet, slate blue, dark red, on blush paper.
 COMPONENT_COLORS: dict[str, str] = {
-    "Description": "#7A7064",   # query ↔ synopsis similarity: warm grey (the "base")
-    "Genre": "#2F5D4A",         # reading-lamp green
-    "Themes": "#B8892E",        # brass
-    "Style": "#7A4E7E",         # plum
-    "Atmosphere": "#3F6E8C",    # dusk blue
-    "Popularity": "#C9A66B",    # light tan
-    "Avoid": "#9E3B32",         # "avoid" penalty (negative value): oxblood
+    "Description": "#7D6E73",   # query ↔ synopsis similarity: mauve grey (the "base")
+    "Genre": "#A63D66",         # raspberry
+    "Themes": "#D4708F",        # rose
+    "Style": "#6B4E8E",         # violet
+    "Atmosphere": "#4F7A8C",    # slate blue
+    "Popularity": "#E3B7A0",    # peach
+    "Avoid": "#7A2E2E",         # "avoid" penalty (negative value): dark red
 }
-USER_COLOR = "#2B2620"           # the user is always drawn in ink colour
-BOOK_COLORS = ("#9E3B32", "#3F6E8C", "#B8892E")  # books #1, 2, 3 (distinct, warm)
-MATCH_COLORS = {"Excellent": "#2F5D4A", "Good": "#B8892E", "Partial": "#8A8178"}
-GRID_COLOR = "#E6DDCB"           # warm light grid lines
+USER_COLOR = "#2E2226"           # the user is always drawn in ink colour
+BOOK_COLORS = ("#7A2E2E", "#4F7A8C", "#D4708F")  # books #1, 2, 3 (distinct, warm)
+MATCH_COLORS = {"Excellent": "#A63D66", "Good": "#D4708F", "Partial": "#9A8C91"}
+GRID_COLOR = "#F0DDE3"           # warm light grid lines
 
-FONT = dict(family="Nunito, 'Segoe UI', Helvetica, Arial, sans-serif", size=13, color="#2B2620")
-TITLE_FONT = dict(family="Literata, Georgia, serif", size=17, color="#23493A")
+FONT = dict(family="Nunito, 'Segoe UI', Helvetica, Arial, sans-serif", size=13, color="#2E2226")
+TITLE_FONT = dict(family="Literata, Georgia, serif", size=17, color="#8E2F56")
 
 # Accepted synonyms for the keys of block_scores / contributions: the contract (§4.4)
 # says "S_desc, S_Genre…" but P4 may use "desc", "Genre", "pop"… Everything is mapped
@@ -186,7 +186,7 @@ def radar_profile(
     )
     # Subplot titles moved up a little so they do not touch the radar labels
     for ann in fig.layout.annotations:
-        ann.update(yshift=18, font=dict(family=TITLE_FONT["family"], size=14, color=COMPONENT_COLORS.get(ann.text, "#2B2620")))
+        ann.update(yshift=18, font=dict(family=TITLE_FONT["family"], size=14, color=COMPONENT_COLORS.get(ann.text, "#2E2226")))
     fig = _base_layout(fig, title, height)
     fig.update_layout(margin=dict(l=110, r=110, t=90 if title else 60, b=40))
     return fig
@@ -227,7 +227,7 @@ def radar_compare(
     fig.add_trace(go.Scatterpolar(
         r=user_r + [user_r[0]], theta=axes + [axes[0]],
         name="Your priorities", line=dict(color=USER_COLOR, width=2, dash="dash"),
-        fill="toself", fillcolor="rgba(43,38,32,0.06)",
+        fill="toself", fillcolor="rgba(46,34,38,0.06)",
         hovertemplate="%{theta}: importance %{r:.2f}<extra>You</extra>",
     ))
     # One polygon per book: what the book offers (scores calibrated to [0, 1])
@@ -298,7 +298,7 @@ def score_breakdown(
         hovertemplate="Final score %{x:.3f}<extra></extra>",
     ))
     fig.update_layout(barmode="relative", bargap=0.35)
-    fig.update_xaxes(title="contribution to the final score", zeroline=True, zerolinecolor="#A89F8F",
+    fig.update_xaxes(title="contribution to the final score", zeroline=True, zerolinecolor="#B7A6AC",
                      gridcolor=GRID_COLOR, range=[min(0, min((sum(min(v, 0) for v in c.values())
                                                           for c in contribs), default=0)) - 0.02,
                                               max(1.0, max(finals, default=1.0)) + 0.18])
@@ -358,9 +358,9 @@ def similarity_map(
     main = set(uniq[np.argsort(-counts)][:top_genres])
     shown_genre = np.where(np.isin(genres, list(main)), genres, "Other")
 
-    # Muted "book cloth" colours: distinct enough for 10 genres, but in the same warm family
-    palette = ["#2F5D4A", "#B8892E", "#3F6E8C", "#9E3B32", "#7A4E7E", "#6F8F5B",
-               "#C27C4E", "#4F7A87", "#A0685F", "#8C8A4B", "#5C5A8F", "#B5838D"]
+    # Muted colours: distinct enough for 10 genres, but in the same rose family
+    palette = ["#A63D66", "#D4708F", "#4F7A8C", "#7A2E2E", "#6B4E8E", "#7E9C8F",
+               "#C98BA3", "#C2557A", "#A0685F", "#D19A6B", "#8A6FB0", "#B5838D"]
     fig = go.Figure()
     order = sorted(main, key=lambda g: -int(counts[list(uniq).index(g)])) + ["Other"]
     for i, g in enumerate(order):
@@ -370,7 +370,7 @@ def similarity_map(
         fig.add_trace(go.Scattergl(
             x=coords[idx, 0], y=coords[idx, 1], mode="markers", name=g,
             marker=dict(size=4, opacity=0.45 if g != "Other" else 0.2,
-                        color=palette[i % len(palette)] if g != "Other" else "#C9C0B0"),
+                        color=palette[i % len(palette)] if g != "Other" else "#D9C8CE"),
             text=titles[idx], hovertemplate="%{text}<extra>" + g + "</extra>",
         ))
 
@@ -389,14 +389,14 @@ def similarity_map(
         fig.add_trace(go.Scatter(
             x=[coords[i, 0]], y=[coords[i, 1]], mode="markers+text", name=f"#{k + 1} {_short(label, 30)}",
             marker=dict(symbol="star", size=20, color=BOOK_COLORS[k % len(BOOK_COLORS)],
-                        line=dict(color="#FBF8F1", width=1.5)),
+                        line=dict(color="#FFF8F8", width=1.5)),
             text=[f"#{k + 1}"], textposition="top center", textfont=dict(size=13, color=USER_COLOR),
             hovertext=[str(label)], hovertemplate="%{hovertext}<extra>recommended</extra>",
         ))
     if user_xy is not None:
         fig.add_trace(go.Scatter(
             x=[user_xy[0]], y=[user_xy[1]], mode="markers+text", name="You",
-            marker=dict(symbol="x", size=16, color=USER_COLOR, line=dict(width=2, color="#FBF8F1")),
+            marker=dict(symbol="x", size=16, color=USER_COLOR, line=dict(width=2, color="#FFF8F8")),
             text=["YOU"], textposition="bottom center", textfont=dict(size=13, color=USER_COLOR),
             hovertemplate="Your position (weighted barycentre of your closest books)<extra></extra>",
         ))
@@ -445,7 +445,7 @@ def similarity_heatmap(
         x=[_short(c, 30) for c in col_labels],
         y=[_short(r, 45) for r in row_labels],
         customdata=np.array([[f"{r}  ↔  {c}" for c in col_labels] for r in row_labels], dtype=object),
-        colorscale=[[0, "#FBF8F1"], [0.5, "#C9A66B"], [1, "#23493A"]], zmin=zmin, zmax=zmax,
+        colorscale=[[0, "#FFF8F8"], [0.5, "#E3B7A0"], [1, "#8E2F56"]], zmin=zmin, zmax=zmax,
         text=np.round(sim, 2), texttemplate="%{text:.2f}", textfont=dict(size=10),
         hovertemplate="%{customdata}<br>cosine %{z:.3f}<extra></extra>",
         colorbar=dict(title="cos", thickness=12),
@@ -481,11 +481,11 @@ def score_gauge(score: float, label: str = "", height: int = 170) -> go.Figure:
     color = MATCH_COLORS.get(label.split()[0] if label else "", COMPONENT_COLORS["Genre"])
     fig = go.Figure(go.Indicator(
         mode="gauge+number", value=round(100 * float(score), 1),
-        number=dict(suffix="%", font=dict(family=TITLE_FONT["family"], size=28, color="#23493A")),
+        number=dict(suffix="%", font=dict(family=TITLE_FONT["family"], size=28, color="#8E2F56")),
         gauge=dict(axis=dict(range=[0, 100], tickvals=[55, 75], ticktext=["55", "75"]),
                    bar=dict(color=color),
-                   steps=[dict(range=[0, 55], color="#F3EEE4"), dict(range=[55, 75], color="#EAE2D2"),
-                          dict(range=[75, 100], color="#DFD4BF")]),
+                   steps=[dict(range=[0, 55], color="#FBEFF2"), dict(range=[55, 75], color="#F5E2E8"),
+                          dict(range=[75, 100], color="#EDD3DC")]),
     ))
     fig.update_layout(margin=dict(l=20, r=20, t=10, b=0), height=height, font=FONT,
                       paper_bgcolor="rgba(0,0,0,0)")

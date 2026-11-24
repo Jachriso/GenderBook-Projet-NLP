@@ -1,11 +1,11 @@
 # App theme (read automatically when streamlit is started from the root of the repo).
-# "Reading room" palette: banker's-lamp green, paper, green glass; same colours as src/viz.py.
+# "Rose reading nook" palette: raspberry, blush paper, powder-pink sidebar; same colours as src/viz.py.
 [theme]
 base = "light"
-primaryColor = "#23493A"
-backgroundColor = "#FBF8F1"
-secondaryBackgroundColor = "#E3EBE1"
-textColor = "#2B2620"
+primaryColor = "#8E2F56"
+backgroundColor = "#FFF8F8"
+secondaryBackgroundColor = "#F8E6EC"
+textColor = "#2E2226"
 
 [browser]
 gatherUsageStats = false

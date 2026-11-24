@@ -30,7 +30,7 @@ The `en_core_web_sm` model above is required (P3's encoder tests use it):
 python -m pytest tests -q        # every test should pass
 ```
 
-## Run the application (The Bibliophile's Quest)
+## Run the application
 
 ```bash
 python -m scripts.prepare_app       # once: downloads the SBERT model, encodes the 12,000 books, checks the demo personas
