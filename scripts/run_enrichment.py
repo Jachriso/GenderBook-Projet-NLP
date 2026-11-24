@@ -1,14 +1,14 @@
 """
-Lance l'enrichissement sémantique (P2).
+Run the semantic enrichment (P2).
 
-    python -m scripts.run_enrichment --sample          # 500 livres, ~1 min : test rapide
-    python -m scripts.run_enrichment                   # catalogue complet (12 000 livres)
-    python -m scripts.run_enrichment --annotation-sheet  # génère la feuille des 60 livres à annoter
+    python -m scripts.run_enrichment --sample          # 500 books, ~1 min: quick test
+    python -m scripts.run_enrichment                   # full catalogue (12,000 books)
+    python -m scripts.run_enrichment --annotation-sheet  # generates the sheet of the 60 books to annotate
 
-Sorties :
-    data/processed/books_enriched.parquet          (complet)  ou  books_enriched_sample.parquet (--sample)
-    data/reference/category_genre_map.csv          table catégories -> genres (colonne genre_manual à relire)
-    data/reference/enrichment_report.json          statistiques de l'enrichissement
+Outputs:
+    data/processed/books_enriched.parquet          (full)  or  books_enriched_sample.parquet (--sample)
+    data/reference/category_genre_map.csv          categories -> genres table (genre_manual column to review)
+    data/reference/enrichment_report.json          enrichment statistics
 """
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))  # permet « python scripts/run_enrichment.py » comme « python -m scripts... »
+sys.path.insert(0, str(ROOT))  # allows "python scripts/run_enrichment.py" as well as "python -m scripts..."
 
 import pandas as pd  # noqa: E402
 
@@ -51,13 +51,13 @@ def main() -> None:
     encoder = en.SbertEncoder(args.model)
     blocks = en.load_blocks()
 
-    # Embeddings des livres (cache disque : relancer est instantané)
+    # Book embeddings (disk cache: rerunning is instantaneous)
     tag = "sample" if args.sample else "clean"
     name = f"p2_{args.model.split('/')[-1]}_{tag}_books"
     book_emb = en.encode_cached(encoder, df["embed_text"].fillna("").tolist(),
                                 df["book_id"].astype(str).tolist(), name)
 
-    # Table catégories -> genres : on conserve la relecture manuelle si le fichier existe déjà
+    # Categories -> genres table: the manual review is kept if the file already exists
     existing = pd.read_csv(en.CATEGORY_MAP_PATH, keep_default_na=False) if en.CATEGORY_MAP_PATH.exists() else None
     cat_map = en.build_category_map(en.category_counts(df), encoder, blocks, existing)
     cat_map.to_csv(en.CATEGORY_MAP_PATH, index=False)

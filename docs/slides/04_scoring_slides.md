@@ -1,23 +1,23 @@
-# Slides P4 : scoring sémantique et recommandation
+# P4 slides: semantic scoring and recommendation
 
-## Slide 1 : Du questionnaire au profil sémantique
-- Idée clé : **tout devient phrase puis embedding**, même les Likert
-  - complexité 5 → « a complex, dense, literary and demanding narrative »
-  - rythme 1 → « a slow, contemplative and quiet story »
-- 4 ensembles de préférences P_b (Genre, Thèmes, Style, Atmosphère) + requête globale q_global (moyenne des réponses libres + auteur préféré)
-- Texte « à éviter » encodé sans les négations (SBERT gère mal « no »)
-- Visuel : schéma réponses → phrases → vecteurs, et le radar du profil (block_affinities)
+## Slide 1: From the questionnaire to the semantic profile
+- Key idea: **everything becomes a sentence and then an embedding**, even the Likerts
+  - complexity 5 → "a complex, dense, literary and demanding narrative"
+  - pace 1 → "a slow, contemplative and quiet story"
+- 4 sets of preferences P_b (Genre, Themes, Style, Atmosphere) + global query q_global (average of the free-text answers + favourite author)
+- "To avoid" text encoded without the negations (SBERT handles "no" poorly)
+- Visual: diagram answers → sentences → vectors, and the profile radar (block_affinities)
 
-## Slide 2 : La formule de score
-- Final = [0,5·S̃_desc + 0,4·Coverage + λ·Pop] / (0,9 + λ) − 0,5·max(0, cos(avoid) − 0,3)
-- Coverage = Σ W_b·S̃_b / Σ W_b (formule du sujet, poids = Likert d'importance)
-- S_b = « max puis moyenne » : chaque préférence trouve son meilleur label dans le livre
-- Calibration p5/p95 sur les candidats : rend les cosinus lisibles sans saturer le top
-- Visuel : la formule + barres empilées des contributions d'un livre
+## Slide 2: The scoring formula
+- Final = [0.5·S̃_desc + 0.4·Coverage + λ·Pop] / (0.9 + λ) − 0.5·max(0, cos(avoid) − 0.3)
+- Coverage = Σ W_b·S̃_b / Σ W_b (assignment formula, weights = importance Likerts)
+- S_b = "max then mean": each preference finds its best label in the book
+- p5/p95 calibration on the candidates: makes the cosines readable without saturating the top
+- Visual: the formula + stacked bars of a book's contributions
 
-## Slide 3 : Exemple calculé à la main + explication
-- Un persona (dark academia) → 1 livre du top : S_desc, S_Genre, S_Themes, S_Style, S_Atmosphere, couverture, score final (tableau de la section 6 du notebook)
-- L'explication générée : phrase du résumé la plus proche, thèmes communs, critère le plus fort et le plus faible
-- Cohérence : 3 personas contrastés → 3 tops très différents (fantasy jeunesse / polar nordique / essai philosophique)
-- Mini-ablation : S_desc seul vs Coverage seule vs formule complète (précision de genre@3)
-- Message oral : « Le score n'est pas une boîte noire : chaque point vient d'une similarité qu'on peut montrer. »
+## Slide 3: Example computed by hand + explanation
+- One persona (dark academia) → 1 book of the top: S_desc, S_Genre, S_Themes, S_Style, S_Atmosphere, coverage, final score (table of section 6 of the notebook)
+- The generated explanation: closest sentence of the blurb, shared themes, strongest and weakest criterion
+- Consistency: 3 contrasting personas → 3 very different tops (children's fantasy / Nordic noir / philosophical essay)
+- Mini-ablation: S_desc alone vs Coverage alone vs full formula (genre precision@3)
+- Oral message: "The score is not a black box: every point comes from a similarity we can show."

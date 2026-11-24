@@ -1,10 +1,10 @@
-"""Compare les phrases actuelles des thèmes à des variantes plus concrètes (moyenne ou max).
-Réutilise les embeddings de livres déjà calculés. Ne modifie ni blocks.json ni le parquet.
+"""Compare the current theme sentences with more concrete variants (mean or max).
+Reuses the book embeddings already computed. Modifies neither blocks.json nor the parquet.
 
-IMPORTANT : ce script évalue sur le jeu de RÉGLAGE (gold_60_clean.csv) uniquement. Ne JAMAIS l'utiliser avec
-le jeu de test (gold_holdout.csv) : il est réservé à la mesure finale (scripts/evaluate_enrichment.py).
-Les variantes retenues sont déjà dans data/reference/theme_variants.json ; `--write` les réécrit depuis VARIANTS
-(par défaut le fichier n'est plus modifié, pour éviter un écrasement accidentel)."""
+IMPORTANT: this script evaluates on the TUNING set (gold_60_clean.csv) only. NEVER use it with
+the test set (gold_holdout.csv): it is reserved for the final measurement (scripts/evaluate_enrichment.py).
+The chosen variants are already in data/reference/theme_variants.json; `--write` rewrites them from VARIANTS
+(by default the file is no longer modified, to avoid an accidental overwrite)."""
 import json, sys
 from pathlib import Path
 import numpy as np, pandas as pd
@@ -85,7 +85,7 @@ blocks = en.load_blocks()["Themes"]
 labels = list(blocks.keys())
 assert set(VARIANTS) == set(labels), set(labels) ^ set(VARIANTS)
 
-# embeddings livres, alignés sur books_clean (cache de P2)
+# book embeddings, aligned with books_clean (P2's cache)
 emb_dir = ROOT / "data/embeddings"
 E = np.load(emb_dir / "p2_all-MiniLM-L6-v2_clean_books.npy")
 ids = [str(x) for x in json.load(open(emb_dir / "p2_all-MiniLM-L6-v2_clean_books_ids.json"))]

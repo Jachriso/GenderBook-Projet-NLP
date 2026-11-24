@@ -1,14 +1,14 @@
 """
-Vérification rapide du moteur sémantique (P3) avec le VRAI modèle SBERT, sur 500 livres.
+Quick check of the semantic engine (P3) with the REAL SBERT model, on 500 books.
 
-Lancer depuis la racine du repo :
+Run from the repo root:
     python -X utf8 -m scripts.p3_quick_check
 
-Ce que le script montre :
-    1. le chargement du modèle et l'encodage des 500 livres (et le temps que ça prend) ;
-    2. combien de résumés dépassent la limite de tokens du modèle (problème de troncature) ;
-    3. des requêtes en langage naturel -> les 3 livres les plus proches + la phrase qui explique ;
-    4. les matrices de labels des 4 blocs (réutilisation du référentiel de P2).
+What the script shows:
+    1. loading the model and encoding the 500 books (and how long it takes);
+    2. how many blurbs exceed the model's token limit (truncation issue);
+    3. natural-language queries -> the 3 closest books + the sentence that explains;
+    4. the label matrices of the 4 blocks (reuse of P2's taxonomy).
 """
 import time
 
@@ -18,29 +18,29 @@ import pandas as pd
 from src import config
 from src.embeddings import EmbeddingEngine
 
-# 1. Catalogue de développement : les 500 livres enrichis par P2 (sinon l'échantillon de P1)
+# 1. Development catalogue: the 500 books enriched by P2 (otherwise P1's sample)
 path = config.DATA_PROCESSED / "books_enriched_sample.parquet"
 if not path.exists():
     path = config.BOOKS_SAMPLE
 books = pd.read_parquet(path)
 print(f"Catalogue : {path.name} -> {len(books)} livres")
 
-# Cache séparé pour l'échantillon : on ne mélange pas avec le cache du catalogue complet
+# Separate cache for the sample: not mixed with the full catalogue's cache
 engine = EmbeddingEngine(books=books, cache_dir=config.DATA_EMBEDDINGS / "sample")
 
-# 2. Encodage des livres (le modèle est téléchargé au premier lancement : ~90 Mo)
+# 2. Encoding the books (the model is downloaded on the first run: ~90 MB)
 t0 = time.perf_counter()
 matrix = engine.book_matrix()
 print(f"\nMatrice des livres : {matrix.shape} en {time.perf_counter() - t0:.1f} s")
 print(f"Modèle : {engine.model_name} | limite : {engine.max_tokens} tokens | dimension : {matrix.shape[1]}")
 
-# 3. Troncature : combien de résumés sont coupés par le modèle ?
+# 3. Truncation: how many blurbs are cut by the model?
 n_tok = engine.count_tokens(books["embed_text"].tolist())
 over = (n_tok > engine.max_tokens - 2).mean() * 100
 print(f"Tokens par résumé : médiane {np.median(n_tok):.0f}, max {n_tok.max()} "
       f"-> {over:.1f} % des résumés dépassent la limite et sont tronqués")
 
-# 4. Requêtes de démonstration (aucune ne cite un titre ni un auteur)
+# 4. Demo queries (none mentions a title or an author)
 queries = [
     "a boy discovers he is a wizard and goes to a school of magic",
     "a detective investigates a murder in a small English village",
@@ -57,7 +57,7 @@ for q in queries:
         print(f"  {rank}. {row['title'][:60]} ({row['authors_str'][:30]}) | cos = {s:.3f}")
         print(f"     phrase la plus proche ({s_sent:.2f}) : {sentence[:140]}")
 
-# 5. Labels des 4 blocs (vecteurs identiques à ceux de P2)
+# 5. Labels of the 4 blocks (vectors identical to P2's)
 print()
 for block in config.BLOCKS:
     labels, m = engine.label_matrix(block)

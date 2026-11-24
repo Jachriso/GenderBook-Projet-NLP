@@ -1,24 +1,24 @@
 """
-Construction du PROFIL SÉMANTIQUE du lecteur à partir des réponses au questionnaire (P4).
+Construction of the reader's SEMANTIC PROFILE from the questionnaire answers (P4).
 
     answers.json (P5)  ──►  build_profile(answers, engine)  ──►  UserProfile
 
-Idée directrice : TOUT ce que l'utilisateur répond devient du TEXTE puis un
-EMBEDDING, y compris les réponses numériques. Un Likert « complexité = 5 » n'est
-pas utilisé comme un nombre mais converti en la phrase « a complex, dense,
-literary and demanding narrative », encodée par SBERT et comparée aux livres.
-C'est ce qui garde l'analyse sémantique même pour les questions fermées
-(exigence « not purely numerical » du sujet).
+Guiding idea: EVERYTHING the user answers becomes TEXT and then an
+EMBEDDING, including the numeric answers. A Likert "complexity = 5" is not
+used as a number but converted into the sentence "a complex, dense,
+literary and demanding narrative", encoded by SBERT and compared with the books.
+This is what keeps the analysis semantic even for closed questions
+(the assignment's "not purely numerical" requirement).
 
-Ce que produit build_profile :
-1. q_global : vecteur de la demande globale = moyenne des embeddings des réponses
-   libres (ideal_book, loved_book, atmosphere), mélangée avec le centroïde des
-   livres de l'auteur préféré s'il est dans le catalogue (0.7 / 0.3).
-2. P_b(u) : pour chaque bloc (Genre, Themes, Style, Atmosphere), la liste des
-   phrases de préférence de l'utilisateur et leurs embeddings.
-3. W_b : poids des blocs (Likert d'importance), λ : bonus popularité.
-4. q_avoid : embedding du texte « à éviter » (négations retirées).
-5. block_affinities (radar du profil) et summary (résumé par template).
+What build_profile produces:
+1. q_global: vector of the overall request = average of the embeddings of the free-text
+   answers (ideal_book, loved_book, atmosphere), mixed with the centroid of the
+   favourite author's books if they are in the catalogue (0.7 / 0.3).
+2. P_b(u): for each block (Genre, Themes, Style, Atmosphere), the list of the
+   user's preference sentences and their embeddings.
+3. W_b: block weights (importance Likert), λ: popularity bonus.
+4. q_avoid: embedding of the "to avoid" text (negations removed).
+5. block_affinities (profile radar) and summary (template-based summary).
 """
 from __future__ import annotations
 
@@ -33,26 +33,26 @@ from src.fallback_engine import l2_normalize
 from src.schemas import BLOCKS, UserProfile
 
 # ---------------------------------------------------------------------------
-# 1. Conversion Likert -> phrases (cœur du « semantic, not numerical »)
+# 1. Likert -> sentences conversion (core of "semantic, not numerical")
 # ---------------------------------------------------------------------------
-# Une phrase par niveau. Le niveau 3 (neutre) = pas de préférence => pas de phrase,
-# pour ne pas diluer le bloc avec un texte qui ne dit rien.
+# One sentence per level. Level 3 (neutral) = no preference => no sentence,
+# so as not to dilute the block with a text that says nothing.
 LIKERT_SENTENCES: dict[str, dict[int, str]] = {
-    # Complexité narrative (bloc Style)
+    # Narrative complexity (Style block)
     "complexity": {
         1: "a simple, easy and accessible story with clear, straightforward writing",
         2: "an easy-to-read, light narrative that is not too demanding",
         4: "a rich and layered narrative with some depth and complexity",
         5: "a complex, dense, literary and demanding narrative with sophisticated prose",
     },
-    # Rythme (bloc Style)
+    # Pace (Style block)
     "pace": {
         1: "a slow, contemplative and quiet story that takes its time",
         2: "a gently paced, reflective story",
         4: "a well-paced story with momentum and suspense",
         5: "a fast-paced, gripping page-turner that is hard to put down",
     },
-    # Tonalité légère <-> sombre (bloc Atmosphere)
+    # Light <-> dark tone (Atmosphere block)
     "darkness": {
         1: "a light, warm, cozy and feel-good story that makes you smile",
         2: "a mostly uplifting and gentle story",
@@ -61,15 +61,15 @@ LIKERT_SENTENCES: dict[str, dict[int, str]] = {
     },
 }
 
-# Question guidée « character-driven ou plot-driven ? » (bloc Style)
+# Guided question "character-driven or plot-driven?" (Style block)
 FOCUS_SENTENCES: dict[str, str] = {
     "Characters": "a character-driven story with deep psychological portraits and inner lives",
     "Plot": "a plot-driven story full of twists, events and narrative surprises",
     "Both": "a story that balances rich characters and a compelling plot",
 }
 
-# Q7 « Époque du récit » -> label du bloc Atmosphere de blocks.json (P2).
-# Plusieurs orthographes acceptées pour être robuste aux libellés de l'app.
+# Q7 "Period of the story" -> Atmosphere block label of blocks.json (P2).
+# Several spellings accepted, to be robust to the app's wording.
 PERIOD_TO_LABEL: dict[str, str] = {
     "ancient": "Ancient world", "ancient world": "Ancient world", "antiquity": "Ancient world",
     "medieval": "Medieval", "middle ages": "Medieval",
@@ -82,9 +82,9 @@ PERIOD_TO_LABEL: dict[str, str] = {
 }
 NO_PREFERENCE = {"", "no preference", "any", "none"}
 
-# Mots de négation retirés du texte « à éviter » : SBERT gère mal la négation,
-# « No romance » serait encodé presque comme « romance »… ce qui est justement ce
-# qu'on veut pénaliser. On retire donc la négation pour garder le SUJET à éviter.
+# Negation words removed from the "to avoid" text: SBERT handles negation poorly,
+# "No romance" would be encoded almost like "romance"… which is precisely what
+# we want to penalise. The negation is therefore removed to keep the SUBJECT to avoid.
 _NEGATION_RE = re.compile(
     r"\b(no|not|nothing|never|avoid(ing)?|without|don'?t|do not|i don'?t want|"
     r"i do not want|please|anything|any|too much|i hate|i dislike)\b",
@@ -93,7 +93,7 @@ _NEGATION_RE = re.compile(
 
 
 def likert_to_sentence(key: str, value: int | float | None) -> str | None:
-    """Convertit une réponse Likert (1-5) en phrase descriptive, ou None si neutre/absente."""
+    """Convert a Likert answer (1-5) into a descriptive sentence, or None if neutral/missing."""
     if value is None:
         return None
     v = int(round(float(value)))
@@ -104,14 +104,14 @@ def likert_to_sentence(key: str, value: int | float | None) -> str | None:
 
 
 def clean_avoid_text(text: str) -> str:
-    """« No romance-centered plots, no gore » -> « romance-centered plots, gore »."""
+    """Example: 'No romance-centered plots, no gore' -> 'romance-centered plots, gore'."""
     t = _NEGATION_RE.sub(" ", str(text or ""))
     t = re.sub(r"\s+([,.;])", r"\1", re.sub(r"\s+", " ", t))
     return t.strip(" ,.;")
 
 
 def lambda_from_likert(popularity: int | float | None) -> float:
-    """Likert popularity (1 = pépites méconnues ... 5 = best-sellers) -> λ ∈ [0, LAMBDA_POP_MAX]."""
+    """Popularity Likert (1 = hidden gems ... 5 = best-sellers) -> λ ∈ [0, LAMBDA_POP_MAX]."""
     if popularity is None:
         popularity = 3
     p = min(max(float(popularity), 1.0), 5.0)
@@ -123,57 +123,57 @@ def _norm_label(s: str) -> str:
 
 
 def resolve_label(blocks: dict[str, dict[str, str]], block: str, label: str) -> str | None:
-    """Retrouve le label exact de blocks.json à partir du libellé de l'app.
+    """Find the exact blocks.json label from the app's wording.
 
-    Tolère la casse et les variantes courtes : « Identity » -> « Identity & self-discovery »,
-    « Morality & Guilt » -> « Morality & guilt ». Retourne None si rien ne correspond.
+    Tolerates case and short variants: "Identity" -> "Identity & self-discovery",
+    "Morality & Guilt" -> "Morality & guilt". Returns None if nothing matches.
     """
     labels = list(blocks.get(block, {}))
     if label in labels:
         return label
     key = _norm_label(label)
-    for lab in labels:                       # 1. égalité sans casse ni ponctuation
+    for lab in labels:                       # 1. equality ignoring case and punctuation
         if _norm_label(lab) == key:
             return lab
-    for lab in labels:                       # 2. le libellé est le début du label
+    for lab in labels:                       # 2. the wording is the start of the label
         if key and _norm_label(lab).startswith(key):
             return lab
     return None
 
 
 def label_phrase(blocks: dict[str, dict[str, str]], block: str, label: str) -> str:
-    """Phrase descriptive d'un label (blocks.json) ; à défaut, le label lui-même (fallback)."""
+    """Descriptive sentence of a label (blocks.json); otherwise the label itself (fallback)."""
     lab = resolve_label(blocks, block, label)
     return blocks[block][lab] if lab is not None else str(label)
 
 
 # ---------------------------------------------------------------------------
-# 2. Phrases de préférence par bloc : P_b(u)
+# 2. Preference sentences per block: P_b(u)
 # ---------------------------------------------------------------------------
 def block_preference_phrases(answers: dict, blocks: dict[str, dict[str, str]]) -> dict[str, list[str]]:
-    """Construit P_b(u) pour chaque bloc à partir des réponses.
+    """Build P_b(u) for each block from the answers.
 
-    - Genre      : phrases des genres cochés (Q5)
-    - Themes     : phrases des thèmes cochés (Q6) + « livre adoré et pourquoi » (Q2)
-    - Style      : Likert complexité (Q10) et rythme (Q11) en phrases + focus (Q16)
-    - Atmosphere : époque (Q7) + Likert tonalité (Q12) en phrase + ambiance libre (Q3)
-    Un bloc sans aucune phrase reprend la description idéale (Q1) : il reste
-    ainsi mesurable au lieu d'être vide.
+    - Genre      : sentences of the ticked genres (Q5)
+    - Themes     : sentences of the ticked themes (Q6) + "loved book and why" (Q2)
+    - Style      : complexity (Q10) and pace (Q11) Likerts as sentences + focus (Q16)
+    - Atmosphere : period (Q7) + tone Likert (Q12) as a sentence + free-text mood (Q3)
+    A block without any sentence takes the ideal description (Q1): it thus
+    remains measurable instead of being empty.
     """
     free = answers.get("free_text", {}) or {}
     likert = answers.get("likert", {}) or {}
     guided = answers.get("guided", {}) or {}
     P: dict[str, list[str]] = {b: [] for b in BLOCKS}
 
-    # Genre : labels cochés -> leurs phrases descriptives
+    # Genre: ticked labels -> their descriptive sentences
     P["Genre"] += [label_phrase(blocks, "Genre", g) for g in answers.get("genres", []) or []]
 
-    # Thèmes : labels cochés + texte libre « livre adoré » (riche en thèmes)
+    # Themes: ticked labels + "loved book" free text (rich in themes)
     P["Themes"] += [label_phrase(blocks, "Themes", t) for t in answers.get("themes", []) or []]
     if (free.get("loved_book") or "").strip():
         P["Themes"].append(free["loved_book"].strip())
 
-    # Style : Likert convertis en phrases + question guidée character/plot
+    # Style: Likerts converted into sentences + character/plot guided question
     for key in ("complexity", "pace"):
         s = likert_to_sentence(key, likert.get(key))
         if s:
@@ -182,7 +182,7 @@ def block_preference_phrases(answers: dict, blocks: dict[str, dict[str, str]]) -
     if focus in FOCUS_SENTENCES:
         P["Style"].append(FOCUS_SENTENCES[focus])
 
-    # Atmosphère : époque choisie (label P2) + tonalité + texte libre
+    # Atmosphere: chosen period (P2 label) + tone + free text
     period = str(answers.get("period") or "").strip()
     if period.lower() not in NO_PREFERENCE:
         lab = PERIOD_TO_LABEL.get(period.lower(), period)
@@ -193,7 +193,7 @@ def block_preference_phrases(answers: dict, blocks: dict[str, dict[str, str]]) -
     if (free.get("atmosphere") or "").strip():
         P["Atmosphere"].append(free["atmosphere"].strip())
 
-    # Repli : un bloc vide reprend la description idéale
+    # Fallback: an empty block takes the ideal description
     ideal = (free.get("ideal_book") or "").strip()
     for b in BLOCKS:
         if not P[b] and ideal:
@@ -202,7 +202,7 @@ def block_preference_phrases(answers: dict, blocks: dict[str, dict[str, str]]) -
 
 
 def block_weights(answers: dict) -> dict[str, float]:
-    """W_b = Likert d'importance (1-5) de chaque bloc ; 3 par défaut."""
+    """W_b = importance Likert (1-5) of each block; 3 by default."""
     likert = answers.get("likert", {}) or {}
     keys = {"Genre": "w_genre", "Themes": "w_themes", "Style": "w_style", "Atmosphere": "w_atmosphere"}
     out = {}
@@ -213,23 +213,23 @@ def block_weights(answers: dict) -> dict[str, float]:
 
 
 # ---------------------------------------------------------------------------
-# 3. Requête globale q_global
+# 3. Global query q_global
 # ---------------------------------------------------------------------------
 def global_query_texts(answers: dict) -> list[str]:
-    """Réponses libres qui décrivent le livre recherché (Q1, Q2, Q3)."""
+    """Free-text answers describing the book being looked for (Q1, Q2, Q3)."""
     free = answers.get("free_text", {}) or {}
     return [free[k].strip() for k in ("ideal_book", "loved_book", "atmosphere")
             if (free.get(k) or "").strip()]
 
 
 def encode_global_query(texts: list[str], engine, how: str = config.QUERY_COMBINATION) -> np.ndarray | None:
-    """Encode les réponses libres en UN vecteur.
+    """Encode the free-text answers into ONE vector.
 
-    - "mean"   : moyenne des embeddings de chaque réponse (chaque réponse compte autant,
-                 et aucune n'est tronquée par la limite de 256 tokens de MiniLM) ;
-    - "concat" : un seul texte concaténé (le modèle voit le contexte complet,
-                 mais une réponse longue écrase les autres et le tout peut être tronqué).
-    Le notebook 04 compare les deux.
+    - "mean"   : average of the embeddings of each answer (each answer counts equally,
+                 and none is truncated by MiniLM's 256-token limit);
+    - "concat" : a single concatenated text (the model sees the full context,
+                 but a long answer crushes the others and the whole may be truncated).
+    Notebook 04 compares the two.
     """
     if not texts:
         return None
@@ -239,7 +239,7 @@ def encode_global_query(texts: list[str], engine, how: str = config.QUERY_COMBIN
 
 
 def author_centroid(books: pd.DataFrame | None, engine, name: str | None) -> tuple[np.ndarray | None, str | None]:
-    """Centroïde des embeddings des livres de l'auteur préféré (matching flou de P1)."""
+    """Centroid of the embeddings of the favourite author's books (P1's fuzzy matching)."""
     if books is None or not (name or "").strip():
         return None, None
     from src.data_loader import find_author, get_books_by_author
@@ -247,13 +247,13 @@ def author_centroid(books: pd.DataFrame | None, engine, name: str | None) -> tup
     found = get_books_by_author(books, name)
     if found.empty:
         return None, None
-    # books est indexé 0..N-1 dans le même ordre que engine.book_matrix()
+    # books is indexed 0..N-1 in the same order as engine.book_matrix()
     vec = l2_normalize(engine.book_matrix()[found.index.to_numpy()].mean(axis=0))
     return vec, find_author(books, name)
 
 
 # ---------------------------------------------------------------------------
-# 4. Résumé du profil (template)
+# 4. Profile summary (template)
 # ---------------------------------------------------------------------------
 def _top_labels(aff: dict[str, float], n: int) -> list[str]:
     return [k for k, _ in sorted(aff.items(), key=lambda kv: -kv[1])[:n]]
@@ -261,7 +261,7 @@ def _top_labels(aff: dict[str, float], n: int) -> list[str]:
 
 def profile_summary(answers: dict, affinities: dict[str, dict[str, float]],
                     weights: dict[str, float], lambda_pop: float, author: str | None) -> str:
-    """Résumé lisible du profil lecteur, généré par template (sans LLM)."""
+    """Readable summary of the reader profile, generated from a template (no LLM)."""
     genres = answers.get("genres") or _top_labels(affinities.get("Genre", {}), 2)
     themes = answers.get("themes") or _top_labels(affinities.get("Themes", {}), 2)
     style = _top_labels(affinities.get("Style", {}), 1)
@@ -290,12 +290,12 @@ def profile_summary(answers: dict, affinities: dict[str, dict[str, float]],
 
 
 # ---------------------------------------------------------------------------
-# Corrections de la relecture : fiction_only automatique et labels « demandés »
+# Review fixes: automatic fiction_only and "requested" labels
 # ---------------------------------------------------------------------------
-# Labels de style / atmosphère que chaque réponse Likert DEMANDE ou CONTREDIT.
-# Ex. pace = 1 ou 2 demande « Slow and contemplative » et contredit « Fast-paced page-turner ».
+# Style / atmosphere labels that each Likert answer REQUESTS or CONTRADICTS.
+# E.g. pace = 1 or 2 requests "Slow and contemplative" and contradicts "Fast-paced page-turner".
 LIKERT_LABELS: dict[str, dict[str, tuple[tuple[str, ...], tuple[str, ...]]]] = {
-    #               (labels demandés,                     labels contredits)
+    #               (requested labels,                    contradicted labels)
     "pace": {
         "low":  (("Slow and contemplative",),          ("Fast-paced page-turner",)),
         "high": (("Fast-paced page-turner",),          ("Slow and contemplative",)),
@@ -316,11 +316,11 @@ FOCUS_LABELS: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
 
 
 def auto_fiction_only(answers: dict, blocks: dict[str, dict[str, str]] | None = None) -> bool | None:
-    """fiction_only effectif : la réponse explicite, sinon True si SEULS des genres de fiction sont cochés.
+    """Effective fiction_only: the explicit answer, otherwise True if ONLY fiction genres are ticked.
 
-    - fiction_only explicite (True / False) : on le respecte.
-    - au moins un genre de config.FICTION_GENRES et aucun de config.NONFICTION_GENRES : True.
-    - sinon : None (pas de filtre).
+    - explicit fiction_only (True / False): it is respected.
+    - at least one genre of config.FICTION_GENRES and none of config.NONFICTION_GENRES: True.
+    - otherwise: None (no filter).
     """
     explicit = answers.get("fiction_only")
     if explicit is not None:
@@ -336,11 +336,11 @@ def auto_fiction_only(answers: dict, blocks: dict[str, dict[str, str]] | None = 
 def requested_labels(answers: dict, blocks: dict[str, dict[str, str]],
                      affinities: dict[str, dict[str, float]],
                      n_top: int = config.N_TOP_AFFINITIES) -> dict[str, list[str]]:
-    """Labels que l'explication a le droit de citer, par bloc.
+    """Labels the explanation is allowed to cite, per block.
 
-    = labels cochés (genres, thèmes, époque) + labels déduits des Likert et du focus
-      + top n_top des affinités du bloc,
-      MOINS les labels qui contredisent une réponse (ex. « Fast-paced » si pace = 2).
+    = ticked labels (genres, themes, period) + labels inferred from the Likerts and the focus
+      + top n_top affinities of the block,
+      MINUS the labels that contradict an answer (e.g. "Fast-paced" if pace = 2).
     """
     likert = answers.get("likert", {}) or {}
     guided = answers.get("guided", {}) or {}
@@ -369,39 +369,39 @@ def requested_labels(answers: dict, blocks: dict[str, dict[str, str]],
     for b in BLOCKS:
         aff = affinities.get(b, {})
         top = sorted(aff, key=aff.get, reverse=True)[:n_top]
-        labels = list(dict.fromkeys(asked[b] + top))      # ordre conservé, sans doublon
+        labels = list(dict.fromkeys(asked[b] + top))      # order kept, no duplicates
         out[b] = [lab for lab in labels if lab not in banned]
     return out
 
 
 # ---------------------------------------------------------------------------
-# 5. Point d'entrée
+# 5. Entry point
 # ---------------------------------------------------------------------------
 def build_profile(answers: dict, engine, books: pd.DataFrame | None = None,
                   blocks: dict[str, dict[str, str]] | None = None,
                   how: str = config.QUERY_COMBINATION) -> UserProfile:
-    """Transforme answers.json en UserProfile (voir le docstring du module).
+    """Turn answers.json into a UserProfile (see the module docstring).
 
     Args:
-        answers: réponses au format answers.json (PLAN_PROJET.md §4.3).
-        engine: objet respectant le contrat EmbeddingEngine (P3) ou LocalEngine.
-        books: catalogue indexé 0..N-1, aligné sur engine.book_matrix() (pour l'auteur préféré).
-        blocks: référentiel blocks.json (P2). Vide = les labels eux-mêmes sont encodés.
-        how: "mean" ou "concat" pour combiner les réponses libres.
+        answers: answers in the answers.json format (PLAN_PROJET.md §4.3).
+        engine: object following the EmbeddingEngine contract (P3) or LocalEngine.
+        books: catalogue indexed 0..N-1, aligned with engine.book_matrix() (for the favourite author).
+        blocks: blocks.json taxonomy (P2). Empty = the labels themselves are encoded.
+        how: "mean" or "concat" to combine the free-text answers.
     """
     blocks = blocks or {}
     free = answers.get("free_text", {}) or {}
     guided = answers.get("guided", {}) or {}
     likert = answers.get("likert", {}) or {}
 
-    # Étape 1 : phrases de préférence par bloc et leurs embeddings
+    # Step 1: preference sentences per block and their embeddings
     phrases = block_preference_phrases(answers, blocks)
     block_vecs = {b: engine.encode(phrases[b]) for b in BLOCKS}
 
-    # Étape 2 : requête globale = réponses libres (+ auteur préféré)
+    # Step 2: global query = free-text answers (+ favourite author)
     texts = global_query_texts(answers)
     q_text = encode_global_query(texts, engine, how)
-    if q_text is None:  # aucune réponse libre : on se rabat sur toutes les phrases de blocs
+    if q_text is None:  # no free-text answer: fall back on all the block sentences
         allv = np.vstack([v for v in block_vecs.values() if len(v)]) if any(len(v) for v in block_vecs.values()) else None
         q_text = l2_normalize(allv.mean(0)) if allv is not None else np.zeros(engine.encode(["book"]).shape[1], np.float32)
     centroid, author = author_centroid(books, engine, answers.get("favorite_author"))
@@ -410,17 +410,17 @@ def build_profile(answers: dict, engine, books: pd.DataFrame | None = None,
     else:
         q_global = q_text
 
-    # Étape 3 : texte « à éviter » (négations retirées)
+    # Step 3: "to avoid" text (negations removed)
     avoid_raw = (free.get("avoid") or "").strip()
     avoid_txt = clean_avoid_text(avoid_raw)
     q_avoid = engine.encode([avoid_txt])[0] if avoid_txt else None
 
-    # Étape 4 : poids des blocs et du bonus popularité
+    # Step 4: block weights and popularity bonus
     weights = block_weights(answers)
     lam = lambda_from_likert(likert.get("popularity"))
 
-    # Étape 5 : affinités utilisateur ↔ labels (radar du profil)
-    # affinité(label) = max sur les phrases P_b et q_global du cosinus avec la phrase du label
+    # Step 5: user ↔ label affinities (profile radar)
+    # affinity(label) = max over the P_b sentences and q_global of the cosine with the label's sentence
     affinities: dict[str, dict[str, float]] = {}
     for b in BLOCKS:
         labels, L = engine.label_matrix(b)
@@ -431,7 +431,7 @@ def build_profile(answers: dict, engine, books: pd.DataFrame | None = None,
         sims = (Q @ L.T).max(axis=0)
         affinities[b] = {lab: float(np.clip(s, 0.0, 1.0)) for lab, s in zip(labels, sims)}
 
-    # Étape 6 : contraintes dures (appliquées par data_loader.apply_constraints)
+    # Step 6: hard constraints (applied by data_loader.apply_constraints)
     excluded = list(answers.get("excluded_authors") or [])
     if guided.get("exclude_favorite_author") and answers.get("favorite_author"):
         excluded.append(answers["favorite_author"])
@@ -439,16 +439,16 @@ def build_profile(answers: dict, engine, books: pd.DataFrame | None = None,
         "audience": answers.get("audience") or None,
         "formats": list(answers.get("formats") or []) or None,
         "excluded_authors": excluded or None,
-        "period": answers.get("publication_period") or None,   # année de PUBLICATION (optionnel)
-        # True / False / None ; True automatique si seuls des genres de fiction sont cochés
+        "period": answers.get("publication_period") or None,   # PUBLICATION year (optional)
+        # True / False / None; automatically True if only fiction genres are ticked
         "fiction_only": auto_fiction_only(answers, blocks),
         "fiction_only_auto": answers.get("fiction_only") is None and auto_fiction_only(answers, blocks) is True,
-        # Pas d'information de série dans le dataset : préférence notée mais non filtrable
+        # No series information in the dataset: preference recorded but not filterable
         "standalone_only": bool(guided.get("standalone_only", False)),
-        "relaxed": [],                                           # filtres relâchés si 0 résultat
+        "relaxed": [],                                           # filters relaxed if 0 results
     }
 
-    # Étape 7 : textes et vecteurs du profil (contrat UserProfile)
+    # Step 7: profile texts and vectors (UserProfile contract)
     query_texts = {"global": " ".join(texts)}
     query_texts.update({b: " | ".join(phrases[b]) for b in BLOCKS})
     query_texts["avoid"] = avoid_txt
@@ -467,7 +467,7 @@ def build_profile(answers: dict, engine, books: pd.DataFrame | None = None,
 
 
 def example_answers() -> dict[str, Any]:
-    """Exemple de réponses conforme au contrat answers.json (PLAN_PROJET.md §4.3)."""
+    """Example of answers following the answers.json contract (PLAN_PROJET.md §4.3)."""
     return {
         "free_text": {
             "ideal_book": "I enjoy psychological novels exploring identity and moral dilemmas, "

@@ -1,17 +1,17 @@
 """
-Analyses de l'espace sémantique sur le catalogue complet (MiniLM, cache des 12 000 livres).
+Analyses of the semantic space on the full catalogue (MiniLM, cache of the 12,000 books).
 
-    A. Distribution des cosinus : catalogue entier vs 300 candidats (justifie la calibration de P4).
-    B. Carte UMAP 2D, colorée par genre (pour la « carte de similarité » de P5).
-    C. Score silhouette par genre (les genres forment-ils des régions séparées ?).
-    D. Voisins qui partagent un genre (mesure adaptée à des genres multiples qui se chevauchent).
+    A. Cosine distribution: whole catalogue vs 300 candidates (justifies P4's calibration).
+    B. 2D UMAP map, coloured by genre (for P5's "similarity map").
+    C. Silhouette score by genre (do genres form separate regions?).
+    D. Neighbours sharing a genre (measure suited to multiple, overlapping genres).
 
-Lancer depuis la racine du repo (environ 1 à 2 minutes ; le cache MiniLM doit exister,
-sinon il est recalculé, ~7 min) :
+Run from the repo root (about 1 to 2 minutes; the MiniLM cache must exist,
+otherwise it is recomputed, ~7 min):
     python -X utf8 -m scripts.p3_semantic_map
 
-Sorties :
-    data/embeddings/umap_2d.npy + umap_book_ids.json   (réutilisés par l'app de P5)
+Outputs:
+    data/embeddings/umap_2d.npy + umap_book_ids.json   (reused by P5's app)
     docs/figures/p3_cosine_distribution.png + .json
     docs/figures/p3_umap_genres.png
     docs/figures/p3_genre_neighbors.json
@@ -30,12 +30,12 @@ from src.semantic_map import (compute_umap, cosine_distribution, genre_neighbor_
 from scripts.p3_build_embeddings import FAMOUS_QUERIES
 from scripts.p3_compare_encoders import QUERIES
 
-N_GENRE_COLORS = 10   # les 10 genres les plus fréquents en couleur, le reste en gris
+N_GENRE_COLORS = 10   # the 10 most frequent genres in colour, the rest in grey
 
 
 def main(engine: EmbeddingEngine | None = None, force_umap: bool = False) -> dict:
     import matplotlib
-    matplotlib.use("Agg")                          # pas de fenêtre : on enregistre des PNG
+    matplotlib.use("Agg")                          # no window: PNGs are saved
     import matplotlib.pyplot as plt
 
     config.FIGURES_DIR.mkdir(parents=True, exist_ok=True)
@@ -45,7 +45,7 @@ def main(engine: EmbeddingEngine | None = None, force_umap: bool = False) -> dic
     print(f"Catalogue : {M.shape[0]} livres, vecteurs de dimension {M.shape[1]} ({engine.model_name})")
 
     # ------------------------------------------------------------------ #
-    # A. Distribution des cosinus
+    # A. Cosine distribution
     # ------------------------------------------------------------------ #
     queries = [q for q, _ in FAMOUS_QUERIES] + [q for q, _ in QUERIES]
     dist = cosine_distribution(M, engine.encode(queries))
@@ -79,7 +79,7 @@ def main(engine: EmbeddingEngine | None = None, force_umap: bool = False) -> dic
     (config.FIGURES_DIR / "p3_cosine_distribution.json").write_text(json.dumps(stats, indent=2), encoding="utf-8")
 
     # ------------------------------------------------------------------ #
-    # B. Carte UMAP 2D
+    # B. 2D UMAP map
     # ------------------------------------------------------------------ #
     ids = engine.book_ids
     coords = None if force_umap else load_umap(ids)
@@ -92,7 +92,7 @@ def main(engine: EmbeddingEngine | None = None, force_umap: bool = False) -> dic
     else:
         print("\nB. CARTE UMAP 2D : rechargée depuis data/embeddings/umap_2d.npy")
 
-    # Genre principal de chaque livre (1er genre attribué par P2)
+    # Main genre of each book (1st genre assigned by P2)
     genres = books["genres"] if "genres" in books else None
     main_genre = np.array([(list(g)[0] if g is not None and len(g) else "Unknown")
                            for g in (genres if genres is not None else [None] * len(books))])
@@ -106,14 +106,14 @@ def main(engine: EmbeddingEngine | None = None, force_umap: bool = False) -> dic
     for i, g in enumerate(top_genres):
         m = main_genre == g
         ax.scatter(coords[m, 0], coords[m, 1], s=2, color=cmap(i), label=f"{g} ({m.sum()})")
-    # Démonstration : où tombe une requête utilisateur sur la carte ?
+    # Demo: where does a user query land on the map?
     demo_q, _ = FAMOUS_QUERIES[0]
     xy = project_query(engine.encode([demo_q])[0], M, coords)
     ax.scatter([xy[0]], [xy[1]], marker="*", s=400, c="black", edgecolors="white", zorder=5,
                label='query: "a boy discovers he is a wizard…"')
     ax.set_title(f"UMAP semantic map of the {len(books)} books (colour = main genre)")
     ax.set_xticks([]); ax.set_yticks([])
-    # Légende à droite du graphique, avec des marqueurs de taille lisible (y compris l'étoile)
+    # Legend to the right of the plot, with readable marker sizes (including the star)
     leg = ax.legend(fontsize=8, loc="upper left", bbox_to_anchor=(1.01, 1), frameon=False)
     for h in getattr(leg, "legend_handles", None) or leg.legendHandles:
         h.set_sizes([40])
@@ -122,14 +122,14 @@ def main(engine: EmbeddingEngine | None = None, force_umap: bool = False) -> dic
     plt.close(fig)
 
     # ------------------------------------------------------------------ #
-    # C. Silhouette par genre
+    # C. Silhouette by genre
     # ------------------------------------------------------------------ #
     sil = genre_silhouette(M, main_genre)
     print(f"\nC. SILHOUETTE PAR GENRE (cosinus, 3 000 livres) : {sil:.3f}")
     print("   (1 = genres parfaitement séparés, 0 = genres qui se chevauchent)")
 
 
-    # Mesure adaptée à des genres multiples qui se chevauchent : les voisins partagent-ils un genre ?
+    # Measure suited to multiple, overlapping genres: do neighbours share a genre?
     all_genres = [list(g) if g is not None else [] for g in
                   (genres if genres is not None else [None] * len(books))]
     agree = genre_neighbor_agreement(M, all_genres)

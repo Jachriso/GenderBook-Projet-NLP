@@ -1,24 +1,24 @@
 """
-Explications TRANSPARENTES des recommandations, générées par template (P4).
+TRANSPARENT explanations of the recommendations, generated from templates (P4).
 
-Pas de LLM : chaque phrase est construite à partir des résultats NLP réellement
-calculés (similarités, labels communs, phrase la plus proche, couverture). Le
-texte est donc fidèle au score par construction. Le bonus LLM de P6
-(llm_explain.py) pourra reformuler, mais l'app fonctionne sans.
+No LLM: each sentence is built from the NLP results actually computed
+(similarities, shared labels, closest sentence, coverage). The text is
+therefore faithful to the score by construction. P6's LLM bonus
+(llm_explain.py) may rephrase it, but the app works without it.
 
-Structure d'une explication (en anglais, comme l'interface) :
-1. accroche selon le niveau de score (Excellent / Good / Partial) ;
-2. similarité du résumé + phrase du résumé la plus proche de la demande ;
-3. labels communs par bloc (thèmes, genre, style, atmosphère) ;
-4. critère le plus contributif et critère le plus faible ;
-5. couverture globale, popularité, et avertissement si le livre touche un sujet à éviter.
+Structure of an explanation (in English, like the interface):
+1. opening line depending on the score level (Excellent / Good / Partial);
+2. blurb similarity + sentence of the blurb closest to the request;
+3. shared labels per block (themes, genre, style, atmosphere);
+4. most contributing criterion and weakest criterion;
+5. overall coverage, popularity, and a warning if the book touches a subject to avoid.
 """
 from __future__ import annotations
 
 from src.schemas import BLOCKS, Recommendation, UserProfile
 
-# Plusieurs accroches par niveau : la variante dépend du rang (déterministe,
-# mais les trois livres du top ne commencent pas tous par la même phrase).
+# Several opening lines per level: the variant depends on the rank (deterministic,
+# but the three books of the top do not all start with the same sentence).
 OPENERS = {
     "Excellent": [
         "This book is an excellent match for what you described.",
@@ -61,21 +61,21 @@ def _truncate(text: str, n: int = 220) -> str:
 
 
 def explain_recommendation(rec: Recommendation, profile: UserProfile | None = None) -> str:
-    """Construit l'explication textuelle d'une recommandation (template, sans LLM)."""
+    """Build the text explanation of a recommendation (template, no LLM)."""
     parts: list[str] = []
 
-    # 1. Accroche selon le niveau de score
+    # 1. Opening line depending on the score level
     variants = OPENERS.get(rec.match_label, OPENERS["Partial"])
     parts.append(variants[(rec.rank - 1) % len(variants)])
 
-    # 2. Similarité du résumé + phrase la plus proche (preuve sémantique)
+    # 2. Blurb similarity + closest sentence (semantic evidence)
     raw_desc = rec.raw_scores.get("S_desc", rec.block_scores.get("S_desc", 0.0))
     s = f"Its synopsis is semantically close to your description (similarity {raw_desc:.2f})"
     if rec.best_sentence:
         s += f", especially: «{_truncate(rec.best_sentence)}»"
     parts.append(s + ".")
 
-    # 3. Labels communs par bloc, dans l'ordre d'importance donné par l'utilisateur
+    # 3. Shared labels per block, in the order of importance given by the user
     order = list(BLOCKS)
     if profile is not None:
         order = sorted(BLOCKS, key=lambda b: -profile.weights.get(b, 0))
@@ -84,7 +84,7 @@ def explain_recommendation(rec: Recommendation, profile: UserProfile | None = No
         if pairs:
             parts.append(BLOCK_PHRASES[b].format(labels=_fmt_labels(pairs)))
 
-    # 4. Critère le plus fort / le plus faible (hors pénalité)
+    # 4. Strongest / weakest criterion (penalty excluded)
     contrib = {k: v for k, v in rec.contributions.items() if k != "Avoid penalty" and v > 0}
     if contrib:
         best = max(contrib, key=contrib.get)
@@ -95,7 +95,7 @@ def explain_recommendation(rec: Recommendation, profile: UserProfile | None = No
         parts.append(f"It is a weaker match on {COMPONENT_NAMES[weakest]} "
                      f"({blocks_only[weakest]:.0%}).")
 
-    # 5. Couverture, popularité, sujet à éviter
+    # 5. Coverage, popularity, subject to avoid
     parts.append(f"Overall preference coverage: {rec.coverage:.0%}.")
     if profile is not None and profile.lambda_pop >= 0.1 and rec.popularity >= 0.6:
         parts.append("It is also a popular, well-rated book.")
@@ -106,7 +106,7 @@ def explain_recommendation(rec: Recommendation, profile: UserProfile | None = No
 
 
 def explain_score_formula(rec: Recommendation, profile: UserProfile) -> str:
-    """Détail chiffré du calcul (expander « How was this score computed? » de l'app)."""
+    """Numeric breakdown of the computation (the app's "How was this score computed?" expander)."""
     w = profile.weights
     tw = sum(w[b] for b in BLOCKS)
     lines = [

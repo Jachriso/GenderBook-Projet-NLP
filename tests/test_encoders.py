@@ -1,7 +1,7 @@
-"""Tests de src/encoders.py (baselines TF-IDF / GloVe + comparaison). Aucun téléchargement.
+"""Tests of src/encoders.py (TF-IDF / GloVe baselines + comparison). No download.
 
-Le faux GloVe place « wizard », « sorcerer » et « magician » au même endroit de l'espace :
-on vérifie ainsi le COMPORTEMENT attendu de chaque méthode face aux synonymes.
+The fake GloVe puts "wizard", "sorcerer" and "magician" at the same place in the space:
+this checks the expected BEHAVIOUR of each method with synonyms.
 """
 import numpy as np
 import pandas as pd
@@ -15,7 +15,7 @@ from tests.test_embeddings import FakeModel
 
 
 class FakeKeyedVectors:
-    """Imite gensim KeyedVectors : `mot in kv`, `kv[mot]`, `kv.vector_size`."""
+    """Mimics gensim KeyedVectors: `word in kv`, `kv[word]`, `kv.vector_size`."""
 
     vector_size = 4
     _vecs = {
@@ -68,7 +68,7 @@ def test_tfidf_matches_shared_words_but_not_synonyms(books):
     same_words = cosine_scores(enc.encode(["sorcerer academy"]), docs)[0]
     synonyms = cosine_scores(enc.encode(["wizard school"]), docs)[0]
     assert same_words.argmax() == 0 and same_words[0] > 0
-    assert np.allclose(synonyms, 0)  # aucun mot commun -> TF-IDF est aveugle
+    assert np.allclose(synonyms, 0)  # no shared word -> TF-IDF is blind
 
 
 # ---------- GloVe ----------
@@ -77,7 +77,7 @@ def test_glove_handles_synonyms(books):
     enc = GloveEncoder(keyed_vectors=FakeKeyedVectors())
     docs = enc.encode(books["embed_text"].tolist())
     scores = cosine_scores(enc.encode(["wizard school"]), docs)[0]
-    assert scores.argmax() == 0  # « wizard school » retrouve « sorcerer academy »
+    assert scores.argmax() == 0  # "wizard school" finds "sorcerer academy"
     assert np.allclose(np.linalg.norm(docs, axis=1), 1, atol=1e-5)
 
 
@@ -89,7 +89,7 @@ def test_glove_unknown_words_give_zero_vector():
 def test_glove_tfidf_weighting_fits_idf(books):
     enc = GloveEncoder(weighting="tfidf", keyed_vectors=FakeKeyedVectors()).fit(books["embed_text"])
     assert enc.name == "glove-tfidf" and "kitchen" in enc._idf
-    # « kitchen » apparaît dans 2 livres, « sorcerer » dans 1 : le mot rare a un IDF plus élevé
+    # "kitchen" appears in 2 books, "sorcerer" in 1: the rare word has a higher IDF
     assert enc._idf["sorcerer"] > enc._idf["kitchen"]
 
 
@@ -117,9 +117,9 @@ def test_compare_encoders_ranks(books):
     res = compare_encoders(encoders, books, [("wizard school", "b1"), ("war soldier", "b2")])
     assert len(res) == 4
     r = res.set_index(["encoder", "query"])["rank"]
-    assert r[("glove", "wizard school")] == 1          # synonymes compris
-    assert r[("tfidf", "wizard school")] == 2.5        # score nul partout -> rang moyen sur 4 livres
-    assert r[("tfidf", "war soldier")] == 1            # « soldier » est un mot commun
+    assert r[("glove", "wizard school")] == 1          # synonyms understood
+    assert r[("tfidf", "wizard school")] == 2.5        # zero score everywhere -> average rank over 4 books
+    assert r[("tfidf", "war soldier")] == 1            # "soldier" is a shared word
 
 
 def test_compare_encoders_unknown_target(books):
@@ -128,7 +128,7 @@ def test_compare_encoders_unknown_target(books):
         compare_encoders(enc, books, [("x", "nope")])
 
 
-# ---------- TF-IDF + LSA (version dense, demandée par P6) ----------
+# ---------- TF-IDF + LSA (dense version, requested by P6) ----------
 
 def test_tfidf_lsa_is_dense_and_normalized(books):
     from src.encoders import TfidfLsaEncoder
@@ -149,7 +149,7 @@ def test_tfidf_lsa_requires_fit_and_corpus():
 
 
 def test_every_dense_encoder_returns_ndarray(books):
-    # Contrat du PLAN : get_encoder(name).encode(texts) -> np.ndarray dense (sauf "tfidf", creux)
+    # PLAN contract: get_encoder(name).encode(texts) -> dense np.ndarray (except "tfidf", sparse)
     from src.encoders import DENSE_ENCODER_NAMES
     texts = books["embed_text"].tolist()
     fakes = _fake_kwargs()
@@ -159,10 +159,10 @@ def test_every_dense_encoder_returns_ndarray(books):
         assert isinstance(emb, np.ndarray) and emb.ndim == 2 and emb.shape[0] == len(texts), name
 
 
-# ---------- Branchement dans le moteur de secours de P4 (demande de P6) ----------
+# ---------- Plugging into P4's fallback engine (requested by P6) ----------
 
 def _fake_kwargs():
-    """Arguments qui remplacent les vrais modèles par des faux (aucun téléchargement)."""
+    """Arguments replacing the real models with fake ones (no download)."""
     return {"glove": {"keyed_vectors": FakeKeyedVectors()},
             "glove-tfidf": {"keyed_vectors": FakeKeyedVectors()},
             "tfidf-lsa": {"n_components": 3, "min_df": 1, "max_df": 1.0},
@@ -171,8 +171,8 @@ def _fake_kwargs():
 
 
 def test_every_dense_encoder_plugs_into_local_engine(books):
-    # P6 (notebook 06) compare les encodeurs en les branchant dans LocalEngine de P4 :
-    # book_matrix() doit fonctionner et search() renvoyer des livres pour chacun.
+    # P6 (notebook 06) compares the encoders by plugging them into P4's LocalEngine:
+    # book_matrix() must work and search() must return books for each of them.
     from src.encoders import DENSE_ENCODER_NAMES
     from src.fallback_engine import LocalEngine
     texts = books["embed_text"].tolist()
@@ -186,8 +186,8 @@ def test_every_dense_encoder_plugs_into_local_engine(books):
 
 
 def test_encoder_cache_names_are_unique(books):
-    # LocalEngine nomme son cache d'après encoder.model_name : deux encodeurs différents
-    # ne doivent JAMAIS partager un nom (sinon MPNet rechargerait les vecteurs de MiniLM).
+    # LocalEngine names its cache after encoder.model_name: two different encoders
+    # must NEVER share a name (otherwise MPNet would reload MiniLM's vectors).
     from src.encoders import ENCODER_NAMES
     texts = books["embed_text"].tolist()
     kwargs = {**_fake_kwargs(), "tfidf": {"min_df": 1, "max_df": 1.0}}

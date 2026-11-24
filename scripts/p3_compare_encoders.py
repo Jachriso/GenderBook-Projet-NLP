@@ -1,15 +1,15 @@
 """
-Démo « sémantique vs mots-clés » : TF-IDF vs GloVe vs SBERT sur les 500 livres de l'échantillon.
+"Semantic vs keywords" demo: TF-IDF vs GloVe vs SBERT on the 500 books of the sample.
 
-Chaque requête PARAPHRASE le résumé d'un livre précis SANS reprendre ses mots importants
-(ni titre, ni nom de personnage, ni mots-clés du résumé). Question posée à chaque méthode :
-à quel RANG (sur 500) place-t-elle le livre attendu ?
-    - rang 1   : la méthode a trouvé le bon livre en premier ;
-    - rang ~250 : la méthode ne trouve rien (rang « au hasard »).
+Each query PARAPHRASES the blurb of a specific book WITHOUT reusing its important words
+(no title, no character name, no keyword of the blurb). Question asked to each method:
+at which RANK (out of 500) does it place the expected book?
+    - rank 1   : the method found the right book first;
+    - rank ~250 : the method finds nothing ("random" rank).
 
-Lancer depuis la racine du repo :
+Run from the repo root:
     python -X utf8 -m scripts.p3_compare_encoders                 # tfidf, glove, glove-tfidf, minilm
-    python -X utf8 -m scripts.p3_compare_encoders --mpnet         # + all-mpnet-base-v2 (plus lent)
+    python -X utf8 -m scripts.p3_compare_encoders --mpnet         # + all-mpnet-base-v2 (slower)
     python -X utf8 -m scripts.p3_compare_encoders --only tfidf minilm
 """
 import argparse
@@ -20,7 +20,7 @@ import pandas as pd
 from src import config
 from src.encoders import compare_encoders, get_encoder
 
-# (requête paraphrasée, book_id du livre attendu). Mots ÉVITÉS volontairement entre crochets.
+# (paraphrased query, book_id of the expected book). Words deliberately AVOIDED in brackets.
 QUERIES = [
     # Magician (Feist)          [orphan, boy, magician, kingdom, alien, invaders, worlds]
     ("a parentless lad learns spells from an old wizard while creatures from another dimension "
@@ -52,29 +52,29 @@ def main() -> None:
     parser.add_argument("--only", nargs="+", help="liste d'encodeurs à comparer (ex. tfidf minilm)")
     args = parser.parse_args()
 
-    # 1. Catalogue de développement (500 livres)
+    # 1. Development catalogue (500 books)
     path = config.DATA_PROCESSED / "books_enriched_sample.parquet"
     books = pd.read_parquet(path if path.exists() else config.BOOKS_SAMPLE)
     corpus = books["embed_text"].fillna("").tolist()
 
-    # 2. Encodeurs à comparer (TF-IDF et GloVe-TFIDF apprennent leurs IDF sur ce catalogue)
+    # 2. Encoders to compare (TF-IDF and GloVe-TFIDF learn their IDFs on this catalogue)
     names = args.only or ["tfidf", "glove", "glove-tfidf", "minilm"] + (["mpnet"] if args.mpnet else [])
     encoders = {}
     for name in names:
         print(f"Préparation de l'encodeur {name}...")
         encoders[name] = get_encoder(name, corpus=corpus)
 
-    # 3. Rang du livre attendu pour chaque requête et chaque méthode
+    # 3. Rank of the expected book for each query and each method
     res = compare_encoders(encoders, books, QUERIES)
 
-    # 4. Tableau lisible : une ligne par livre attendu, une colonne par méthode
+    # 4. Readable table: one row per expected book, one column per method
     table = res.pivot(index="target", columns="encoder", values="rank")[names]
     summary = pd.DataFrame({
         "rang moyen": table.mean(),
         "rang médian": table.median(),
         "top-1 (%)": (table == 1).mean() * 100,
         "top-10 (%)": (table <= 10).mean() * 100,
-        "MRR": (1 / table).mean(),          # Mean Reciprocal Rank : 1 = toujours 1er, ~0 = jamais trouvé
+        "MRR": (1 / table).mean(),          # Mean Reciprocal Rank: 1 = always 1st, ~0 = never found
     }).T.round(2)
     seconds = res.groupby("encoder")["seconds"].first()[names]
 
@@ -87,13 +87,13 @@ def main() -> None:
     print("\nTEMPS (encodage des 500 livres + requêtes, en secondes)")
     print(seconds.to_string())
 
-    # 5. Ce que chaque méthode a mis en 1re position (utile pour commenter les échecs)
+    # 5. What each method put in 1st position (useful to discuss the failures)
     print("\nLIVRE CLASSÉ 1er PAR CHAQUE MÉTHODE")
     print(res.pivot(index="target", columns="encoder", values="top1_title")[names].to_string())
 
-    # 6. Sauvegarde pour le notebook 03 et le rapport
-    # Nom du fichier = encodeurs comparés, pour ne jamais écraser une comparaison précédente
-    # (le lancement par défaut garde le nom historique p3_encoder_comparison_sample.csv).
+    # 6. Save for notebook 03 and the report
+    # File name = compared encoders, so that a previous comparison is never overwritten
+    # (the default run keeps the historical name p3_encoder_comparison_sample.csv).
     suffix = "" if not (args.only or args.mpnet) else "_" + "-".join(names)
     out = config.FIGURES_DIR / f"p3_encoder_comparison_sample{suffix}.csv"
     out.parent.mkdir(parents=True, exist_ok=True)

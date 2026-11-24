@@ -1,15 +1,15 @@
 """
-Construit le catalogue de livres à partir du dataset Kaggle brut (personne 1).
+Build the book catalogue from the raw Kaggle dataset (person 1).
 
-Usage (depuis la racine du repo) :
-    python -m scripts.build_dataset            # catalogue complet + échantillon
+Usage (from the repo root):
+    python -m scripts.build_dataset            # full catalogue + sample
     python -m scripts.build_dataset --no-langdetect
 
-Sorties :
-    data/processed/books_clean.parquet   catalogue final (~12 000 livres)
-    data/processed/books_sample.parquet  échantillon stratifié de 500 livres
-    data/reference/filtering_report.csv  nombre de lignes après chaque filtre
-    data/reference/category_stats.csv    fréquence des catégories (pour la personne 2)
+Outputs:
+    data/processed/books_clean.parquet   final catalogue (~12,000 books)
+    data/processed/books_sample.parquet  stratified sample of 500 books
+    data/reference/filtering_report.csv  number of rows after each filter
+    data/reference/category_stats.csv    category frequencies (for person 2)
 """
 import argparse
 import time
@@ -25,7 +25,7 @@ def main() -> None:
     args = parser.parse_args()
 
     t0 = time.time()
-    download_raw_dataset()  # ne fait rien si les CSV sont déjà là
+    download_raw_dataset()  # does nothing if the CSVs are already there
     catalogue, report, stats = build_catalogue(
         target_size=args.target_size, detect_language=not args.no_langdetect
     )

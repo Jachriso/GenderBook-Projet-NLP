@@ -1,17 +1,17 @@
 """
-Outils pour l'annotation de référence (« gold »).
+Tools for the reference ("gold") annotation.
 
-  1) Créer un jeu de TEST de 40 livres, disjoint des 60 livres du réglage :
+  1) Create a TEST set of 40 books, disjoint from the 60 tuning books:
        python scripts/gold_tools.py make-holdout
 
-  2) Relire / remplir une annotation en terminal (1 livre à la fois, reprise possible) :
+  2) Review / fill in an annotation in the terminal (1 book at a time, can be resumed):
        python scripts/gold_tools.py review --gold data/reference/gold_60_clean.csv --annotator Hajar
        python scripts/gold_tools.py review --gold data/reference/gold_holdout.csv   --annotator Hajar
 
-Pour chaque livre on affiche titre + description, puis la liste NUMÉROTÉE des labels de blocks.json.
-Réponses acceptées : des numéros (« 3,7 »), des noms de labels séparés par « | », ENTRÉE pour garder les labels
-affichés (relecture), « s » pour passer, « q » pour sauvegarder et quitter. Chaque livre validé reçoit
-`annotator` = ton prénom ; le fichier est sauvegardé après chaque livre.
+For each book the title + description are shown, then the NUMBERED list of the blocks.json labels.
+Accepted answers: numbers ("3,7"), label names separated by "|", ENTER to keep the displayed labels
+(review), "s" to skip, "q" to save and quit. Each validated book gets
+`annotator` = your first name; the file is saved after each book.
 """
 from __future__ import annotations
 
@@ -30,7 +30,7 @@ GOLD_COLS = ["book_id", "title", "authors_str", "description", "gold_genres", "g
 
 
 def is_reviewed(annotator: str) -> bool:
-    """Un livre est « relu par un humain » si `annotator` est renseigné et ne désigne pas un LLM."""
+    """A book is "reviewed by a human" if `annotator` is filled in and does not name an LLM."""
     a = str(annotator or "").strip().lower()
     return bool(a) and "llm" not in a and "claude" not in a and "relire" not in a
 
@@ -40,7 +40,7 @@ def split_labels(cell: str) -> list[str]:
 
 
 def parse_choice(text: str, labels: list[str], max_labels: int) -> list[str] | None:
-    """Numéros (« 3,7 ») ou noms séparés par « | » -> liste de labels valides ; None si invalide."""
+    """Numbers ("3,7") or names separated by "|" -> list of valid labels; None if invalid."""
     text = text.strip()
     if not text:
         return None
@@ -72,7 +72,7 @@ def menu(labels: list[str]) -> str:
 
 
 def ask(prompt: str, labels: list[str], current: list[str], max_labels: int, input_fn, print_fn):
-    """Retourne ('ok', labels) | ('skip', None) | ('quit', None)."""
+    """Returns ('ok', labels) | ('skip', None) | ('quit', None)."""
     while True:
         ans = input_fn(prompt).strip()
         if ans.lower() == "q":
@@ -89,7 +89,7 @@ def ask(prompt: str, labels: list[str], current: list[str], max_labels: int, inp
 
 def review_rows(df: pd.DataFrame, blocks: dict, annotator: str, save_fn, input_fn=input, print_fn=print,
                 redo: bool = False) -> pd.DataFrame:
-    """Boucle de relecture. ``save_fn(df)`` est appelé après chaque livre validé."""
+    """Review loop. ``save_fn(df)`` is called after each validated book."""
     glabels, tlabels = list(blocks["Genre"]), list(blocks["Themes"])
     todo = [i for i in df.index if redo or not is_reviewed(df.at[i, "annotator"])]
     print_fn(f"{len(todo)} livre(s) à valider sur {len(df)}.")
