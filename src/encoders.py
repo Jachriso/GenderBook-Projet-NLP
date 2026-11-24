@@ -4,12 +4,17 @@ encoders.py : les 4 façons de transformer un texte en vecteur, comparées par P
     | nom           | représentation                         | type            | comprend les synonymes ? | comprend le contexte ? |
     |---------------|----------------------------------------|-----------------|--------------------------|------------------------|
     | "tfidf"       | sac de mots pondéré (lexical)          | creux, ~50 000 d | non                      | non                    |
+    | "tfidf-lsa"   | TF-IDF réduit par SVD tronquée (LSA)   | dense, 256 d     | en partie (co-occurrences)| non                   |
     | "glove"       | moyenne des vecteurs de mots (statique)| dense, 100 d     | oui                      | non                    |
     | "glove-tfidf" | moyenne pondérée par l'IDF             | dense, 100 d     | oui                      | non                    |
     | "minilm"      | SBERT all-MiniLM-L6-v2 (contextuel)    | dense, 384 d     | oui                      | oui                    |
     | "mpnet"       | SBERT all-mpnet-base-v2 (contextuel)   | dense, 768 d     | oui                      | oui                    |
 
-Tous les encodeurs ont la MÊME interface, pour pouvoir les comparer avec le même code :
+Tous les encodeurs ont la MÊME interface, pour pouvoir les comparer avec le même code.
+Tous renvoient une matrice numpy DENSE (contrat PLAN : get_encoder(name) -> np.ndarray), SAUF "tfidf"
+qui renvoie une matrice creuse scipy (12 000 x 50 000 en dense ≈ 2,4 Go). Pour brancher un TF-IDF
+dans un pipeline qui attend du dense (LocalEngine de P4, évaluation de P6), utiliser "tfidf-lsa".
+
     enc = get_encoder("glove", corpus=textes_des_livres)
     enc.encode(["a boy discovers he is a wizard"])   # -> vecteurs L2-normalisés
     cosine_scores(q, B)                              # -> similarités (marche aussi pour TF-IDF creux)
@@ -32,7 +37,8 @@ from src.embeddings import EmbeddingEngine, l2_normalize, resolve_model_name
 from src.preprocessing import preprocess_many_for_classic
 
 GLOVE_MODEL = "glove-wiki-gigaword-100"   # GloVe entraîné sur Wikipédia + Gigaword (400 000 mots, 100 dim)
-ENCODER_NAMES = ("tfidf", "glove", "glove-tfidf", "minilm", "mpnet")
+ENCODER_NAMES = ("tfidf", "tfidf-lsa", "glove", "glove-tfidf", "minilm", "mpnet")
+DENSE_ENCODER_NAMES = tuple(n for n in ENCODER_NAMES if n != "tfidf")   # utilisables partout
 
 
 # --------------------------------------------------------------------------- #
@@ -66,6 +72,7 @@ class TfidfEncoder:
     """
 
     name = "tfidf"
+    model_name = "tfidf"   # identifiant unique (sert aussi de nom de cache dans LocalEngine de P4)
 
     def __init__(self, ngram_range: tuple[int, int] = (1, 2), min_df: int = 2,
                  max_df: float = 0.5, max_features: int = 50_000) -> None:
@@ -93,6 +100,47 @@ class TfidfEncoder:
         return self.vectorizer.transform(preprocess_many_for_classic(list(texts))).tocsr()
 
 
+class TfidfLsaEncoder:
+    """TF-IDF réduit par SVD tronquée (LSA : Latent Semantic Analysis) -> vecteurs DENSES.
+
+    Pourquoi : la matrice TF-IDF est creuse et très large (~50 000 colonnes) ; la convertir en
+    dense pour 12 000 livres prendrait ~2,4 Go. La SVD tronquée projette chaque texte sur les
+    n_components « directions » principales du vocabulaire (256 par défaut) : 12 000 x 256 en
+    float32 ≈ 12 Mo, compatible avec tout pipeline qui attend un np.ndarray.
+
+    Attention à l'interprétation : LSA n'est plus une baseline PUREMENT lexicale. Les directions
+    regroupent des mots qui apparaissent dans les mêmes résumés, ce qui capte une partie des
+    synonymes. Pour la démo « sémantique vs mots-clés », garder "tfidf" (creux).
+    """
+
+    name = "tfidf-lsa"
+
+    def __init__(self, n_components: int = 256, seed: int = config.RANDOM_SEED, **tfidf_kwargs) -> None:
+        from sklearn.decomposition import TruncatedSVD
+        self.tfidf = TfidfEncoder(**tfidf_kwargs)
+        self.n_components = n_components
+        self.seed = seed
+        self.svd: TruncatedSVD | None = None
+        self.model_name = f"tfidf-lsa{n_components}"   # identifiant unique (nom de cache LocalEngine)
+
+    def fit(self, corpus: Iterable[str]) -> "TfidfLsaEncoder":
+        """Apprend le vocabulaire TF-IDF puis la SVD sur le catalogue."""
+        from sklearn.decomposition import TruncatedSVD
+        corpus = list(corpus)
+        self.tfidf.fit(corpus)
+        X = self.tfidf.encode(corpus)
+        # la SVD exige n_components < nombre de colonnes (petits corpus de test)
+        k = max(1, min(self.n_components, X.shape[1] - 1))
+        self.svd = TruncatedSVD(n_components=k, random_state=self.seed).fit(X)
+        return self
+
+    def encode(self, texts: Sequence[str]) -> np.ndarray:
+        """Textes -> matrice DENSE (n, n_components) float32, lignes de norme 1."""
+        if self.svd is None:
+            raise RuntimeError("TfidfLsaEncoder doit d'abord être entraîné : .fit(corpus)")
+        return l2_normalize(self.svd.transform(self.tfidf.encode(texts)))
+
+
 # --------------------------------------------------------------------------- #
 # 2. GloVe : embeddings de mots STATIQUES
 # --------------------------------------------------------------------------- #
@@ -113,9 +161,11 @@ class GloveEncoder:
                  keyed_vectors: Any = None) -> None:
         if weighting not in ("mean", "tfidf"):
             raise ValueError("weighting doit valoir 'mean' ou 'tfidf'")
-        self.model_name = model_name
+        self.glove_model = model_name           # vecteurs à télécharger (gensim)
         self.weighting = weighting
         self.name = "glove" if weighting == "mean" else "glove-tfidf"
+        # identifiant unique : "glove" et "glove-tfidf" ne doivent pas partager un cache
+        self.model_name = f"{self.name}-{model_name}"
         self._kv = keyed_vectors        # injectable pour les tests
         self._idf: dict[str, float] = {}
 
@@ -124,7 +174,7 @@ class GloveEncoder:
         """Vecteurs GloVe chargés au premier usage (téléchargement ~128 Mo la 1re fois)."""
         if self._kv is None:
             import gensim.downloader as api
-            self._kv = api.load(self.model_name)
+            self._kv = api.load(self.glove_model)
         return self._kv
 
     def fit(self, corpus: Iterable[str]) -> "GloveEncoder":
@@ -165,6 +215,9 @@ class SbertEncoder:
                  long_text: str = "truncate") -> None:
         self.engine = engine or EmbeddingEngine(model_name, long_text=long_text)
         self.name = self.engine.model_name.split("/")[-1]
+        # identifiant unique (nom de cache LocalEngine) : MiniLM et MPNet ne partagent jamais un cache
+        mode = self.engine.long_text
+        self.model_name = self.name if mode == "truncate" else f"{self.name}-{mode}"
 
     def fit(self, corpus: Iterable[str]) -> "SbertEncoder":
         return self  # modèle pré-entraîné : rien à apprendre sur le catalogue
@@ -178,11 +231,14 @@ class SbertEncoder:
 # --------------------------------------------------------------------------- #
 
 def get_encoder(name: str, corpus: Iterable[str] | None = None, **kwargs):
-    """Renvoie un encodeur prêt à l'emploi : "tfidf", "glove", "glove-tfidf", "minilm", "mpnet"
-    (ou tout nom de modèle sentence-transformers).
+    """Renvoie un encodeur prêt à l'emploi : "tfidf", "tfidf-lsa", "glove", "glove-tfidf", "minilm",
+    "mpnet" (ou tout nom de modèle sentence-transformers).
 
-    `corpus` (textes des livres) est OBLIGATOIRE pour "tfidf" et "glove-tfidf", qui apprennent
-    des statistiques sur le catalogue. Il est ignoré par les autres.
+    `.encode(texts)` renvoie un np.ndarray dense L2-normalisé pour tous, SAUF "tfidf" (matrice creuse
+    scipy) : utiliser "tfidf-lsa" pour un TF-IDF branchable dans LocalEngine ou l'évaluation de P6.
+
+    `corpus` (textes des livres) est OBLIGATOIRE pour "tfidf", "tfidf-lsa" et "glove-tfidf", qui
+    apprennent des statistiques sur le catalogue. Il est ignoré par les autres.
 
     >>> enc = get_encoder("tfidf", corpus=books["embed_text"])     # doctest: +SKIP
     >>> enc.encode(["a wizard school"]).shape                       # doctest: +SKIP
@@ -190,11 +246,13 @@ def get_encoder(name: str, corpus: Iterable[str] | None = None, **kwargs):
     key = name.lower()
     if key == "tfidf":
         enc = TfidfEncoder(**kwargs)
+    elif key == "tfidf-lsa":
+        enc = TfidfLsaEncoder(**kwargs)
     elif key in ("glove", "glove-tfidf"):
         enc = GloveEncoder(weighting="mean" if key == "glove" else "tfidf", **kwargs)
     else:
         return SbertEncoder(resolve_model_name(name), **kwargs)
-    if key in ("tfidf", "glove-tfidf"):
+    if key in ("tfidf", "tfidf-lsa", "glove-tfidf"):
         if corpus is None:
             raise ValueError(f"get_encoder({name!r}) a besoin de `corpus` (textes des livres)")
         enc.fit(corpus)

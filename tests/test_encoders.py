@@ -126,3 +126,70 @@ def test_compare_encoders_unknown_target(books):
     enc = {"glove": GloveEncoder(keyed_vectors=FakeKeyedVectors())}
     with pytest.raises(KeyError):
         compare_encoders(enc, books, [("x", "nope")])
+
+
+# ---------- TF-IDF + LSA (version dense, demandée par P6) ----------
+
+def test_tfidf_lsa_is_dense_and_normalized(books):
+    from src.encoders import TfidfLsaEncoder
+    enc = get_encoder("tfidf-lsa", corpus=books["embed_text"], n_components=3, min_df=1, max_df=1.0)
+    assert isinstance(enc, TfidfLsaEncoder)
+    emb = enc.encode(books["embed_text"].tolist())
+    assert isinstance(emb, np.ndarray) and not sparse.issparse(emb)
+    assert emb.shape == (4, 3) and emb.dtype == np.float32
+    assert np.allclose(np.linalg.norm(emb, axis=1), 1, atol=1e-5)
+
+
+def test_tfidf_lsa_requires_fit_and_corpus():
+    from src.encoders import TfidfLsaEncoder
+    with pytest.raises(RuntimeError):
+        TfidfLsaEncoder().encode(["x"])
+    with pytest.raises(ValueError):
+        get_encoder("tfidf-lsa")
+
+
+def test_every_dense_encoder_returns_ndarray(books):
+    # Contrat du PLAN : get_encoder(name).encode(texts) -> np.ndarray dense (sauf "tfidf", creux)
+    from src.encoders import DENSE_ENCODER_NAMES
+    texts = books["embed_text"].tolist()
+    fakes = _fake_kwargs()
+    assert set(fakes) == set(DENSE_ENCODER_NAMES)
+    for name in DENSE_ENCODER_NAMES:
+        emb = get_encoder(name, corpus=texts, **fakes[name]).encode(texts)
+        assert isinstance(emb, np.ndarray) and emb.ndim == 2 and emb.shape[0] == len(texts), name
+
+
+# ---------- Branchement dans le moteur de secours de P4 (demande de P6) ----------
+
+def _fake_kwargs():
+    """Arguments qui remplacent les vrais modèles par des faux (aucun téléchargement)."""
+    return {"glove": {"keyed_vectors": FakeKeyedVectors()},
+            "glove-tfidf": {"keyed_vectors": FakeKeyedVectors()},
+            "tfidf-lsa": {"n_components": 3, "min_df": 1, "max_df": 1.0},
+            "minilm": {"engine": EmbeddingEngine("minilm", model=FakeModel())},
+            "mpnet": {"engine": EmbeddingEngine("mpnet", model=FakeModel())}}
+
+
+def test_every_dense_encoder_plugs_into_local_engine(books):
+    # P6 (notebook 06) compare les encodeurs en les branchant dans LocalEngine de P4 :
+    # book_matrix() doit fonctionner et search() renvoyer des livres pour chacun.
+    from src.encoders import DENSE_ENCODER_NAMES
+    from src.fallback_engine import LocalEngine
+    texts = books["embed_text"].tolist()
+    for name in DENSE_ENCODER_NAMES:
+        enc = get_encoder(name, corpus=texts, **_fake_kwargs()[name])
+        engine = LocalEngine(books, blocks={}, encoder=enc, cache=False)
+        M = engine.book_matrix()
+        assert isinstance(M, np.ndarray) and M.shape[0] == len(books), name
+        idx, scores = engine.search(engine.encode(["a young wizard"])[0], k=2)
+        assert len(idx) == 2 and scores[0] >= scores[1], name
+
+
+def test_encoder_cache_names_are_unique(books):
+    # LocalEngine nomme son cache d'après encoder.model_name : deux encodeurs différents
+    # ne doivent JAMAIS partager un nom (sinon MPNet rechargerait les vecteurs de MiniLM).
+    from src.encoders import ENCODER_NAMES
+    texts = books["embed_text"].tolist()
+    kwargs = {**_fake_kwargs(), "tfidf": {"min_df": 1, "max_df": 1.0}}
+    names = [get_encoder(n, corpus=texts, **kwargs[n]).model_name for n in ENCODER_NAMES]
+    assert len(set(names)) == len(names), names
