@@ -3,7 +3,7 @@ enrichment.py: semantic enrichment of the catalogue (Person 2).
 
 The Book Depository dataset contains NEITHER themes, NOR style, NOR keywords, and its
 1,078 categories are noisy. This module DERIVES this information through semantic
-analysis and produces ``books_enriched.parquet`` (contract columns, PLAN §4.1):
+analysis and produces ``books_enriched.parquet`` (contract columns, see README, section 7):
 
     genres        : list[str]  (top 3, Genre block)
     themes        : list[str]  (top 3, Themes block)
@@ -48,7 +48,7 @@ DEFAULT_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 
 BLOCK_NAMES = ["Genre", "Themes", "Style", "Atmosphere"]
 
-# Number of labels kept per book for each block (contract PLAN §4.1).
+# Number of labels kept per book for each block (team data contract).
 TOP_K = {"Genre": 3, "Themes": 3, "Style": 2, "Atmosphere": 2}
 
 # Words without semantic value to describe a book (publisher vocabulary, Spanish/French function words...).

@@ -69,4 +69,4 @@ The work was split into six roles of comparable workload. The **interfaces betwe
 
 ## 1.6 Outline
 
-Section 2 presents the dataset and its preparation, section 3 the reference framework and the semantic enrichment, section 4 the embedding engine and the choice of model, section 5 the scoring formula and how recommendations are generated, and section 6 the application. Section 7 evaluates the system, section 8 discusses the challenges we faced, section 9 its limitations, and section 10 concludes. The appendix links each requirement of the assignment to its implementation.
+Section 2 presents the dataset and its preparation, section 3 the reference framework and the semantic enrichment, section 4 the embedding engine and the choice of model, section 5 the scoring formula and how recommendations are generated, and section 6 the application. Section 7 evaluates the system, section 8 discusses the challenges we faced, section 9 its limitations, and section 10 concludes. Appendix A links each requirement of the assignment to its implementation, and appendix B lists the libraries used and why they were chosen.

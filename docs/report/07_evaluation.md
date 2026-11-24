@@ -84,6 +84,8 @@ The pairs were judged **twice, independently**: by a team member for the first f
 
 **Model kept for the application: MiniLM.** Relevance alone does not separate MiniLM from TF-IDF + LSA and MPNet on 10 personas (a gap of 3 books out of 30). We keep MiniLM for the other criteria: it is twice as stable as the lexical baseline when the request is rephrased (section 7.3), the only encoder that never returns a book the user has already read, and 4 times faster than MPNet. MPNet is the natural next step if the relevance gap is confirmed on more personas (section 9.2).
 
+![Figure 7.1: metrics of the complete system for each encoder (10 test personas)](../figures/06_encoders.png){width=85%}
+
 ## 7.3 Robustness to rephrasing
 
 Each main request (`ideal_book`) is rewritten three times with the same meaning and different vocabulary. A system that understands meaning should return roughly the same top 3. We measure the Jaccard similarity between the original top 3 and the top 3 of each rephrasing (1 = identical lists, 0 = nothing in common).
@@ -114,6 +116,8 @@ Section 5 proposes $\text{Final} = \frac{\alpha \tilde S_{desc} + \beta\, \text{
 - **The blurb term brings the themes.** With coverage alone, the genre-precision is perfect but the theme overlap drops (0.92): the two terms are complementary, which justifies combining them.
 - **The other terms cannot be separated on 10 personas.** Removing the popularity, the "to avoid" penalty or the calibration changes the MRR by at most 0.08, i.e. by one or two hand-picked books moving in or out of the top 3. Some variants even have a higher MRR than the full formula. With so few relevant books, this is noise rather than evidence, and we did **not** re-tune the constants on these test personas, which would make the evaluation optimistic. As section 5 already observed, $\lambda$ and $\tau$ act as safeguards with a small effect on the ranking.
 
+![Figure 7.2: ablation of the formula (MiniLM, 10 test personas)](../figures/06_ablation.png){width=85%}
+
 ## 7.5 Sensitivity to user-chosen weights
 
 The importance Likert answers (Genre, Themes, Style, Atmosphere) become the weights $W_b$ of the coverage score. If the system is consistent, increasing the importance of a block should push up the books that are close on that block. We vary $W_{Themes}$ from 1 to 5, keeping the other answers fixed, and measure the mean Themes score of the top 10 (MiniLM, mean over the 10 personas).
@@ -123,6 +127,8 @@ The importance Likert answers (Genre, Themes, Style, Atmosphere) become the weig
 | Mean Themes score of the top 10 | 0.728 | 0.751 | 0.766 | 0.776 | 0.782 |
 
 The Themes score **increases at every step** (+0.054 between 1 and 5): the user's importance answers really steer the ranking, in the expected direction. The effect is moderate, which is intended: the weights reorder books that are already relevant, they do not replace the semantic similarity with the request.
+
+![Figure 7.3: mean Themes score of the top 10 as the Themes weight increases](../figures/06_weight_sensitivity.png){width=60%}
 
 ## 7.6 Qualitative analysis
 

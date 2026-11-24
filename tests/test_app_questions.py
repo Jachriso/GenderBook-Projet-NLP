@@ -1,4 +1,4 @@
-"""Tests for the questionnaire (app/questions.py, P5): answers.json follows the contract in PLAN §4.3.
+"""Tests for the questionnaire (app/questions.py, P5): answers.json follows the contract described in the README (section 2).
 
 Run: python -m pytest tests/test_app_questions.py -q
 """

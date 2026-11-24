@@ -89,6 +89,8 @@ MiniLM only reads **256 tokens**. On the catalogue, the median is 178 tokens, th
 
 **Caveat.** 7 queries written by us **illustrate** the differences between the methods; they are not a statistical evaluation.
 
+![Figure 4.1: MRR of each representation on queries sharing no word with the expected blurb](../figures/p3_encoder_mrr.png){width=70%}
+
 ## 4.8 Scaling up: 12,000 books
 
 On the full catalogue, with queries describing well-known books without naming them, the exact book is rarely first: *1984* is 2nd, *The Hunger Games* 5th, *The Hobbit* 8th, *Frankenstein* 27th, *Harry Potter* 32nd. The books ranked above them are nevertheless often **relevant** (*The Witch Boy*, *Magyk*, *Magician* for "a boy discovers he is a wizard"), which is what a recommender aims for.
@@ -111,6 +113,8 @@ Raw SBERT cosines are **compressed**. Over 14 queries × 12,000 books:
 
 **100 % of the candidates are above the catalogue p95** (query by query). A calibration $\tilde s = \mathrm{clip}\big((s-p_5)/(p_{95}-p_5), 0, 1\big)$ computed on the whole catalogue would therefore map almost all candidates to 1: the global similarity term would no longer separate anything. This measurement **justifies the choice made in section 5**, which calibrates on the candidates of reference personas. The engine therefore does not produce a competing calibration file (team decision).
 
+![Figure 4.2: raw cosine scores over the whole catalogue vs over the 300 retrieved candidates](../figures/p3_cosine_distribution.png){width=85%}
+
 ## 4.10 Semantic map and genres
 
 The similarity map of the application is a **UMAP** projection of the 12,000 vectors in 2D (cosine distance, 15 neighbours, `min_dist` = 0.1, fixed seed and frozen algorithm for reproducibility), saved in `data/embeddings/umap_2d.npy`. The user's point is placed at the similarity-weighted average position of their 10 closest books, which avoids saving the UMAP model.
@@ -120,6 +124,8 @@ On the map, genres occupy **regions**: Romance on one side, Fantasy on the other
 Yet the **silhouette score** by main genre is close to 0 (−0.007). It requires clear-cut boundaries, whereas genres **overlap**: a book has up to three genres and some "genres" are audiences (Young Adult). A better-suited measure confirms what the map shows: **79 % of a book's 10 nearest neighbours share at least one of its genres, against 38 % for randomly drawn books (×2.1)**.
 
 Per genre, raw rates are misleading: large fiction genres have the highest ones (Romance 88 %) mostly because of their **size**, since even random books share a genre with a romance 46 % of the time. Corrected by each genre's chance rate (the **lift**), the ranking is reversed. **Small non-fiction genres are the most distinctive** (Business & Economics ×5.0, Self-help & Psychology ×3.9, Science & Nature ×3.3), because their vocabulary is specific. **Large fiction genres are the least distinctive** (Literary Fiction ×1.5, Historical Fiction ×1.7, Romance ×1.9): they overlap with everything, and Literary Fiction is more a style than a subject. This overlap, strongest for fiction, justifies the explicit use of genre labels in the block scores.
+
+![Figure 4.3: UMAP projection of the 12,000 book embeddings, coloured by main genre](../figures/p3_umap_genres.png){width=90%}
 
 ## 4.11 Limitations
 

@@ -11,7 +11,7 @@ encoders.py: the ways of turning a text into a vector, compared by P3 and P6.
     | "mpnet"       | SBERT all-mpnet-base-v2 (contextual)   | dense, 768 d      | yes                         | yes              |
 
 All encoders share the SAME interface, so they can be compared with the same code.
-They all return a DENSE numpy matrix (PLAN contract: get_encoder(name) -> np.ndarray), EXCEPT "tfidf",
+They all return a DENSE numpy matrix (team contract: get_encoder(name) -> np.ndarray), EXCEPT "tfidf",
 which returns a scipy sparse matrix (12,000 x 50,000 dense ≈ 2.4 GB). To plug a TF-IDF into a
 pipeline that expects dense vectors (P4's LocalEngine, P6's evaluation), use "tfidf-lsa".
 

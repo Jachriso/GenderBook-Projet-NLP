@@ -1,4 +1,4 @@
-# Appendix: compliance with the assignment requirements
+# Appendix A: compliance with the assignment requirements
 
 *Each requirement of the assignment is linked to the code that implements it and to the section of the report that documents it.*
 
@@ -39,5 +39,5 @@
 | Show that results come from semantic analysis | highlighted closest sentence, "How was this score computed?" panel, heatmap | 6 | ☑ |
 | **Works without generative AI** | no LLM call in `recommend()` | 5, 10 | ☑ |
 | **Deliverables**: commented notebooks | `notebooks/01` to `06` | all | ☑ |
-| PDF documentation | this report | — | ☐ |
-| Presentation and demo | slides + demo, all 6 members present | — | ☐ |
+| PDF documentation | this report | all | ☑ |
+| Presentation and demo | slides + live demo of the application, all 6 members present | in class | ☑ |

@@ -383,7 +383,7 @@ def build_profile(answers: dict, engine, books: pd.DataFrame | None = None,
     """Turn answers.json into a UserProfile (see the module docstring).
 
     Args:
-        answers: answers in the answers.json format (PLAN_PROJET.md §4.3).
+        answers: answers in the answers.json format (README, section 2).
         engine: object following the EmbeddingEngine contract (P3) or LocalEngine.
         books: catalogue indexed 0..N-1, aligned with engine.book_matrix() (for the favourite author).
         blocks: blocks.json taxonomy (P2). Empty = the labels themselves are encoded.
@@ -467,7 +467,7 @@ def build_profile(answers: dict, engine, books: pd.DataFrame | None = None,
 
 
 def example_answers() -> dict[str, Any]:
-    """Example of answers following the answers.json contract (PLAN_PROJET.md §4.3)."""
+    """Example of answers following the answers.json contract (README, section 2)."""
     return {
         "free_text": {
             "ideal_book": "I enjoy psychological novels exploring identity and moral dilemmas, "

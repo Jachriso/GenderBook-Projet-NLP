@@ -2,7 +2,16 @@
 
 GenderBook recommends books from preferences written in **natural language**. A reader describes the book they would like to read, a book they loved and the atmosphere they are looking for; the system compares the **meaning** of these answers with the blurbs of 12,000 books (SBERT embeddings, cosine similarity), scores each book with an explainable formula, and returns a **top 3** with a score, the criteria behind it and a template-based explanation.
 
-It is theme 3 of the assignment *Semantic Analysis and Intelligent Contextual Recommendation Systems* (*Book Recommendation Based on Literary Preferences*). The original plan and the split of tasks are in [PLAN_PROJET.md](PLAN_PROJET.md); the full documentation is the report in [docs/report/](docs/report/).
+It is theme 3 of the assignment *Semantic Analysis and Intelligent Contextual Recommendation Systems* (*Book Recommendation Based on Literary Preferences*), ECE ING5 Data & AI, 2026-27.
+
+**Deliverables**
+
+| Deliverable required by the assignment | Where |
+|---|---|
+| Source code (Python modules and scripts) | `src/`, `scripts/`, `app/` (comments at every step) |
+| Documentation inline in notebooks | `notebooks/01` to `06`, one per part, executed and commented |
+| Documentation as a PDF (design choices, algorithms, libraries) | [`docs/GenderBook_report.pdf`](docs/GenderBook_report.pdf), built from the sections in [`docs/report/`](docs/report/) |
+| Working web questionnaire and demo | `streamlit run app/streamlit_app.py` (section 2) |
 
 ```
 questionnaire ──► answers.json ──► build_profile() ──► filters ──► retrieval (top 300)
@@ -59,7 +68,18 @@ for r in recs:
     print(r.explanation)
 ```
 
-The answer format is documented in [PLAN_PROJET.md §4.3](PLAN_PROJET.md); ready-made examples are in `data/eval/personas.json` and `data/reference/personas_p4.json`.
+**`answers.json` format** (what the questionnaire produces and `recommend()` expects):
+
+| Key | Content | Question type |
+|---|---|---|
+| `free_text` | `ideal_book` (required), `loved_book`, `atmosphere`, `avoid` | open questions |
+| `genres`, `themes` | labels of `data/reference/blocks.json` | checkboxes |
+| `period` | story period (Atmosphere label) or `"No preference"` | multiple choice |
+| `audience`, `formats` | `Adult` / `Young Adult` / `Children` / `Any`; `Paperback`, `Hardback` | multiple choice |
+| `favorite_author`, `guided` | favourite author; `focus` (characters / plot / both), `exclude_favorite_author`, `standalone_only` | guided questions |
+| `likert` | `complexity`, `pace`, `darkness`, `popularity` and the importance of each block `w_genre`, `w_themes`, `w_style`, `w_atmosphere` (1 to 5) | Likert scales |
+
+Ready-made examples are in `data/eval/personas.json` and `data/reference/personas_p4.json`; the Python contract (`UserProfile`, `Recommendation`) is in `src/schemas.py`.
 
 ### Run the web application
 
@@ -136,12 +156,12 @@ src/
   schemas.py, profile.py, scoring.py, recommender.py, explain.py, fallback_engine.py   P4
   viz.py                                               P5: Plotly figures of the app
   evaluation.py                                        P6: end-to-end evaluation
-scripts/               command-line versions of the pipeline steps · prepare_app.py (app warm-up) · capture_screens.py
+scripts/               command-line versions of the pipeline steps · prepare_app.py (app warm-up) · capture_screens.py · build_report.py (PDF)
 tests/                 unit tests
 docs/
-  report/              sections of the PDF report (00 introduction … 11 appendix)
-  slides/              slide plans per person
-  figures/             figures used in the report and the slides
+  GenderBook_report.pdf  the documentation (PDF), built from docs/report/
+  report/              sections of the report (00 introduction … 12 appendix), in Markdown
+  figures/             figures used in the report
 app/                   Streamlit application (P5): streamlit_app.py (pages) · questions.py (questionnaire) · assets/ (logo)
 ```
 
@@ -165,7 +185,29 @@ get_books_by_author(books, "stephen kng")  # fuzzy matching on author names
 mask = apply_constraints(books, audience="Young Adult", formats=["Paperback"], fiction_only=True)
 ```
 
-## 8. Team
+## 8. Main libraries
+
+| Library | Used for |
+|---|---|
+| `sentence-transformers` (+ PyTorch) | SBERT contextual embeddings: `all-MiniLM-L6-v2` (default), `all-mpnet-base-v2` (comparison) |
+| `scikit-learn` | TF-IDF baseline, truncated SVD (LSA), silhouette score |
+| `gensim` | GloVe word embeddings (`glove-wiki-gigaword-100`) |
+| `spaCy` (`en_core_web_sm`) | tokenisation, lemmatisation, part-of-speech tags (baselines, keywords, sentence splitting) |
+| `pandas`, `pyarrow`, `numpy` | data preparation, parquet storage, vectorised cosine scoring |
+| `rapidfuzz`, `langdetect`, `kagglehub` | fuzzy author matching, language check, dataset download |
+| `umap-learn` | 2D semantic map of the catalogue |
+| `streamlit`, `plotly` | web questionnaire, results page and interactive charts |
+| `pytest`, `jupyter` | unit tests, documented notebooks |
+
+Why each one was chosen is explained in the report (sections 4 and 6, and appendix B).
+
+### Rebuild the PDF report
+
+```bash
+python -m scripts.build_report      # docs/report/*.md -> docs/GenderBook_report.pdf (needs pandoc and Google Chrome)
+```
+
+## 9. Team
 
 | Member | Role | Responsibility |
 |---|---|---|

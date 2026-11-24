@@ -31,4 +31,6 @@ Annotations reviewed by: Hajar (initial proposal assisted by an LLM).
 
 Themes are harder than genres: a book can legitimately carry four themes while we only annotate two or three, and close themes (*Grief & loss*, *Family relationships*) get confused. Errors also come from uninformative marketing descriptions.
 
+![Figure 3.1: thematic profile of each genre (share of the books of a genre carrying each theme)](../figures/02_heatmap_genre_theme.png){width=90%}
+
 **Limitations.** The tone bias of commercial descriptions, MiniLM's 256-token truncation, the subjectivity of themes (annotation by a single person, the author of the pipeline, without an agreement measure), the size of the test set, and the fact that the variant sentences were written by us and tuned on the tuning set. Next steps: a finer model (MPNet), NLI on ambiguous cases, targeted manual corrections.

@@ -2,10 +2,10 @@
 questions.py: content of the questionnaire (Person 5).
 
 This module does NOT depend on Streamlit: it defines the questions, the demo personas,
-the validation and the construction of answers.json (contract PLAN §4.3). It can therefore
+the validation and the construction of answers.json (contract: see README, section 2). It can therefore
 be tested with pytest and reused in the notebooks (P4, P6) to build answers.
 
-Mapping with the question table (PLAN §6) and the 5 question types required by the brief:
+Mapping with the 5 question types required by the brief:
     Q1-Q4   free text (Q1 required, >= 30 characters)     -> free_text
     Q5-Q6   checkboxes (genres, themes)                   -> genres, themes
     Q7      multiple choice, radio (era of the story)     -> period
@@ -219,7 +219,7 @@ def validate_all(state: Mapping[str, Any]) -> list[str]:
 
 
 def build_answers(state: Mapping[str, Any], blocks: Mapping[str, Mapping[str, str]]) -> dict[str, Any]:
-    """Turn the form state into an answers.json that matches the contract EXACTLY (PLAN §4.3).
+    """Turn the form state into an answers.json that matches the contract EXACTLY (README, section 2).
 
     Texts are cleaned (whitespace); Likert values are integers 1-5; guided fields that do
     not apply are neutralised (no author -> favorite_author = "" and exclusion False).

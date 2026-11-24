@@ -4,7 +4,7 @@ SINGLE entry point of the recommendation engine, used by the Streamlit app (P5).
     from src.recommender import recommend
     profile, recs = recommend(answers, top_k=3)
 
-Pipeline (PLAN_PROJET.md §3):
+Pipeline (report, section 5):
     answers ─► build_profile ─► (1) hard filters ─► (2) top-300 retrieval by S_desc
             ─► (3) re-ranking with the full formula ─► (4) diversity (1 book / author)
             ─► (5) Recommendation (scores, contributions, labels, sentence, explanation)
