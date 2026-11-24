@@ -13,3 +13,5 @@ data/raw/
 data/embeddings/*.npy
 # Réponses utilisateurs de l'app
 data/responses/
+
+data/embeddings/

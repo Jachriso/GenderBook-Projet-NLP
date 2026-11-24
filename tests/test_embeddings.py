@@ -18,7 +18,7 @@ from src.embeddings import EmbeddingEngine, cosine_sim, l2_normalize, model_slug
 class FakeTokenizer:
     """Imite le tokenizer Hugging Face : 1 mot = 1 token."""
 
-    def __call__(self, texts, add_special_tokens=False):
+    def __call__(self, texts, add_special_tokens=False, **kwargs):
         if isinstance(texts, str):
             texts = [texts]
         return {"input_ids": [list(range(len(t.split()))) for t in texts]}

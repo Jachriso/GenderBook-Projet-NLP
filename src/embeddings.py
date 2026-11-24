@@ -226,7 +226,9 @@ class EmbeddingEngine:
         Sert à mesurer combien de résumés dépassent la limite du modèle (notebook 03).
         """
         texts = [preprocess_for_transformer(t) for t in texts]
-        ids = self.model.tokenizer(texts, add_special_tokens=False)["input_ids"]
+        # verbose=False : on COMPTE les tokens, on ne les envoie pas au modèle ; inutile que
+        # transformers avertisse « sequence length is longer than the maximum » à chaque texte long.
+        ids = self.model.tokenizer(texts, add_special_tokens=False, verbose=False)["input_ids"]
         return np.array([len(x) for x in ids], dtype=int)
 
     def chunk_text(self, text: str, max_tokens: int | None = None) -> list[str]:
