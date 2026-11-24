@@ -21,7 +21,7 @@ Metrics (computed on the top 3 of each persona):
   * stability          Jaccard similarity of the top 3 obtained with rephrased requests
   * judged precision@3 share of the top 3 judged relevant, in a blind pooled judgment
                        file (see section 7)
-  * judge agreement    raw agreement and Cohen's kappa between two judges (human / LLM)
+  * judge agreement    raw agreement and Cohen's kappa between two judges (two team members)
 """
 from __future__ import annotations
 
@@ -318,10 +318,10 @@ def make_recommender(encoder: str, books: pd.DataFrame | None = None, blocks: di
 # shuffled. Existing judgments are kept when new systems are added to the pool.
 
 JUDGMENTS_PATH = EVAL_DIR / "judgments.csv"          # final labels used in the report
-# Second, independent judgment of the SAME blind file by an LLM (it only saw the CSV: the
-# request and the book, never the system). The final file keeps the human labels for
-# HUMAN_JUDGED_PERSONAS and the LLM labels for the others; on the human personas the two
-# judges are compared (judge_agreement) to show how subjective relevance is.
+# Second, independent judgment of the SAME blind file by other team members (judge B, all 10
+# personas; despite its historical name, judgments_ai.csv holds human labels). The final file
+# keeps judge A's labels for HUMAN_JUDGED_PERSONAS and judge B's for the others; on those
+# personas the two judges are compared (judge_agreement) to show how subjective relevance is.
 JUDGMENTS_AI_PATH = EVAL_DIR / "judgments_ai.csv"
 HUMAN_JUDGED_PERSONAS = ("E01_children_fantasy", "E02_nordic_noir", "E03_historical_romance", "E04_ya_dystopia")
 JUDGMENT_COLUMNS = ["persona", "request", "book_id", "title", "authors", "genres", "blurb", "relevant"]

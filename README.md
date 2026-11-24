@@ -126,7 +126,7 @@ jupyter nbconvert --to notebook --execute --inplace notebooks/06_evaluation.ipyn
 
 - Test personas: `data/eval/personas.json` (expected books fixed by hand before running the system).
 - Results: `data/eval/results/*.csv`; figures: `docs/figures/06_*.png`.
-- Blind relevance judgments of every recommended book (pooling): `data/eval/judgments.csv` (final labels: human for E01–E04, LLM for E05–E10) and `data/eval/judgments_ai.csv` (LLM, all personas), compared in section 8 of the notebook.
+- Blind relevance judgments of every recommended book (pooling): `data/eval/judgments.csv` (final labels: judge A for E01–E04, judge B for E05–E10) and `data/eval/judgments_ai.csv` (judge B, all personas). All judgments were made by team members; the two judges are compared in section 8 of the notebook.
 - MPNet (`RUN_MPNET` in the first cell) needs the MPNet embeddings of the catalogue: encoding them takes ≈ 80 min on CPU (≈ 10 min on a GPU, e.g. Google Colab) with `python -X utf8 -m scripts.p3_build_embeddings --model mpnet`, or copy the three `all-mpnet-base-v2_*` cache files from a teammate into `data/embeddings/` (they are not versioned).
 - Main results (report section 7): with MiniLM, genre-precision@3 0.97 and theme-overlap@3 0.97 on the 10 test personas; the top 3 is twice as stable under rephrasing as with the lexical baseline (Jaccard 0.63 vs 0.28); judged precision@3 0.50 (TF-IDF + LSA and MPNet 0.60, GloVe 0.40).
 
