@@ -130,13 +130,6 @@ textarea:focus, input[type="text"]:focus{border-color:var(--gb-brass) !important
   font-style:italic;line-height:1.6}
 .gb-quote small{font-family:'Nunito','Segoe UI',sans-serif;font-style:normal;color:#7A7064}
 
-/* Covers sit like books on a shelf */
-.gb-cover{width:100%;max-width:170px;aspect-ratio:2/3;object-fit:cover;border-radius:2px 6px 6px 2px;
-  box-shadow:0 8px 18px rgba(60,40,20,.28);
-  background:linear-gradient(90deg,#1C3A2E 0 8%,#23493A 8%)}  /* green cloth binding if the image fails */
-.gb-nocover{width:100%;max-width:170px;aspect-ratio:2/3;border-radius:2px 6px 6px 2px;
-  background:linear-gradient(90deg,#1C3A2E 0 8%,#23493A 8%);color:#E8D9B0;display:flex;
-  align-items:center;justify-content:center;font-size:2.6rem;box-shadow:0 8px 18px rgba(60,40,20,.28)}
 .gb-synopsis{font-family:'Literata',Georgia,serif;line-height:1.7}
 .gb-synopsis mark{background:#F1DFA8;padding:0 2px;border-radius:3px}
 
@@ -495,12 +488,6 @@ def badge(match_label: str) -> str:
     return f'<span class="gb-stamp" style="color:{color}">{html.escape(label)}</span>'
 
 
-def cover(url: str) -> str:
-    if url and url.startswith("http"):
-        return f'<img class="gb-cover" src="{html.escape(url)}" alt="" referrerpolicy="no-referrer">'
-    return '<div class="gb-nocover"></div>'
-
-
 def highlighted_synopsis(text: str, sentence: str) -> str:
     """Synopsis with the sentence closest to the request highlighted (<mark>)."""
     safe = html.escape(text or "")
@@ -546,8 +533,9 @@ FORMULA = (r"\text{Final}= \frac{%s\,\tilde S_{desc} + %s\,\overbrace{\frac{\sum
 
 def render_recommendation(rec: Any, profile: Any, book_row: pd.Series | None) -> None:
     with st.container(border=True):
-        c1, c2, c3 = st.columns([1, 3.2, 1.3], gap="medium")
-        c1.markdown(cover(rec.image_url), unsafe_allow_html=True)
+        # No cover image: the dataset's image_url links point to Book Depository's image
+        # servers, which closed in 2023, so they no longer load.
+        c2, c3 = st.columns([3.2, 1.3], gap="medium")
         with c2:
             st.markdown(f"### {rec.rank}. {rec.title}")
             st.markdown(f"*{rec.authors}* &nbsp; {badge(rec.match_label)}", unsafe_allow_html=True)

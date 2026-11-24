@@ -53,7 +53,7 @@ dataset n'a pas d'info de série : la case reste, c'est une préférence douce.
 ## Points remontés aux autres (non bloquants)
 
 - P1 : quelques doublons d'édition restent visibles (*1984* apparaît 3 fois : « 1984 », « 1984 Nineteen-Eighty Four », « 1984 Deluxe Edition ») et certains noms d'auteurs gardent un titre (« Prof Bernhard Schlink »). La diversité « 1 livre par auteur » de P4 masque le premier point dans le top 3.
-- Couvertures : les `image_url` pointent vers cloudfront ; si une image ne charge pas, l'app n'affiche simplement pas de couverture (pas d'erreur). À vérifier sur une vraie connexion (je n'ai pas pu tester le chargement des images).
+- Couvertures : les `image_url` du dataset pointent vers les serveurs d'images de Book Depository, fermé en 2023 : elles ne chargent plus. L'app n'affiche donc pas de couverture (le champ `image_url` reste dans le contrat de P4, inutilisé).
 
 ## Après l'intégration de P4 (ma checklist)
 
